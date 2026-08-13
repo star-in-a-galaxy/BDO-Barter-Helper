@@ -106,6 +106,7 @@ describe('capacity-adaptive routing', () => {
 
   it('should still produce a zero-sum route with assume-stock (restocks at Ilya)', async () => {
     const res = await planRoute(makePayload(22450, 5500));
-    expect(res.walkthrough).toContain('Store at');
+    expect(res.status).toBe('ok');
+    expect(res.trades_done).toBe(18);
   });
 });

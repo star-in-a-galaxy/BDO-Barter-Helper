@@ -1,5 +1,6 @@
 import { loadBarterPorts } from './catalog.js';
 import { Simulator } from './simulator.js';
+import { seaPath } from './sea-routes.js';
 
 const T7_TRADERS = {
   "A": ["Olvia Coast", "Epheria Sentry Post"],
@@ -79,6 +80,12 @@ function normName(name) {
 }
 
 function getDistance(loc1, loc2, ports) {
+  // Sea-aware distance first: routes around the landmass via "preceding-node"
+  // waypoints where the straight line would cross land.
+  const sea = seaPath(loc1, loc2, ports);
+  if (sea) return sea.distance;
+
+  // Fall back to a straight line for unrouted / unresolvable pairs.
   const key1 = normName(loc1);
   const key2 = normName(loc2);
   

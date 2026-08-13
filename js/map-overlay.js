@@ -5,6 +5,7 @@
 // once by clicking three known ports (Iliya, Lema, Epheria). The solved
 // transform is persisted in localStorage.
 import { loadBarterPorts } from './catalog.js';
+import { seaPath, seaNodeCoords } from './sea-routes.js';
 
 const STORAGE_KEY = 'barter-map-calibration';
 
@@ -173,7 +174,7 @@ export function drawRoute(stops) {
   routeLayer = L.layerGroup();
   routeSegments = [];
 
-  let prev = null; // { latlng }
+  let prev = null; // { latlng, name }
   for (const stop of stops) {
     const port = findPort(stop.location);
     if (!port) {
@@ -187,9 +188,19 @@ export function drawRoute(stops) {
     routeLayer.addLayer(marker);
 
     if (prev) {
-      const line = L.polyline([prev.latlng, ll], { color: '#38bdf8', weight: 3, opacity: 0.85 });
+      // Sea-aware leg: polyline through the sea-route waypoints (real ports AND
+      // synthetic waypoints like "Iliya South" / "Teyamal Gap") instead of a
+      // straight line (which can cut across the landmass).
+      const route = seaPath(prev.name, stop.location, portsCache) || { path: [prev.name, stop.location] };
+      const pts = route.path
+        .map(n => {
+          const c = seaNodeCoords(n, portsCache);
+          return c ? projectToLatLng(c[0], c[1]) : null;
+        })
+        .filter(Boolean);
+      const line = L.polyline(pts, { color: '#38bdf8', weight: 3, opacity: 0.85 });
       routeLayer.addLayer(line);
-      const mid = [(prev.latlng[0] + ll[0]) / 2, (prev.latlng[1] + ll[1]) / 2];
+      const mid = polylineMidpoint(line);
       const numIcon = L.divIcon({
         className: 'route-num',
         html: `<span>${stop.step}</span>`,
@@ -200,14 +211,35 @@ export function drawRoute(stops) {
       routeLayer.addLayer(label);
       routeSegments.push({ step: stop.step, line, label });
     }
-    prev = { latlng: ll };
+    prev = { latlng: ll, name: stop.location };
   }
 
   if (routeVisible) routeLayer.addTo(mapInstance);
   applyActiveStep();
 }
 
-// Color the route segments for the current walkthrough step plus the next 2;
+// Point roughly halfway along a polyline (by cumulative leg length).
+function polylineMidpoint(line) {
+  const latlngs = line.getLatLngs();
+  let total = 0;
+  const cum = [0];
+  for (let i = 0; i < latlngs.length - 1; i++) {
+    total += latlngs[i].distanceTo(latlngs[i + 1]);
+    cum.push(total);
+  }
+  if (total === 0) return latlngs[0] || [0, 0];
+  const target = total / 2;
+  for (let i = 0; i < cum.length - 1; i++) {
+    if (target >= cum[i] && target <= cum[i + 1]) {
+      const f = (target - cum[i]) / (cum[i + 1] - cum[i]);
+      const a = latlngs[i], b = latlngs[i + 1];
+      return [a.lat + (b.lat - a.lat) * f, a.lng + (b.lng - a.lng) * f];
+    }
+  }
+  return latlngs[latlngs.length - 1] || [0, 0];
+}
+
+// Color the route segments for the current walkthrough step plus the next one;
 // gray out everything further ahead.
 export function setActiveStep(step) {
   activeStep = step;
@@ -216,7 +248,7 @@ export function setActiveStep(step) {
 
 function applyActiveStep() {
   routeSegments.forEach(seg => {
-    const on = activeStep != null && seg.step >= activeStep && seg.step <= activeStep + 2;
+    const on = activeStep != null && seg.step >= activeStep && seg.step <= activeStep + 1;
     seg.line.setStyle({
       color: on ? '#facc15' : '#6b7280',
       weight: on ? 5 : 2.5,
