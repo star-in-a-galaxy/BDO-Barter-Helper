@@ -207,7 +207,7 @@ export function drawRoute(stops) {
   applyActiveStep();
 }
 
-// Color the route segments for the current walkthrough step plus the next 5;
+// Color the route segments for the current walkthrough step plus the next 2;
 // gray out everything further ahead.
 export function setActiveStep(step) {
   activeStep = step;
@@ -216,7 +216,7 @@ export function setActiveStep(step) {
 
 function applyActiveStep() {
   routeSegments.forEach(seg => {
-    const on = activeStep != null && seg.step >= activeStep && seg.step <= activeStep + 5;
+    const on = activeStep != null && seg.step >= activeStep && seg.step <= activeStep + 2;
     seg.line.setStyle({
       color: on ? '#facc15' : '#6b7280',
       weight: on ? 5 : 2.5,

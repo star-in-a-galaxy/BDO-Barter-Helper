@@ -1,5 +1,4 @@
 import http.server
-import json
 import mimetypes
 import os
 import socketserver
@@ -19,8 +18,6 @@ class Handler(http.server.BaseHTTPRequestHandler):
 
         if path == "/" or path == "/index.html":
             self.serve_file(INDEX, "text/html; charset=utf-8")
-        elif path == "/api/catalog":
-            self.serve_catalog()
         elif path.startswith("/tiles/"):
             self.serve_tile(path)
         elif path.startswith("/static/"):
@@ -33,97 +30,6 @@ class Handler(http.server.BaseHTTPRequestHandler):
             self.serve_file(full_path, content_type)
         else:
             self.send_error(404)
-
-    def do_POST(self):
-        path = self.path.split("?")[0]
-        if path == "/api/plan":
-            self.handle_plan()
-        elif path == "/api/scan":
-            self.handle_scan()
-        else:
-            self.send_error(404)
-
-    def serve_catalog(self):
-        from catalog import get_catalog
-        data = get_catalog()
-        body = json.dumps(data, ensure_ascii=False).encode("utf-8")
-        self.send_response(200)
-        self.send_header("Content-Type", "application/json; charset=utf-8")
-        self.send_header("Content-Length", str(len(body)))
-        self.end_headers()
-        self.wfile.write(body)
-
-    def handle_plan(self):
-        length = int(self.headers.get("Content-Length", 0))
-        body = self.rfile.read(length)
-        try:
-            payload = json.loads(body)
-        except json.JSONDecodeError:
-            self.send_error(400, "Invalid JSON")
-            return
-        from planner import plan_route
-        result = plan_route(payload)
-        resp = json.dumps(result, ensure_ascii=False).encode("utf-8")
-        self.send_response(200)
-        self.send_header("Content-Type", "application/json; charset=utf-8")
-        self.send_header("Content-Length", str(len(resp)))
-        self.end_headers()
-        self.wfile.write(resp)
-
-    def handle_scan(self):
-        # Body: JSON { "images": [ { "name": "...", "data": "<base64 png>" }, ... ] }
-        length = int(self.headers.get("Content-Length", 0))
-        body = self.rfile.read(length)
-        try:
-            payload = json.loads(body)
-        except json.JSONDecodeError:
-            self.send_error(400, "Invalid JSON")
-            return
-
-        import base64
-        import tempfile
-
-        from scanner import scan
-
-        images = payload.get("images") or []
-        t4t5_paths = []
-        t5t6_path = None
-        t6t7_path = None
-        temp_files = []
-        for img in images:
-            data = base64.b64decode(img.get("data", ""))
-            name = img.get("name", "")
-            itype = img.get("type", "")
-            fd, path = tempfile.mkstemp(suffix=".png")
-            os.close(fd)
-            with open(path, "wb") as f:
-                f.write(data)
-            temp_files.append(path)
-            if itype == "t6t7" or "t6_t7" in name.lower():
-                t6t7_path = path
-            elif itype == "t5t6" or "t5_t6" in name.lower():
-                t5t6_path = path
-            else:
-                t4t5_paths.append(path)
-
-        try:
-            if not t4t5_paths or not t5t6_path:
-                result = {"error": "Need at least one T4→T5 screenshot and one T5→T6 screenshot"}
-            else:
-                result = scan(t4t5_paths, t5t6_path, t6t7_path)
-        finally:
-            for p in temp_files:
-                try:
-                    os.remove(p)
-                except OSError:
-                    pass
-
-        resp = json.dumps(result, ensure_ascii=False).encode("utf-8")
-        self.send_response(200)
-        self.send_header("Content-Type", "application/json; charset=utf-8")
-        self.send_header("Content-Length", str(len(resp)))
-        self.end_headers()
-        self.wfile.write(resp)
 
     def serve_tile(self, path):
         # Request: /tiles/{z}/{x}_{y}.webp

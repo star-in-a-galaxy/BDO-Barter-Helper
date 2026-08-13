@@ -5,7 +5,9 @@
     "coordinates": [
       -92954.5,
       -132983
-    ]
+    ],
+    "source_tier": "level_6",
+    "target_tier": "level_7"
   },
   "181": {
     "name": "Lema Island",
@@ -14,7 +16,9 @@
     "coordinates": [
       -56891.3,
       -397108
-    ]
+    ],
+    "source_tier": "level_6",
+    "target_tier": "level_7"
   },
   "182": {
     "name": "Iliya Island",
@@ -23,7 +27,9 @@
     "coordinates": [
       153562,
       -289760
-    ]
+    ],
+    "source_tier": "level_6",
+    "target_tier": "level_7"
   },
   "240": {
     "name": "Epheria Sentry Post",
@@ -31,7 +37,9 @@
     "coordinates": [
       -369289,
       -26636.3
-    ]
+    ],
+    "source_tier": "level_6",
+    "target_tier": "level_7"
   },
   "364": {
     "name": "Marlene Island",
@@ -40,7 +48,9 @@
     "coordinates": [
       -63777.7,
       -265813
-    ]
+    ],
+    "source_tier": "level_2",
+    "target_tier": "level_3"
   },
   "365": {
     "name": "Balvege Island",
@@ -49,7 +59,9 @@
     "coordinates": [
       -93354.5,
       -266197
-    ]
+    ],
+    "source_tier": "level_4",
+    "target_tier": "level_5"
   },
   "366": {
     "name": "Angie Island",
@@ -58,7 +70,9 @@
     "coordinates": [
       -131366,
       -238017
-    ]
+    ],
+    "source_tier": "level_2",
+    "target_tier": "level_3"
   },
   "367": {
     "name": "Duch Island",
@@ -67,7 +81,9 @@
     "coordinates": [
       -95026.4,
       -207815
-    ]
+    ],
+    "source_tier": null,
+    "target_tier": null
   },
   "368": {
     "name": "Eveto Island",
@@ -76,7 +92,9 @@
     "coordinates": [
       -85396,
       -220655
-    ]
+    ],
+    "source_tier": null,
+    "target_tier": null
   },
   "369": {
     "name": "Luivano Island",
@@ -85,7 +103,9 @@
     "coordinates": [
       -43910,
       -181358
-    ]
+    ],
+    "source_tier": null,
+    "target_tier": null
   },
   "371": {
     "name": "Mariveno Island",
@@ -94,7 +114,9 @@
     "coordinates": [
       -25890.8,
       -224844
-    ]
+    ],
+    "source_tier": null,
+    "target_tier": null
   },
   "372": {
     "name": "Ephde Rune Island",
@@ -103,7 +125,9 @@
     "coordinates": [
       7230.57,
       -165212
-    ]
+    ],
+    "source_tier": null,
+    "target_tier": null
   },
   "373": {
     "name": "Invernen Island",
@@ -112,7 +136,9 @@
     "coordinates": [
       -123249,
       -303782
-    ]
+    ],
+    "source_tier": null,
+    "target_tier": null
   },
   "374": {
     "name": "Tulu Island",
@@ -121,7 +147,9 @@
     "coordinates": [
       -87025.5,
       -326256
-    ]
+    ],
+    "source_tier": "level_3",
+    "target_tier": "level_4"
   },
   "375": {
     "name": "Orffs Island",
@@ -130,7 +158,9 @@
     "coordinates": [
       -55021.4,
       -330371
-    ]
+    ],
+    "source_tier": "level_4",
+    "target_tier": "level_5"
   },
   "376": {
     "name": "Tashu Island",
@@ -139,7 +169,9 @@
     "coordinates": [
       -122014,
       -430941
-    ]
+    ],
+    "source_tier": "level_1",
+    "target_tier": "level_2"
   },
   "377": {
     "name": "Baremi Island",
@@ -148,7 +180,9 @@
     "coordinates": [
       6946.34,
       -290557
-    ]
+    ],
+    "source_tier": "level_4",
+    "target_tier": "level_5"
   },
   "378": {
     "name": "Weita Island",
@@ -157,7 +191,9 @@
     "coordinates": [
       38273.7,
       -257200
-    ]
+    ],
+    "source_tier": "level_2",
+    "target_tier": "level_3"
   },
   "379": {
     "name": "Paratama Island",
@@ -166,7 +202,9 @@
     "coordinates": [
       43288.6,
       -207825
-    ]
+    ],
+    "source_tier": null,
+    "target_tier": null
   },
   "380": {
     "name": "Kanvera Island",
@@ -175,7 +213,9 @@
     "coordinates": [
       82273.7,
       -241286
-    ]
+    ],
+    "source_tier": "level_2",
+    "target_tier": "level_3"
   },
   "381": {
     "name": "Arakil Island",
@@ -184,7 +224,9 @@
     "coordinates": [
       96742.8,
       -223298
-    ]
+    ],
+    "source_tier": "level_2",
+    "target_tier": "level_3"
   },
   "382": {
     "name": "Beiruwa Island",
@@ -193,7 +235,9 @@
     "coordinates": [
       84729.4,
       -165217
-    ]
+    ],
+    "source_tier": null,
+    "target_tier": null
   },
   "383": {
     "name": "Taramura Island",
@@ -202,7 +246,9 @@
     "coordinates": [
       129340,
       -191491
-    ]
+    ],
+    "source_tier": "level_2",
+    "target_tier": "level_3"
   },
   "384": {
     "name": "Ostra Island",
@@ -211,7 +257,9 @@
     "coordinates": [
       141489,
       -209881
-    ]
+    ],
+    "source_tier": "level_2",
+    "target_tier": "level_3"
   },
   "385": {
     "name": "Delinghart Island",
@@ -220,7 +268,9 @@
     "coordinates": [
       205951,
       -200129
-    ]
+    ],
+    "source_tier": null,
+    "target_tier": null
   },
   "386": {
     "name": "Pilava Island",
@@ -229,7 +279,9 @@
     "coordinates": [
       255801,
       -191862
-    ]
+    ],
+    "source_tier": "level_4",
+    "target_tier": "level_5"
   },
   "387": {
     "name": "Racid Island",
@@ -238,7 +290,9 @@
     "coordinates": [
       69250.5,
       -408777
-    ]
+    ],
+    "source_tier": "level_1",
+    "target_tier": "level_2"
   },
   "388": {
     "name": "Al-Naha Island",
@@ -247,7 +301,9 @@
     "coordinates": [
       36729.7,
       -370254
-    ]
+    ],
+    "source_tier": "level_3",
+    "target_tier": "level_4"
   },
   "389": {
     "name": "Ajir Island",
@@ -256,7 +312,9 @@
     "coordinates": [
       74721.3,
       -324086
-    ]
+    ],
+    "source_tier": "level_4",
+    "target_tier": "level_5"
   },
   "390": {
     "name": "Pujara Island",
@@ -265,7 +323,9 @@
     "coordinates": [
       258690,
       -295960
-    ]
+    ],
+    "source_tier": "level_4",
+    "target_tier": "level_5"
   },
   "391": {
     "name": "Lisz Island",
@@ -274,7 +334,9 @@
     "coordinates": [
       -233814,
       -266645
-    ]
+    ],
+    "source_tier": "level_3",
+    "target_tier": "level_4"
   },
   "392": {
     "name": "Narvo Island",
@@ -283,7 +345,9 @@
     "coordinates": [
       -184158,
       -295736
-    ]
+    ],
+    "source_tier": "level_4",
+    "target_tier": "level_5"
   },
   "393": {
     "name": "Marka Island",
@@ -292,7 +356,9 @@
     "coordinates": [
       -183092,
       -247770
-    ]
+    ],
+    "source_tier": null,
+    "target_tier": null
   },
   "394": {
     "name": "Louruve Island",
@@ -301,7 +367,9 @@
     "coordinates": [
       -213127,
       -234473
-    ]
+    ],
+    "source_tier": "level_2",
+    "target_tier": "level_3"
   },
   "395": {
     "name": "Staren Island",
@@ -310,7 +378,9 @@
     "coordinates": [
       -248601,
       -207950
-    ]
+    ],
+    "source_tier": null,
+    "target_tier": null
   },
   "396": {
     "name": "Randis Island",
@@ -319,7 +389,9 @@
     "coordinates": [
       -383461,
       -110496
-    ]
+    ],
+    "source_tier": null,
+    "target_tier": null
   },
   "397": {
     "name": "Serca Island",
@@ -328,7 +400,9 @@
     "coordinates": [
       -384974,
       -86495.4
-    ]
+    ],
+    "source_tier": null,
+    "target_tier": null
   },
   "398": {
     "name": "Daton Island",
@@ -337,7 +411,9 @@
     "coordinates": [
       -443029,
       -213565
-    ]
+    ],
+    "source_tier": "level_3",
+    "target_tier": "level_4"
   },
   "399": {
     "name": "Netnume Island",
@@ -346,7 +422,9 @@
     "coordinates": [
       -417664,
       -192859
-    ]
+    ],
+    "source_tier": null,
+    "target_tier": null
   },
   "400": {
     "name": "Oben Island",
@@ -355,7 +433,9 @@
     "coordinates": [
       -393076,
       -206009
-    ]
+    ],
+    "source_tier": "level_4",
+    "target_tier": "level_5"
   },
   "401": {
     "name": "Eberdeen Island",
@@ -364,7 +444,9 @@
     "coordinates": [
       -360261,
       -188740
-    ]
+    ],
+    "source_tier": null,
+    "target_tier": null
   },
   "402": {
     "name": "Dunde Island",
@@ -373,7 +455,9 @@
     "coordinates": [
       -381076,
       -178841
-    ]
+    ],
+    "source_tier": "level_2",
+    "target_tier": "level_3"
   },
   "403": {
     "name": "Albresser Island",
@@ -382,7 +466,9 @@
     "coordinates": [
       -330051,
       -172260
-    ]
+    ],
+    "source_tier": "level_2",
+    "target_tier": "level_3"
   },
   "404": {
     "name": "Barater Island",
@@ -391,7 +477,9 @@
     "coordinates": [
       -325298,
       -145943
-    ]
+    ],
+    "source_tier": null,
+    "target_tier": null
   },
   "405": {
     "name": "Ginburrey Island",
@@ -400,7 +488,9 @@
     "coordinates": [
       -451474,
       -149315
-    ]
+    ],
+    "source_tier": "level_2",
+    "target_tier": "level_3"
   },
   "406": {
     "name": "Rameda Island",
@@ -409,7 +499,9 @@
     "coordinates": [
       -513035,
       -155219
-    ]
+    ],
+    "source_tier": "level_4",
+    "target_tier": "level_5"
   },
   "407": {
     "name": "Theonil Island",
@@ -418,7 +510,9 @@
     "coordinates": [
       -485677,
       -115769
-    ]
+    ],
+    "source_tier": "level_4",
+    "target_tier": "level_5"
   },
   "408": {
     "name": "Modric Island",
@@ -427,7 +521,9 @@
     "coordinates": [
       -468288,
       -99032
-    ]
+    ],
+    "source_tier": "level_2",
+    "target_tier": "level_3"
   },
   "409": {
     "name": "Baeza Island",
@@ -436,7 +532,9 @@
     "coordinates": [
       -439636,
       -85688.5
-    ]
+    ],
+    "source_tier": null,
+    "target_tier": null
   },
   "410": {
     "name": "Teyamal Island",
@@ -445,7 +543,9 @@
     "coordinates": [
       -524725,
       -66122.4
-    ]
+    ],
+    "source_tier": "level_3",
+    "target_tier": "level_4"
   },
   "415": {
     "name": "Sausan Garrison Wharf",
@@ -453,7 +553,9 @@
     "coordinates": [
       249255,
       -143070
-    ]
+    ],
+    "source_tier": "level_6",
+    "target_tier": "level_7"
   },
   "430": {
     "name": "Hakoven Island",
@@ -462,7 +564,9 @@
     "coordinates": [
       1252450,
       -547567
-    ]
+    ],
+    "source_tier": "level_5",
+    "target_tier": "level_6"
   },
   "562": {
     "name": "Kuit Islands",
@@ -471,7 +575,9 @@
     "coordinates": [
       -348511,
       -390896
-    ]
+    ],
+    "source_tier": "level_1",
+    "target_tier": "level_2"
   },
   "563": {
     "name": "Almai Island",
@@ -480,7 +586,9 @@
     "coordinates": [
       -395052,
       -337672
-    ]
+    ],
+    "source_tier": "level_3",
+    "target_tier": "level_4"
   },
   "564": {
     "name": "Padix Island",
@@ -489,7 +597,9 @@
     "coordinates": [
       -349233,
       -342047
-    ]
+    ],
+    "source_tier": "level_4",
+    "target_tier": "level_5"
   },
   "565": {
     "name": "Teste Island",
@@ -498,7 +608,9 @@
     "coordinates": [
       -428648,
       -301252
-    ]
+    ],
+    "source_tier": "level_1",
+    "target_tier": "level_2"
   },
   "566": {
     "name": "Arita Island",
@@ -507,7 +619,9 @@
     "coordinates": [
       -239524,
       -342047
-    ]
+    ],
+    "source_tier": "level_1",
+    "target_tier": "level_2"
   },
   "570": {
     "name": "Tinberra Island",
@@ -516,7 +630,9 @@
     "coordinates": [
       218576,
       -529420
-    ]
+    ],
+    "source_tier": "level_1",
+    "target_tier": "level_2"
   },
   "571": {
     "name": "Lerao Island",
@@ -525,7 +641,9 @@
     "coordinates": [
       268242,
       -520144
-    ]
+    ],
+    "source_tier": "level_1",
+    "target_tier": "level_2"
   },
   "572": {
     "name": "Portanen Island",
@@ -534,7 +652,9 @@
     "coordinates": [
       290959,
       -464069
-    ]
+    ],
+    "source_tier": "level_1",
+    "target_tier": "level_2"
   },
   "573": {
     "name": "Shasha Island",
@@ -543,7 +663,9 @@
     "coordinates": [
       265965,
       -413236
-    ]
+    ],
+    "source_tier": "level_3",
+    "target_tier": "level_4"
   },
   "574": {
     "name": "Rosevan Island",
@@ -552,7 +674,9 @@
     "coordinates": [
       309771,
       -414742
-    ]
+    ],
+    "source_tier": "level_3",
+    "target_tier": "level_4"
   },
   "662": {
     "name": "Sokota Island",
@@ -561,7 +685,9 @@
     "coordinates": [
       329275,
       -138692
-    ]
+    ],
+    "source_tier": "level_1",
+    "target_tier": "level_2"
   },
   "663": {
     "name": "Riyed Island",
@@ -570,7 +696,9 @@
     "coordinates": [
       393866,
       -181537
-    ]
+    ],
+    "source_tier": "level_3",
+    "target_tier": "level_4"
   },
   "664": {
     "name": "Esfah Island",
@@ -579,7 +707,9 @@
     "coordinates": [
       422234,
       -239025
-    ]
+    ],
+    "source_tier": "level_1",
+    "target_tier": "level_2"
   },
   "665": {
     "name": "Tigris Island",
@@ -588,7 +718,9 @@
     "coordinates": [
       406466,
       -258086
-    ]
+    ],
+    "source_tier": "level_3",
+    "target_tier": "level_4"
   },
   "666": {
     "name": "Shirna Island",
@@ -597,7 +729,9 @@
     "coordinates": [
       445168,
       -261867
-    ]
+    ],
+    "source_tier": "level_3",
+    "target_tier": "level_4"
   },
   "667": {
     "name": "Halmad Island",
@@ -606,7 +740,9 @@
     "coordinates": [
       558999,
       -333684
-    ]
+    ],
+    "source_tier": null,
+    "target_tier": null
   },
   "668": {
     "name": "Kashuma Island",
@@ -615,7 +751,9 @@
     "coordinates": [
       589314,
       -372650
-    ]
+    ],
+    "source_tier": null,
+    "target_tier": null
   },
   "669": {
     "name": "Orisha Island",
@@ -624,7 +762,9 @@
     "coordinates": [
       418555,
       -324117
-    ]
+    ],
+    "source_tier": "level_3",
+    "target_tier": "level_4"
   },
   "671": {
     "name": "Boa Island",
@@ -633,7 +773,9 @@
     "coordinates": [
       419550,
       -372439
-    ]
+    ],
+    "source_tier": "level_1",
+    "target_tier": "level_2"
   },
   "685": {
     "name": "Derko Island",
@@ -642,7 +784,9 @@
     "coordinates": [
       843205,
       -415735
-    ]
+    ],
+    "source_tier": null,
+    "target_tier": null
   },
   "693": {
     "name": "Arehaza",
@@ -650,7 +794,9 @@
     "coordinates": [
       1267170,
       -177948
-    ]
+    ],
+    "source_tier": "level_5",
+    "target_tier": "level_6"
   },
   "966": {
     "name": "Starry Midnight Port",
@@ -658,11 +804,15 @@
     "coordinates": [
       -321664,
       598912
-    ]
+    ],
+    "source_tier": "level_5",
+    "target_tier": "level_6"
   },
   "983": {
     "name": "Crow's Nest",
-    "barterer": "Kami"
+    "barterer": "Kami",
+    "source_tier": null,
+    "target_tier": null
   },
   "994": {
     "name": "Shipwrecked Haran's Cargo Ship",
@@ -671,7 +821,9 @@
     "coordinates": [
       -704776,
       -950571
-    ]
+    ],
+    "source_tier": "level_4",
+    "target_tier": "great_ocean"
   },
   "995": {
     "name": "Unfinished Adrift Vessel",
@@ -680,7 +832,9 @@
     "coordinates": [
       -709930,
       -1231870
-    ]
+    ],
+    "source_tier": "level_4",
+    "target_tier": "great_ocean"
   },
   "996": {
     "name": "Lantinia's Combat Raft",
@@ -689,7 +843,9 @@
     "coordinates": [
       -632996,
       -1132940
-    ]
+    ],
+    "source_tier": "level_4",
+    "target_tier": "great_ocean"
   },
   "997": {
     "name": "Pakio's Combat Raft",
@@ -698,7 +854,9 @@
     "coordinates": [
       -337874,
       -1158330
-    ]
+    ],
+    "source_tier": null,
+    "target_tier": null
   },
   "998": {
     "name": "Crow Merchants' Vessel",
@@ -707,7 +865,9 @@
     "coordinates": [
       -517383,
       -862095
-    ]
+    ],
+    "source_tier": "level_4",
+    "target_tier": "great_ocean"
   },
   "999": {
     "name": "Shipwrecked Rickun's Ship",
@@ -716,7 +876,9 @@
     "coordinates": [
       -816088,
       -669021
-    ]
+    ],
+    "source_tier": null,
+    "target_tier": null
   },
   "1001": {
     "name": "Shipwrecked Cox Pirate Ship",
@@ -725,7 +887,9 @@
     "coordinates": [
       -748316,
       -505615
-    ]
+    ],
+    "source_tier": "level_4",
+    "target_tier": "great_ocean"
   },
   "1002": {
     "name": "Shipwrecked Marine Vessel",
@@ -734,7 +898,9 @@
     "coordinates": [
       -940162,
       -556455
-    ]
+    ],
+    "source_tier": null,
+    "target_tier": null
   },
   "1003": {
     "name": "Old Moon Guild's Carrack",
@@ -743,7 +909,9 @@
     "coordinates": [
       -864896,
       -1081480
-    ]
+    ],
+    "source_tier": null,
+    "target_tier": null
   },
   "1004": {
     "name": "Shipwrecked Ancient Relic Cargo Ship",
@@ -752,7 +920,9 @@
     "coordinates": [
       -660737,
       -799925
-    ]
+    ],
+    "source_tier": "level_4",
+    "target_tier": "great_ocean"
   },
   "1005": {
     "name": "Cholace Chico's Pirate Union",
@@ -761,7 +931,9 @@
     "coordinates": [
       -850719,
       -890429
-    ]
+    ],
+    "source_tier": "level_4",
+    "target_tier": "great_ocean"
   },
   "1006": {
     "name": "Wandering Merchant's Ship",
@@ -770,7 +942,9 @@
     "coordinates": [
       -543161,
       -1030450
-    ]
+    ],
+    "source_tier": "level_4",
+    "target_tier": "great_ocean"
   },
   "1014": {
     "name": "Grándiha",
@@ -778,7 +952,9 @@
     "coordinates": [
       -559743,
       476904
-    ]
+    ],
+    "source_tier": "level_5",
+    "target_tier": "level_6"
   },
   "1243": {
     "name": "Dallae Pier",
@@ -786,7 +962,9 @@
     "coordinates": [
       -994803,
       -1341090
-    ]
+    ],
+    "source_tier": "level_5",
+    "target_tier": "level_6"
   },
   "1257": {
     "name": "Haemo Island",
@@ -794,7 +972,9 @@
     "coordinates": [
       -1349680,
       -1025630
-    ]
+    ],
+    "source_tier": "level_5",
+    "target_tier": "level_6"
   },
   "1557": {
     "name": "Sanctuary Coastal Outpost",
@@ -802,6 +982,8 @@
     "coordinates": [
       495582,
       -461518
-    ]
+    ],
+    "source_tier": "level_6",
+    "target_tier": "level_7"
   }
 }

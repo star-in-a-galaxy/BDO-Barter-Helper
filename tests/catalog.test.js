@@ -27,9 +27,9 @@ function getCatalog() {
   };
   
   const t7ByRegion = {
-    'A': ['Sanctuary Coastal Outpost', 'Sausan Garrison Wharf'],
+    'A': ['Olvia Coast', 'Epheria Sentry Post'],
     'B': ['Iliya Island', 'Lema Island'],
-    'C': ['Olvia Coast', 'Epheria Sentry Post']
+    'C': ['Sanctuary Coastal Outpost', 'Sausan Garrison Wharf']
   };
   
   const chainOptions = [];
@@ -108,7 +108,8 @@ describe('catalog', () => {
       expect(catalog.t7ByRegion.A).toBeDefined();
       expect(catalog.t7ByRegion.B).toBeDefined();
       expect(catalog.t7ByRegion.C).toBeDefined();
-      expect(catalog.t7ByRegion.A).toContain('Sanctuary Coastal Outpost');
+      expect(catalog.t7ByRegion.A).toContain('Olvia Coast');
+      expect(catalog.t7ByRegion.C).toContain('Sanctuary Coastal Outpost');
     });
 
     it('should generate chain options', () => {

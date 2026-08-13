@@ -1,0 +1,78 @@
+{
+  "t6": {
+    "Hakoven Island": [
+      "Valencia Sand Shield",
+      "Valencian Desert Fine Sword",
+      "Fancy Camel Hide",
+      "Golden Sand Ring"
+    ],
+    "Arehaza": [
+      "Top-Quality Coconut Syrup",
+      "Traditional Arehazan Tea",
+      "Miniature Arehaza Lighthouse",
+      "Golden Cactus Bouquet"
+    ],
+    "Grándiha": [
+      "Forest Fairy Perfume",
+      "Kamasylvian Sculpture",
+      "Moonlit Crystal Lamp",
+      "Mossy Silver Log Decoration"
+    ],
+    "Starry Midnight Port": [
+      "Black Rose Bouquet",
+      "Moonlit Crystal Shard",
+      "Moonshade Aged Wine",
+      "Shadow Ornament Mirror"
+    ],
+    "Haemo Island": [
+      "Bamboo Sap Crate",
+      "Nampo Persimmon Crate",
+      "High-quality Ink-scented Box",
+      "Hanji Country Wild Berry Crate"
+    ],
+    "Dallae Pier": [
+      "Top-Quality Blue Underglaze Porcelain Crate",
+      "Top-Quality Gamtu Crate",
+      "Brass Bowl Crate",
+      "Sharp Safflower Blade Crate"
+    ]
+  },
+  "t7": {
+    "Olvia Coast": [
+      "Top-Quality Heidelian Wine",
+      "Golden Flour Sack",
+      "Organic Honey Crate",
+      "Traditional Balenos Decorative Anchor"
+    ],
+    "Epheria Sentry Post": [
+      "Golden Eagle Brooch",
+      "Calpheon Knights' Combat Manual",
+      "Calpheon Golden Candle Stand",
+      "Calpheonian Artisan's Pearl Necklace"
+    ],
+    "Sausan Garrison Wharf": [
+      "Sausan Military Supply",
+      "Stonetail Carrot Healthy Food Crate",
+      "Omar Lava Powder",
+      "Tarif Magic Jar"
+    ],
+    "Sanctuary Coastal Outpost": [
+      "Rusalka's Thorny Bouquet",
+      "Sturdy Caphras Timber",
+      "Top-Quality Hakinza Perfume",
+      "Throne of Edana Records"
+    ],
+    "Iliya Island": [
+      "Artisan's Seashell Necklace",
+      "Balenosian Sailor's Telescope",
+      "Balenos Whale Sculpture",
+      "Balenos Salt Flower"
+    ],
+    "Lema Island": [
+      "Balenos Starlight Salt",
+      "Balenos Relic Fragment",
+      "Balenos Rainbow Coral",
+      "Rainbow Sea Crystal Piece"
+    ]
+  }
+}

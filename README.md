@@ -11,6 +11,7 @@ A web-based tool to optimize Black Desert Online bartering routes, with screensh
 - **Inventory Weight Juggling**: Batch trips by juggling items between ship and player
 - **Route Optimization**: Minimizes sailing distance (region chains, stock subsets, 2-opt refinement), respects the fixed East/South T6 trader order
 - **Step-by-Step Walkthrough**: Numbered steps with per-step "done" checkboxes (prefix invariant) and region banners
+- **Inventory Panel**: Live Boat/Player inventory overlay on the map (draggable), with item weights and overweight warning, tracking the current step
 - **Interactive Map**: Leaflet map (bdolytics tiles) with calibrated barter-port markers (color-coded by tier), the solved route as numbered segments, and the active step highlighted as you complete steps
 
 ## Local Development
@@ -18,16 +19,18 @@ A web-based tool to optimize Black Desert Online bartering routes, with screensh
 The app is a static site. Serve it locally:
 
 ```bash
-# Python 3 (recommended — also enables the local OCR fallback server)
+# Python 3 (recommended — also serves the map tiles)
 python serve.py
 
-# Or any static server (scan falls back to in-browser OCR only)
+# Or any static server
 python -m http.server 8000
 npx serve .
 npm run serve
 ```
 
 Then open http://localhost:8000
+
+Scanning runs entirely in the browser (tesseract.js from a CDN), the same on local and GitHub Pages — no server-side OCR.
 
 ### Running tests
 
@@ -51,8 +54,7 @@ Everything runs client-side, so no backend is needed:
 - Map tiles are static files under `tiles/`.
 - OCR uses tesseract.js loaded from a CDN.
 - Route optimization, calibration and markers are all in-browser JavaScript.
-
-> **Local-only features:** when running `python serve.py`, the OCR scan additionally falls back to `/api/scan` (a Python/RapidOCR endpoint). On GitHub Pages that endpoint doesn't exist — the in-browser OCR is used instead.
+- The scanner is identical locally and on GitHub Pages.
 
 ### Manual deployment
 
@@ -72,20 +74,23 @@ bater_route/
 │   ├── optimizer.js        # Route optimizer (regions, stock, juggling, 2-opt)
 │   ├── planner.js          # Route planner orchestrator (validates via Simulator)
 │   ├── walkthrough.js      # Step-by-step walkthrough generator + done checkboxes
+│   ├── inventory.js        # Boat/Player inventory tracking + panel rendering
 │   ├── simulator.js        # Inventory simulation (ship/player/storage)
 │   ├── scanner.js          # In-browser screenshot OCR + parsing (tesseract.js)
 │   ├── map-overlay.js      # Map calibration, port markers, route overlay
-│   └── state-machine.js    # State-machine optimizer (alternative entry point)
+│   ├── pako.min.js         # zlib (UPNG dependency)
+│   └── upng.js             # Pure-JS PNG decode/encode (OCR preprocessing)
 ├── assets/
 │   ├── barterGoods.json    # Item definitions
 │   ├── barterPorts.json    # Port names + coordinates (used for map + distances)
 │   ├── barterRoutes.json   # Barter route data
+│   ├── barterTierPorts.json# Port-specific T6/T7 item lists
+│   ├── barter_items/       # Source T6/T7 item lists (generate barterTierPorts.json)
 │   └── icons/              # Item icon images (level_{tier}_{name}.webp)
 ├── static/                 # Leaflet library files
 ├── tiles/                  # Map tile images ({z}/{x}_{y}.webp, from bdolytics)
 ├── tests/                  # Vitest unit tests
-├── serve.py                # Local dev server (+ /api/scan OCR fallback)
-├── scanner.py              # Python OCR scanner (local /api/scan backend)
+├── serve.py                # Local dev server (static files + map tiles)
 ├── .github/workflows/      # GitHub Actions Pages deployment
 └── .nojekyll               # Disables Jekyll on GitHub Pages
 ```
@@ -98,7 +103,7 @@ The map tiles use BDO in-game coordinates projected onto a Leaflet `CRS.Simple` 
 
 Defaults can be adjusted in the UI:
 
-- **Region mapping**: North → C, South → B, East → A (T7 trade regions)
+- **Region mapping**: North → A, South → B, East → C (T7 trade regions)
 - **Free Ship Weight**: 22,450 lt
 - **Character Weight Limit**: 5,500 lt
 - **Character Used Weight**: 150 lt (threshold = limit × 1.7 − used)

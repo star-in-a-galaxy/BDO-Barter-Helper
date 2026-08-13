@@ -1,5 +1,6 @@
 let barterGoods = null;
 let barterPorts = null;
+let barterTierPorts = null;
 
 export async function loadBarterGoods() {
   if (barterGoods) return barterGoods;
@@ -13,6 +14,16 @@ export async function loadBarterPorts() {
   const response = await fetch('assets/barterPorts.json');
   barterPorts = await response.json();
   return barterPorts;
+}
+
+// Which exact T6/T7 items each port offers (from assets/barterTierPorts.json,
+// generated from assets/barter_items/T6_items.txt + T7_items.txt). T6/T7 items
+// are port-specific, so they can never be ambiguous.
+export async function loadBarterTierPorts() {
+  if (barterTierPorts) return barterTierPorts;
+  const response = await fetch('assets/barterTierPorts.json');
+  barterTierPorts = await response.json();
+  return barterTierPorts;
 }
 
 export async function getCatalog() {
@@ -35,9 +46,9 @@ export async function getCatalog() {
   };
   
   const t7ByRegion = {
-    'A': ['Sanctuary Coastal Outpost', 'Sausan Garrison Wharf'],
+    'A': ['Olvia Coast', 'Epheria Sentry Post'],
     'B': ['Iliya Island', 'Lema Island'],
-    'C': ['Olvia Coast', 'Epheria Sentry Post']
+    'C': ['Sanctuary Coastal Outpost', 'Sausan Garrison Wharf']
   };
   
   const chainOptions = [];

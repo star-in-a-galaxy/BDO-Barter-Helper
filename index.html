@@ -67,6 +67,39 @@
     letter-spacing: 0.5px;
   }
   
+  .btn-flat {
+    font-size: 11px;
+    padding: 4px 10px;
+    border: 1px solid #666;
+    border-radius: 4px;
+    background: #3a3a3a;
+    color: #ddd;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .btn-flat:hover {
+    background: #4a4a4a;
+    color: #fff;
+  }
+  
+  .section-title-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+  }
+  .section-title-row .section-title {
+    margin-bottom: 0;
+  }
+  
+  .config-row.scan-row {
+    justify-content: space-between;
+    gap: 8px;
+  }
+  .config-row.scan-row button {
+    flex: 1;
+  }
+  
   table {
     width: 100%;
     border-collapse: collapse;
@@ -86,6 +119,57 @@
     padding: 6px;
     border-bottom: 1px solid #333;
     vertical-align: top;
+  }
+  
+  .scan-warning {
+    display: inline-block;
+    margin-left: 6px;
+    padding: 1px 6px;
+    border-radius: 8px;
+    font-size: 11px;
+    font-weight: 600;
+    color: #1e1e1e;
+    background: #facc15;
+    cursor: help;
+    white-space: nowrap;
+  }
+  
+  .resolve-modal {
+    position: fixed; inset: 0; z-index: 2000;
+    background: rgba(0, 0, 0, 0.6);
+    display: none; align-items: center; justify-content: center;
+  }
+  .resolve-card {
+    background: #1e1e1e; color: #e0e0e0;
+    border: 1px solid #444; border-radius: 8px;
+    width: min(560px, 92vw); max-height: 82vh; overflow-y: auto;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
+  }
+  .resolve-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 16px; border-bottom: 1px solid #444; font-weight: 600;
+    position: sticky; top: 0; background: #1e1e1e;
+  }
+  #resolve-close {
+    background: none; border: none; color: #aaa; font-size: 22px;
+    cursor: pointer; line-height: 1; padding: 0 4px;
+  }
+  #resolve-close:hover { color: #fff; }
+  #resolve-body { padding: 16px; }
+  .resolve-context { font-weight: 600; color: #5a9; margin-bottom: 4px; }
+  .resolve-field { color: #facc15; font-size: 12px; margin-bottom: 12px; word-break: break-word; }
+  .resolve-options { display: flex; flex-direction: column; gap: 8px; }
+  .resolve-option {
+    display: flex; align-items: center; text-align: left; padding: 10px 12px;
+    border: 1px solid #555; background: #2a2a2a; color: #e0e0e0;
+    border-radius: 6px; cursor: pointer; font-size: 13px;
+  }
+  .resolve-option:hover { border-color: #5a9; background: #2f3a3f; }
+  .resolve-option.current { border-color: #5a9; }
+  .resolve-option img { flex-shrink: 0; }
+  .resolve-footer {
+    padding: 10px 16px; border-top: 1px solid #444;
+    color: #888; font-size: 12px; position: sticky; bottom: 0; background: #1e1e1e;
   }
   
   .filter-input {
@@ -388,6 +472,80 @@
     margin-right: 2px;
   }
   
+  .inv-panel {
+    margin-top: 6px;
+    padding: 5px 8px;
+    padding-left: 25px;
+    border-left: 2px solid rgba(56,189,248,0.35);
+    background: rgba(56,189,248,0.05);
+    border-radius: 4px;
+    font-size: 0.78rem;
+    line-height: 1.6;
+  }
+  
+  .inv-row {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex-wrap: wrap;
+  }
+  
+  .inv-row svg {
+    color: #7dd3fc;
+    flex-shrink: 0;
+  }
+  
+  .inv-label {
+    color: #7dd3fc;
+    font-weight: 600;
+    flex-shrink: 0;
+  }
+  
+  .inv-before {
+    opacity: 0.5;
+    text-decoration: line-through;
+  }
+  
+  .inv-empty {
+    color: #556;
+    font-style: italic;
+  }
+  
+  .inv-weight {
+    color: #94a3b8;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  
+  .inv-overweight {
+    color: #f87171;
+    font-weight: 700;
+    white-space: nowrap;
+  }
+  
+  #inv-controls {
+    position: absolute; left: 10px; bottom: 10px; z-index: 1000;
+    background: rgba(30,30,30,0.92); color: #e0e0e0;
+    padding: 10px 12px; border-radius: 6px; font-size: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.5); max-width: 360px;
+  }
+  #inv-controls .mc-title {
+    font-size: 11px; font-weight: 600; text-transform: uppercase;
+    color: #888; margin-bottom: 6px; letter-spacing: 0.5px;
+  }
+  #inv-controls .inv-drag {
+    cursor: move;
+    user-select: none;
+    touch-action: none;
+  }
+  #inv-controls .inv-drag::before {
+    content: '⋮⋮ ';
+    opacity: 0.6;
+  }
+  #inv-controls #inv-body .inv-panel {
+    margin-top: 0;
+  }
+  
   .drop-zone {
     border: 1px dashed #555;
     border-radius: 6px;
@@ -560,7 +718,10 @@
     </div>
     <div id="sidebar-content">
       <div class="section">
-        <div class="section-title">Trade Table (T4 → T5)</div>
+        <div class="section-title-row">
+          <div class="section-title">Trade Table</div>
+          <button id="clear-table-btn" class="btn-flat" type="button">Clear Table</button>
+        </div>
         <table id="trade-table">
           <thead>
             <tr>
@@ -587,13 +748,13 @@
           <input type="file" id="scan-t5t6" accept="image/png,image/jpeg" hidden>
         </div>
         <div class="drop-zone" id="drop-t6t7" tabindex="0">
-          <div class="drop-hint">T6→T7 screenshot (optional — auto-fills region mapping)</div>
+          <div class="drop-hint">T6→T7 screenshot  — drag &amp; drop here, click to browse, or Ctrl+V to paste</div>
           <div class="drop-list" id="drop-t6t7-list"></div>
           <input type="file" id="scan-t6t7" accept="image/png,image/jpeg" hidden>
         </div>
-        <div class="config-row">
-          <label></label>
-          <button id="scan-btn" type="button">Scan &amp; Fill Table</button>
+        <div class="config-row scan-row">
+          <button id="clear-scan-btn" class="btn-flat" type="button">Clear Screenshots</button>
+          <button id="scan-btn" class="btn-flat" type="button">Scan &amp; Fill Table</button>
         </div>
       </div>
       
@@ -603,25 +764,25 @@
           <div>
             <label>North →</label>
             <select id="region-north">
-              <option value="A">A (Sanctuary/Sausan)</option>
+              <option value="A" selected>A (Olvia/Epheria)</option>
               <option value="B">B (Ilya/Lema)</option>
-              <option value="C" selected>C (Olvia/Epheria)</option>
+              <option value="C">C (Sanctuary/Sausan)</option>
             </select>
           </div>
           <div>
             <label>South →</label>
             <select id="region-south">
-              <option value="A">A (Sanctuary/Sausan)</option>
+              <option value="A">A (Olvia/Epheria)</option>
               <option value="B" selected>B (Ilya/Lema)</option>
-              <option value="C">C (Olvia/Epheria)</option>
+              <option value="C">C (Sanctuary/Sausan)</option>
             </select>
           </div>
           <div>
             <label>East →</label>
             <select id="region-east">
-              <option value="A" selected>A (Sanctuary/Sausan)</option>
+              <option value="A">A (Olvia/Epheria)</option>
               <option value="B">B (Ilya/Lema)</option>
-              <option value="C">C (Olvia/Epheria)</option>
+              <option value="C" selected>C (Sanctuary/Sausan)</option>
             </select>
           </div>
         </div>
@@ -683,11 +844,28 @@
       <div id="calib-status"></div>
       <pre id="calib-details"></pre>
     </div>
+    <div id="inv-controls" style="display:none">
+      <div class="mc-title inv-drag">Player &amp; Boat inventory</div>
+      <div id="inv-body"></div>
+    </div>
     <div id="info">zoom 15</div>
   </div>
 </div>
 
+<div id="resolve-modal" class="resolve-modal" style="display:none">
+  <div class="resolve-card">
+    <div class="resolve-header">
+      <span id="resolve-title">Resolve scan uncertainty</span>
+      <button id="resolve-close" type="button" title="Close">×</button>
+    </div>
+    <div id="resolve-body"></div>
+    <div class="resolve-footer"><span id="resolve-progress"></span></div>
+  </div>
+</div>
+
 <script src="static/leaflet.js"></script>
+<script src="js/pako.min.js"></script>
+<script src="js/upng.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 <script>
   const MIN_ZOOM = 0;

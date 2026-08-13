@@ -23,9 +23,9 @@ vi.mock('../js/catalog.js', () => ({
       'East': ['Hakoven Island', 'Arehaza']
     },
     t7ByRegion: {
-      'A': ['Sanctuary Coastal Outpost', 'Sausan Garrison Wharf'],
+      'A': ['Olvia Coast', 'Epheria Sentry Post'],
       'B': ['Iliya Island', 'Lema Island'],
-      'C': ['Olvia Coast', 'Epheria Sentry Post']
+      'C': ['Sanctuary Coastal Outpost', 'Sausan Garrison Wharf']
     },
     chainOptions: [
       'North - Haemo Island',
@@ -55,7 +55,7 @@ describe('planner', () => {
       { region: 'East', chain: 'East - Arehaza', t5: '[Level 5] 102 Year Old Golden Herb', t4: '[Level 4] Panacea', island: 'Padix Island' },
       { region: 'East', chain: 'East - Hakoven Island', t5: '[Level 5] Golden Fish Scale', t4: '[Level 4] Seashell Deco', island: 'Oben Island' }
     ],
-    region_mapping: { north: 'C', south: 'B', east: 'A' },
+    region_mapping: { north: 'A', south: 'B', east: 'C' },
     ilya_stock: { east: true, north: false, south: false },
     config: {
       base_parley: 1000000,
@@ -119,7 +119,7 @@ describe('planner', () => {
     it('should handle empty trades', async () => {
       const payload = {
         trades: [],
-        region_mapping: { north: 'C', south: 'B', east: 'C' },
+        region_mapping: { north: 'A', south: 'B', east: 'C' },
         ilya_stock: { east: false, north: false, south: false }
       };
       const result = await planRoute(payload);
@@ -156,7 +156,7 @@ describe('planner', () => {
     const run = async () => {
       const result = await optimizeRoute(
         samplePayload.trades,
-        { north: 'C', south: 'B', east: 'A' },
+        { north: 'A', south: 'B', east: 'C' },
         { east: true, north: false, south: false },
         22450, 5000, 150, true, false
       );

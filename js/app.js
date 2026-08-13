@@ -1,20 +1,27 @@
 import { getCatalog } from './catalog.js';
 import { planRoute } from './planner.js';
-import { attachStepCheckboxes } from './walkthrough.js';
+import { attachStepCheckboxes, getActiveCard, getInventoryForCard } from './walkthrough.js';
+import { formatInventory } from './inventory.js';
 import { initMapOverlay, drawRoute, clearRoute, setActiveStep } from './map-overlay.js';
 import { scanImages as clientScan } from './scanner.js';
 
 let catalog = null;
 let tradeRows = [];
 
+// Fixed row order: the 6 chains, always shown (scanned values fill in where
+// found; missing chains stay blank).
 const DEFAULT_TRADES = [
-  { region: 'North', chain: 'Dallae Pier', t5: '[Level 5] Octagonal Box', t4: '[Level 4] Stolen Pirate Dagger', island: 'Ajir Island' },
-  { region: 'North', chain: 'Haemo Island', t5: '[Level 5] Mysterious Rock', t4: '[Level 4] Marine Knights\' Helm', island: 'Baremi Island' },
-  { region: 'South', chain: 'Starry Midnight Port', t5: '[Level 5] Luxury Patterned Fabric', t4: '[Level 4] Pirate\'s Key', island: 'Orffs Island' },
-  { region: 'South', chain: 'Grandiha', t5: '[Level 5] Portrait of the Ancient', t4: '[Level 4] Headless Dragon Figurine', island: 'Narvo Island' },
-  { region: 'East', chain: 'Arehaza', t5: '[Level 5] 102 Year Old Golden Herb', t4: '[Level 4] Panacea', island: 'Padix Island' },
-  { region: 'East', chain: 'Hakoven Island', t5: '[Level 5] Golden Fish Scale', t4: '[Level 4] Seashell Deco', island: 'Oben Island' }
+  { region: 'North', chain: 'Dallae Pier' },
+  { region: 'North', chain: 'Haemo Island' },
+  { region: 'South', chain: 'Grandiha' },
+  { region: 'South', chain: 'Starry Midnight Port' },
+  { region: 'East', chain: 'Hakoven Island' },
+  { region: 'East', chain: 'Arehaza' }
 ];
+
+function normChainName(s) {
+  return String(s || '').toLowerCase().normalize('NFKD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]/g, '');
+}
 
 function createFilterDropdown(container, options, initialValue, showIcon = false) {
   const wrapper = document.createElement('div');
@@ -48,7 +55,10 @@ function createFilterDropdown(container, options, initialValue, showIcon = false
   }
   
   function getItemIcon(opt) {
-    return typeof opt === 'object' && opt.icon ? opt.icon : null;
+    // Icon paths in the data are absolute ("/assets/icons/..."), which break
+    // under a GitHub Pages repo sub-path — make them relative like the rest of
+    // the app's asset references.
+    return typeof opt === 'object' && opt.icon ? String(opt.icon).replace(/^\//, '') : null;
   }
   
   function updateSelectedIcon() {
@@ -201,6 +211,7 @@ function createFilterDropdown(container, options, initialValue, showIcon = false
       selectedValue = val;
       previousValue = val;
       input.value = val;
+      updateSelectedIcon();
     }
   };
 }
@@ -212,6 +223,21 @@ function createTradeRow(trade) {
   regionCell.textContent = `${trade.region} ${trade.chain}`;
   regionCell.style.fontWeight = 'bold';
   regionCell.style.color = '#5a9';
+
+  let warnBadge = null;
+  const renderWarnings = () => {
+    if (warnBadge) { warnBadge.remove(); warnBadge = null; }
+    if (trade.warnings && trade.warnings.length) {
+      warnBadge = document.createElement('span');
+      warnBadge.className = 'scan-warning';
+      warnBadge.textContent = '⚠ verify';
+      warnBadge.title = trade.warnings
+        .map(w => `${w.field}: "${w.item}"\n  OCR read: ${w.read}\n  could also be: ${w.alternatives.join(', ')}`)
+        .join('\n\n');
+      regionCell.appendChild(warnBadge);
+    }
+  };
+  renderWarnings();
   
   const t5Cell = document.createElement('td');
   const t4Cell = document.createElement('td');
@@ -236,6 +262,7 @@ function createTradeRow(trade) {
   
   return {
     element: row,
+    chain: trade.chain, // for lookup in the resolution modal
     getData: () => ({
       region: trade.region,
       chain: `${trade.region} - ${trade.chain}`,
@@ -244,7 +271,19 @@ function createTradeRow(trade) {
       island: islandDropdown.getValue(),
       t6: trade.t6,
       t7: trade.t7
-    })
+    }),
+    // Resolve an ambiguity: set the field to the chosen option.
+    setValue: (field, value) => {
+      if (field === 't5') t5Dropdown.setValue(value);
+      else if (field === 't4') t4Dropdown.setValue(value);
+      else if (field === 'island') islandDropdown.setValue(value);
+      else if (field === 't6') trade.t6 = value;
+      else if (field === 't7') trade.t7 = value;
+    },
+    clearWarnings: () => {
+      trade.warnings = undefined;
+      renderWarnings();
+    }
   };
 }
 
@@ -253,7 +292,8 @@ async function calculateRoute() {
   btn.disabled = true;
   btn.textContent = 'Calculating...';
   
-  const trades = tradeRows.map(r => r.getData());
+  // Skip rows that were never filled (scan found nothing for that chain).
+  const trades = tradeRows.map(r => r.getData()).filter(t => t.t5 && t.t4);
   
   const payload = {
     trades: trades,
@@ -279,6 +319,7 @@ async function calculateRoute() {
     resultDiv.classList.add('show');
     resultDiv.classList.remove('hide-done');
     attachStepCheckboxes(resultDiv);
+    updateInventoryPanel();
     
     const hideDoneToggle = document.getElementById('hide-done-toggle');
     const hideDoneCheckbox = document.getElementById('hide-done');
@@ -307,8 +348,25 @@ function populateTrades(trades) {
   const tbody = document.getElementById('trade-rows');
   tbody.innerHTML = '';
   tradeRows = [];
-  (trades || []).forEach(trade => {
-    const row = createTradeRow(trade);
+  const byChain = new Map();
+  (trades || []).forEach(t => {
+    const key = normChainName(t.chain);
+    if (!byChain.has(key)) byChain.set(key, t);
+  });
+  // Always render all 6 rows in the fixed order; fill from the scan where the
+  // chain was recognized, leave the rest blank.
+  DEFAULT_TRADES.forEach(base => {
+    const scanned = byChain.get(normChainName(base.chain));
+    const row = createTradeRow({
+      region: base.region,
+      chain: base.chain,
+      t5: scanned ? scanned.t5 : undefined,
+      t4: scanned ? scanned.t4 : undefined,
+      island: scanned ? scanned.island : undefined,
+      t6: scanned ? scanned.t6 : undefined,
+      t7: scanned ? scanned.t7 : undefined,
+      warnings: scanned ? scanned.warnings : undefined
+    });
     tbody.appendChild(row.element);
     tradeRows.push(row);
   });
@@ -334,6 +392,26 @@ async function addScanImages(type, files) {
     scanStore[type].push({ name, type, data, mime: file.type });
   }
   renderScanList(type);
+}
+
+// Clear all pending screenshots from every scan zone.
+function clearScreenshots() {
+  for (const type of ['t4t5', 't5t6', 't6t7']) {
+    scanStore[type] = [];
+    renderScanList(type);
+  }
+}
+
+// Clear every trade row's T5/T4/Island (and any scanned T6/T7) back to blank.
+function clearTradeTable() {
+  tradeRows.forEach(row => {
+    row.setValue('t5', '');
+    row.setValue('t4', '');
+    row.setValue('island', '');
+    row.setValue('t6', undefined);
+    row.setValue('t7', undefined);
+    row.clearWarnings();
+  });
 }
 
 function renderScanList(type) {
@@ -418,6 +496,97 @@ async function getClipboardImages(e) {
   return files;
 }
 
+// Item icon <img> for a "[Level N] Item Name" string (mirrors walkthrough.js).
+function itemIconImg(itemName) {
+  const tierMatch = String(itemName).match(/\[Level (\d)\]/);
+  const tier = tierMatch ? tierMatch[1] : '';
+  const safe = String(itemName).replace(/\[Level \d+\]\s*/, '').toLowerCase()
+    .replace(/['"]/g, '').replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '');
+  return `<img src="assets/icons/level_${tier}_${safe}.webp" alt="" width="26" height="26" style="vertical-align:middle;margin-right:8px;" onerror="this.style.display='none'">`;
+}
+
+// Modal that walks through every unique scan ambiguity (near-twin items) and
+// asks the user to pick which item is right. The same ambiguity can appear in
+// several rows/trades (e.g. a T6 item seen in both the T5→T6 and T6→T7 scans),
+// so it is asked once and the chosen answer is applied to all of them.
+// Returns true if it opened a modal.
+function openResolutionModal(trades) {
+  const groups = new Map();
+  (trades || []).forEach((trade) => {
+    // Find the rendered row by chain (the table is always in the fixed order,
+    // which doesn't match the scan's output order).
+    const row = tradeRows.find(r => normChainName(r.chain) === normChainName(trade.chain));
+    if (!row) return;
+    (trade.warnings || []).forEach(w => {
+      const key = `${w.field}|${w.item}|${(w.alternatives || []).join('|')}`;
+      if (!groups.has(key)) groups.set(key, { w, targets: [] });
+      groups.get(key).targets.push({ trade, row });
+    });
+  });
+  if (!groups.size) return false;
+
+  const queue = [...groups.values()];
+
+  const modal = document.getElementById('resolve-modal');
+  const body = document.getElementById('resolve-body');
+  const title = document.getElementById('resolve-title');
+  const progress = document.getElementById('resolve-progress');
+  const closeBtn = document.getElementById('resolve-close');
+  modal.style.display = 'flex';
+
+  const close = () => { modal.style.display = 'none'; };
+  closeBtn.onclick = close;
+  modal.onclick = (e) => { if (e.target === modal) close(); };
+
+  let i = 0;
+  const show = () => {
+    if (i >= queue.length) { close(); return; }
+    const { w, targets } = queue[i];
+    const trade = targets[0].trade;
+    progress.textContent = `Resolving ${i + 1} of ${queue.length}`;
+    title.textContent = 'Resolve scan uncertainty';
+    body.innerHTML = '';
+
+    const context = document.createElement('div');
+    context.className = 'resolve-context';
+    // Name the port where the item is used (the island for T4/T5 give/receive).
+    const where = (w.field === 't4' || w.field === 't5') ? (trade.island || '') : '';
+    const route = `${trade.region} ${trade.chain}`;
+    context.textContent = where ? `${route} - ${where}` : route;
+    body.appendChild(context);
+
+    const field = document.createElement('div');
+    field.className = 'resolve-field';
+    const tier = (String(w.item).match(/\[Level (\d)\]/) || [])[1] || '';
+    field.textContent = `Source Level: ${tier} - OCR ambiguity, please pick the correct item`;
+    body.appendChild(field);
+
+    const optionsWrap = document.createElement('div');
+    optionsWrap.className = 'resolve-options';
+    const options = [w.item, ...w.alternatives];
+    options.forEach(opt => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'resolve-option' + (opt === w.item ? ' current' : '');
+      btn.innerHTML = itemIconImg(opt) + `<span>${opt}</span>`;
+      btn.title = opt === w.item ? 'Keep the matched item' : 'Choose this alternative';
+      btn.addEventListener('click', () => {
+        for (const { row } of targets) {
+          row.setValue(w.field, opt);
+          row.clearWarnings();
+        }
+        i++;
+        show();
+      });
+      optionsWrap.appendChild(btn);
+    });
+    body.appendChild(optionsWrap);
+  };
+
+  show();
+  return true;
+}
+
 async function scanScreenshots() {
   const images = [...scanStore.t4t5, ...scanStore.t5t6, ...scanStore.t6t7];
   if (scanStore.t4t5.length === 0 || scanStore.t5t6.length === 0) {
@@ -428,27 +597,8 @@ async function scanScreenshots() {
   btn.disabled = true;
   btn.textContent = 'Scanning…';
   try {
-    // In-browser OCR (tesseract.js) first; falls back to the local Python
-    // /api/scan when it throws (e.g. tesseract CDN blocked, or 0 rows locally).
-    let result = null;
-    try {
-      result = await clientScan(images);
-    } catch (clientErr) {
-      console.warn('In-browser OCR failed, trying local server:', clientErr);
-    }
-    if (!result || !result.trades || result.trades.length === 0) {
-      try {
-        const resp = await fetch('/api/scan', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ images })
-        });
-        const serverResult = await resp.json();
-        if (!serverResult.error) result = serverResult;
-      } catch (err) {
-        console.warn('Local /api/scan unavailable:', err);
-      }
-    }
+    // In-browser OCR (tesseract.js) only — the same path as GitHub Pages.
+    const result = await clientScan(images);
     if (result.error) {
       alert('Scan failed: ' + result.error);
       return;
@@ -459,7 +609,13 @@ async function scanScreenshots() {
       if (result.mapping.south) document.getElementById('region-south').value = result.mapping.south;
       if (result.mapping.east) document.getElementById('region-east').value = result.mapping.east;
     }
-    alert(`Filled ${(result.trades || []).length} trade row(s) from the screenshots.`);
+    const trades = result.trades || [];
+    const openedModal = openResolutionModal(trades);
+    if (!openedModal) {
+      alert(trades.length
+        ? `Filled ${trades.length} trade row(s) from the screenshots.`
+        : 'No trades were recognized from the screenshots. Check that they show the barter list clearly, and that tesseract.js loaded (needs internet).');
+    }
   } catch (err) {
     alert('Scan error: ' + err.message);
   } finally {
@@ -479,9 +635,12 @@ async function init() {
   
   populateTrades(DEFAULT_TRADES);
   initMapOverlay(map);
+  makeDraggable(document.getElementById('inv-controls'));
   
   document.getElementById('calculate-btn').addEventListener('click', calculateRoute);
   document.getElementById('scan-btn').addEventListener('click', scanScreenshots);
+  document.getElementById('clear-scan-btn').addEventListener('click', clearScreenshots);
+  document.getElementById('clear-table-btn').addEventListener('click', clearTradeTable);
   setupDropZone('t4t5');
   setupDropZone('t5t6');
   setupDropZone('t6t7');
@@ -502,7 +661,62 @@ async function init() {
   const resultDiv = document.getElementById('result');
   resultDiv.addEventListener('activestep', (e) => {
     setActiveStep(e.detail && e.detail.step);
+    updateInventoryPanel();
   });
+}
+
+// Show the current step's boat/player inventory in the map overlay panel.
+function updateInventoryPanel() {
+  const panel = document.getElementById('inv-controls');
+  const body = document.getElementById('inv-body');
+  if (!panel || !body) return;
+  const card = getActiveCard(document.getElementById('result'));
+  if (!card) {
+    panel.style.display = 'none';
+    body.innerHTML = '';
+    return;
+  }
+  const inv = getInventoryForCard(card);
+  if (!inv) {
+    panel.style.display = 'none';
+    return;
+  }
+  body.innerHTML = formatInventory(inv.before, inv.after, inv.swapped, {
+    shipMax: inv.shipMax,
+    playerMax: inv.playerMax,
+    playerUsedWeight: inv.playerUsedWeight
+  });
+  panel.style.display = '';
+}
+
+// Let the inventory panel be dragged around the map (drag by its title bar).
+function makeDraggable(el) {
+  if (!el) return;
+  const handle = el.querySelector('.inv-drag');
+  if (!handle) return;
+  let dragging = false, offX = 0, offY = 0;
+  handle.addEventListener('pointerdown', (e) => {
+    dragging = true;
+    offX = e.clientX - el.getBoundingClientRect().left;
+    offY = e.clientY - el.getBoundingClientRect().top;
+    handle.setPointerCapture && handle.setPointerCapture(e.pointerId);
+    e.preventDefault();
+  });
+  handle.addEventListener('pointermove', (e) => {
+    if (!dragging) return;
+    const wrap = el.offsetParent || el.parentElement;
+    const wr = wrap.getBoundingClientRect();
+    let left = e.clientX - wr.left - offX;
+    let top = e.clientY - wr.top - offY;
+    left = Math.max(0, Math.min(left, wr.width - el.offsetWidth));
+    top = Math.max(0, Math.min(top, wr.height - el.offsetHeight));
+    el.style.left = left + 'px';
+    el.style.top = top + 'px';
+    el.style.bottom = 'auto';
+  });
+  const stop = () => { dragging = false; };
+  handle.addEventListener('pointerup', stop);
+  handle.addEventListener('pointercancel', stop);
 }
 
 document.addEventListener('DOMContentLoaded', init);

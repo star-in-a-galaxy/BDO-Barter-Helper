@@ -1,11 +1,11 @@
 import { getCatalog } from './catalog.js';
-import { optimizeRoute, tierItem, t6Name, t7Name } from './optimizer.js';
+import { optimizeRoute, t6Name, t7Name } from './optimizer.js';
 import { generateWalkthrough } from './walkthrough.js';
 import { Simulator } from './simulator.js';
 
 export async function planRoute(payload) {
   const trades = payload.trades || [];
-  const regionMapping = payload.region_mapping || { north: "C", south: "B", east: "A" };
+  const regionMapping = payload.region_mapping || { north: "A", south: "B", east: "C" };
   // ilya_stock: true means T5 stock is assumed available for ALL regions;
   // an object (e.g. { east: true }) still works for per-region stock.
   // A plain `false` (or missing value) means no T5 stock — do NOT fall back
@@ -338,7 +338,11 @@ export async function planRoute(payload) {
     throw new Error(`Route validation failed:\n${errors.join('\n')}`);
   }
   
-  const walkthroughText = generateWalkthrough(validatedActions);
+  const walkthroughText = generateWalkthrough(validatedActions, {
+    shipMax: config.ship_weight,
+    playerMax: (config.char_weight * 1.7) - (config.char_used_weight || 150),
+    playerUsedWeight: config.char_used_weight || 150
+  });
 
   // Ordered route stops with step numbers matching the walkthrough: consecutive
   // actions at the same location collapse into a single step (same grouping as

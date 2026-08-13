@@ -23,9 +23,9 @@ vi.mock('../js/catalog.js', () => ({
       'East': ['Hakoven Island', 'Arehaza']
     },
     t7ByRegion: {
-      'A': ['Sanctuary Coastal Outpost', 'Sausan Garrison Wharf'],
+      'A': ['Olvia Coast', 'Epheria Sentry Post'],
       'B': ['Iliya Island', 'Lema Island'],
-      'C': ['Olvia Coast', 'Epheria Sentry Post']
+      'C': ['Sanctuary Coastal Outpost', 'Sausan Garrison Wharf']
     },
     chainOptions: [],
     ports: barterPorts,
@@ -48,7 +48,7 @@ const trades = [
 
 const makePayload = (shipWeight, charWeight) => ({
   trades,
-  region_mapping: { north: 'C', south: 'B', east: 'A' },
+  region_mapping: { north: 'A', south: 'B', east: 'C' },
   ilya_stock: true,
   config: {
     base_parley: 1000000,
