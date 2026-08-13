@@ -1,87 +1,109 @@
 # BDO Bartering Helper
 
-A web-based tool to optimize Black Desert Online bartering routes with inventory management and step-by-step walkthroughs.
+A web-based tool to optimize Black Desert Online bartering routes, with screenshot OCR to fill the trade table, inventory-aware route planning, and an interactive map that visualizes the solved route.
 
 ## Features
 
-- **Trade Table**: Configure T4→T5 trades with filterable dropdowns
+- **Trade Table**: Configure T4→T5→T6→T7 barter chains with filterable dropdowns
+- **Screenshot Scanner**: OCR your in-game barter lists (T4→T5, T5→T6, optional T6→T7) to auto-fill the trade table and the T6→T7 region mapping. Runs **in the browser** (tesseract.js), so it works on GitHub Pages with no server.
 - **Region Mapping**: Map North/South/East chains to T7 regions (A/B/C)
-- **Ilya Stock**: Toggle pre-loading T5 items from Ilya storage
-- **Route Optimization**: Calculates optimal sailing distance
-- **Step-by-Step Walkthrough**: Detailed instructions for each stop
-- **Interactive Map**: Visualize routes on Leaflet tile map
+- **Ilya Stock**: Toggle assuming T5 stock at Ilya for all regions (zero-sum restock)
+- **Inventory Weight Juggling**: Batch trips by juggling items between ship and player
+- **Route Optimization**: Minimizes sailing distance (region chains, stock subsets, 2-opt refinement), respects the fixed East/South T6 trader order
+- **Step-by-Step Walkthrough**: Numbered steps with per-step "done" checkboxes (prefix invariant) and region banners
+- **Interactive Map**: Leaflet map (bdolytics tiles) with calibrated barter-port markers (color-coded by tier), the solved route as numbered segments, and the active step highlighted as you complete steps
 
 ## Local Development
 
-Serve the static site locally:
+The app is a static site. Serve it locally:
 
 ```bash
-# Python 3 (recommended)
+# Python 3 (recommended — also enables the local OCR fallback server)
 python serve.py
 
-# Or use Python's built-in server
+# Or any static server (scan falls back to in-browser OCR only)
 python -m http.server 8000
-
-# Node.js
 npx serve .
-
-# Or use the included npm script
 npm run serve
 ```
 
 Then open http://localhost:8000
 
-## Deployment
+### Running tests
 
-### GitHub Pages (Automatic)
+```bash
+npm install
+npm test -- --run
+```
 
-The repository includes a GitHub Actions workflow that automatically deploys to GitHub Pages when you push to `main` or `master`.
+## Deployment (GitHub Pages)
+
+The repository includes a GitHub Actions workflow (`.github/workflows/deploy.yml`) that deploys the repo root to GitHub Pages on every push to `main`.
 
 To enable:
-1. Go to repository Settings → Pages
-2. Under "Source", select "GitHub Actions"
-3. Push to main/master branch
-4. The site will be available at `https://<username>.github.io/<repo-name>/`
 
-### Manual Deployment
+1. Create a **public** GitHub repo and push this project to `main`.
+2. In repo **Settings → Pages**, set **Source** to **GitHub Actions**.
+3. The site appears at `https://<username>.github.io/<repo-name>/`.
 
-The app is fully static. Upload these files/directories to any web server:
+Everything runs client-side, so no backend is needed:
+
+- Map tiles are static files under `tiles/`.
+- OCR uses tesseract.js loaded from a CDN.
+- Route optimization, calibration and markers are all in-browser JavaScript.
+
+> **Local-only features:** when running `python serve.py`, the OCR scan additionally falls back to `/api/scan` (a Python/RapidOCR endpoint). On GitHub Pages that endpoint doesn't exist — the in-browser OCR is used instead.
+
+### Manual deployment
+
+Upload these to any static host:
+
 - `index.html`
-- `js/` directory
-- `assets/` directory
-- `static/` directory
-- `tiles/` directory (map tiles)
+- `js/`, `assets/`, `static/`, `tiles/`
 
 ## Project Structure
 
 ```
 bater_route/
-├── index.html              # Main UI
-├── js/                     # JavaScript modules
-│   ├── app.js             # Main application logic
-│   ├── catalog.js         # Item/location data loader
-│   ├── distance.js        # Distance calculations
-│   ├── route-builder.js   # Route sequence builder
-│   ├── walkthrough.js     # Text walkthrough generator
-│   ├── simulator.js       # Inventory simulation
-│   └── planner.js         # Route planner orchestrator
+├── index.html              # Main UI + map
+├── js/
+│   ├── app.js              # Main application logic / wiring
+│   ├── catalog.js          # Item/location data loader
+│   ├── optimizer.js        # Route optimizer (regions, stock, juggling, 2-opt)
+│   ├── planner.js          # Route planner orchestrator (validates via Simulator)
+│   ├── walkthrough.js      # Step-by-step walkthrough generator + done checkboxes
+│   ├── simulator.js        # Inventory simulation (ship/player/storage)
+│   ├── scanner.js          # In-browser screenshot OCR + parsing (tesseract.js)
+│   ├── map-overlay.js      # Map calibration, port markers, route overlay
+│   └── state-machine.js    # State-machine optimizer (alternative entry point)
 ├── assets/
-│   ├── barterGoods.json   # Item definitions with icons
-│   ├── barterPorts.json   # Port locations and coordinates
-│   └── icons/             # Item icon images
+│   ├── barterGoods.json    # Item definitions
+│   ├── barterPorts.json    # Port names + coordinates (used for map + distances)
+│   ├── barterRoutes.json   # Barter route data
+│   └── icons/              # Item icon images (level_{tier}_{name}.webp)
 ├── static/                 # Leaflet library files
-├── tiles/                  # Tile map images
-├── serve.py               # Local development server
-└── .github/workflows/     # GitHub Actions deployment
+├── tiles/                  # Map tile images ({z}/{x}_{y}.webp, from bdolytics)
+├── tests/                  # Vitest unit tests
+├── serve.py                # Local dev server (+ /api/scan OCR fallback)
+├── scanner.py              # Python OCR scanner (local /api/scan backend)
+├── .github/workflows/      # GitHub Actions Pages deployment
+└── .nojekyll               # Disables Jekyll on GitHub Pages
 ```
+
+## Map calibration
+
+The map tiles use BDO in-game coordinates projected onto a Leaflet `CRS.Simple` map. On first use (or after the tiles change), calibrate by clicking the **Calibrate Map** button and clicking three known ports on the map: **Iliya Island**, **Lema Island**, **Epheria Sentry Post**. The affine transform is solved from those clicks and saved to `localStorage`; a fitted default is used until then.
 
 ## Configuration
 
-Default values can be adjusted in the UI:
-- **Base Parley**: 1,000,000 (total parley budget)
-- **Parley per Trade**: 11,000 (cost per trade)
-- **Ship Weight**: 22,450 lt (ship capacity)
-- **Character Available**: 5,000 lt (character capacity, ×2 with overstack)
+Defaults can be adjusted in the UI:
+
+- **Region mapping**: North → C, South → B, East → A (T7 trade regions)
+- **Free Ship Weight**: 22,450 lt
+- **Character Weight Limit**: 5,500 lt
+- **Character Used Weight**: 150 lt (threshold = limit × 1.7 − used)
+- **Inventory Weight Juggling**: on
+- **Assume T5 stock for all regions**: off
 
 ## Game Mechanics
 

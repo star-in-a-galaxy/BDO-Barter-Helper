@@ -16,5 +16,5 @@ verify/
 stitched_z14.png
 eng.traineddata
 
-.md
+*.md
 !README.md
