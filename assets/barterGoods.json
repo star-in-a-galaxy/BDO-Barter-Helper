@@ -1,0 +1,986 @@
+[
+    {
+        "itemId": 800001,
+        "name": "[Level 1] Dried Blue Rose",
+        "icon": "/assets/icons/level_1_dried_blue_rose.webp",
+        "grade": 0,
+        "weight": 100,
+        "tier": "level_1"
+    },
+    {
+        "itemId": 800002,
+        "name": "[Level 1] Giant Fish Bone",
+        "icon": "/assets/icons/level_1_giant_fish_bone.webp",
+        "grade": 0,
+        "weight": 100,
+        "tier": "level_1"
+    },
+    {
+        "itemId": 800003,
+        "name": "[Level 1] Naval Ration",
+        "icon": "/assets/icons/level_1_naval_ration.webp",
+        "grade": 0,
+        "weight": 100,
+        "tier": "level_1"
+    },
+    {
+        "itemId": 800004,
+        "name": "[Level 1] Stained Seagull Figurine",
+        "icon": "/assets/icons/level_1_stained_seagull_figurine.webp",
+        "grade": 0,
+        "weight": 100,
+        "tier": "level_1"
+    },
+    {
+        "itemId": 800005,
+        "name": "[Level 1] Raft Toy",
+        "icon": "/assets/icons/level_1_raft_toy.webp",
+        "grade": 0,
+        "weight": 100,
+        "tier": "level_1"
+    },
+    {
+        "itemId": 800006,
+        "name": "[Level 1] Chewy Raw Gizzard",
+        "icon": "/assets/icons/level_1_chewy_raw_gizzard.webp",
+        "grade": 0,
+        "weight": 100,
+        "tier": "level_1"
+    },
+    {
+        "itemId": 800007,
+        "name": "[Level 1] Ancient Urn Piece",
+        "icon": "/assets/icons/level_1_ancient_urn_piece.webp",
+        "grade": 0,
+        "weight": 100,
+        "tier": "level_1"
+    },
+    {
+        "itemId": 800008,
+        "name": "[Level 1] Unidentified Ancient Mural",
+        "icon": "/assets/icons/level_1_unidentified_ancient_mural.webp",
+        "grade": 0,
+        "weight": 100,
+        "tier": "level_1"
+    },
+    {
+        "itemId": 800009,
+        "name": "[Level 1] Cherry Tree Seed Pouch",
+        "icon": "/assets/icons/level_1_cherry_tree_seed_pouch.webp",
+        "grade": 0,
+        "weight": 100,
+        "tier": "level_1"
+    },
+    {
+        "itemId": 800010,
+        "name": "[Level 1] Golden Sand",
+        "icon": "/assets/icons/level_1_golden_sand.webp",
+        "grade": 0,
+        "weight": 100,
+        "tier": "level_1"
+    },
+    {
+        "itemId": 800011,
+        "name": "[Level 1] Roa Flower Seed Pouch",
+        "icon": "/assets/icons/level_1_roa_flower_seed_pouch.webp",
+        "grade": 0,
+        "weight": 100,
+        "tier": "level_1"
+    },
+    {
+        "itemId": 800012,
+        "name": "[Level 1] Rakeflower Seed Pouch",
+        "icon": "/assets/icons/level_1_rakeflower_seed_pouch.webp",
+        "grade": 0,
+        "weight": 100,
+        "tier": "level_1"
+    },
+    {
+        "itemId": 800013,
+        "name": "[Level 1] Fertile Soil",
+        "icon": "/assets/icons/level_1_fertile_soil.webp",
+        "grade": 0,
+        "weight": 100,
+        "tier": "level_1"
+    },
+    {
+        "itemId": 800014,
+        "name": "[Level 1] Pirates' Gunpowder",
+        "icon": "/assets/icons/level_1_pirates_gunpowder.webp",
+        "grade": 0,
+        "weight": 100,
+        "tier": "level_1"
+    },
+    {
+        "itemId": 800015,
+        "name": "[Level 2] Islanders' Lunchbox",
+        "icon": "/assets/icons/level_2_islanders_lunchbox.webp",
+        "grade": 1,
+        "weight": 400,
+        "tier": "level_2"
+    },
+    {
+        "itemId": 800016,
+        "name": "[Level 2] Cron Castle Gold Coin",
+        "icon": "/assets/icons/level_2_cron_castle_gold_coin.webp",
+        "grade": 1,
+        "weight": 400,
+        "tier": "level_2"
+    },
+    {
+        "itemId": 800017,
+        "name": "[Level 2] Pirate Ship Mast",
+        "icon": "/assets/icons/level_2_pirate_ship_mast.webp",
+        "grade": 1,
+        "weight": 400,
+        "tier": "level_2"
+    },
+    {
+        "itemId": 800018,
+        "name": "[Level 2] Opulent Marble",
+        "icon": "/assets/icons/level_2_opulent_marble.webp",
+        "grade": 1,
+        "weight": 400,
+        "tier": "level_2"
+    },
+    {
+        "itemId": 800019,
+        "name": "[Level 2] Filtered Drinking Water",
+        "icon": "/assets/icons/level_2_filtered_drinking_water.webp",
+        "grade": 1,
+        "weight": 400,
+        "tier": "level_2"
+    },
+    {
+        "itemId": 800020,
+        "name": "[Level 2] Conch Shell Ornament",
+        "icon": "/assets/icons/level_2_conch_shell_ornament.webp",
+        "grade": 1,
+        "weight": 400,
+        "tier": "level_2"
+    },
+    {
+        "itemId": 800021,
+        "name": "[Level 2] Supreme Oyster Box",
+        "icon": "/assets/icons/level_2_supreme_oyster_box.webp",
+        "grade": 1,
+        "weight": 400,
+        "tier": "level_2"
+    },
+    {
+        "itemId": 800022,
+        "name": "[Level 2] Big Stone Slab",
+        "icon": "/assets/icons/level_2_big_stone_slab.webp",
+        "grade": 1,
+        "weight": 400,
+        "tier": "level_2"
+    },
+    {
+        "itemId": 800023,
+        "name": "[Level 2] Narvo Sea Cucumber",
+        "icon": "/assets/icons/level_2_narvo_sea_cucumber.webp",
+        "grade": 1,
+        "weight": 400,
+        "tier": "level_2"
+    },
+    {
+        "itemId": 800024,
+        "name": "[Level 2] Balanced Stone Pagoda",
+        "icon": "/assets/icons/level_2_balanced_stone_pagoda.webp",
+        "grade": 1,
+        "weight": 400,
+        "tier": "level_2"
+    },
+    {
+        "itemId": 800025,
+        "name": "[Level 2] Sea Survival Kit",
+        "icon": "/assets/icons/level_2_sea_survival_kit.webp",
+        "grade": 1,
+        "weight": 400,
+        "tier": "level_2"
+    },
+    {
+        "itemId": 800026,
+        "name": "[Level 2] Monster Tentacle",
+        "icon": "/assets/icons/level_2_monster_tentacle.webp",
+        "grade": 1,
+        "weight": 400,
+        "tier": "level_2"
+    },
+    {
+        "itemId": 800027,
+        "name": "[Level 2] Pirate Gold Coin",
+        "icon": "/assets/icons/level_2_pirate_gold_coin.webp",
+        "grade": 1,
+        "weight": 400,
+        "tier": "level_2"
+    },
+    {
+        "itemId": 800028,
+        "name": "[Level 2] Urchin Spine",
+        "icon": "/assets/icons/level_2_urchin_spine.webp",
+        "grade": 1,
+        "weight": 400,
+        "tier": "level_2"
+    },
+    {
+        "itemId": 800029,
+        "name": "[Level 3] Old Hourglass",
+        "icon": "/assets/icons/level_3_old_hourglass.webp",
+        "grade": 2,
+        "weight": 900,
+        "tier": "level_3"
+    },
+    {
+        "itemId": 800030,
+        "name": "[Level 3] Torn Pirate Treasure Map",
+        "icon": "/assets/icons/level_3_torn_pirate_treasure_map.webp",
+        "grade": 2,
+        "weight": 900,
+        "tier": "level_3"
+    },
+    {
+        "itemId": 800031,
+        "name": "[Level 3] Pirates' Supply Box",
+        "icon": "/assets/icons/level_3_pirates_supply_box.webp",
+        "grade": 2,
+        "weight": 900,
+        "tier": "level_3"
+    },
+    {
+        "itemId": 800032,
+        "name": "[Level 3] Scout Binoculars",
+        "icon": "/assets/icons/level_3_scout_binoculars.webp",
+        "grade": 2,
+        "weight": 900,
+        "tier": "level_3"
+    },
+    {
+        "itemId": 800033,
+        "name": "[Level 3] Stalactite Fragment",
+        "icon": "/assets/icons/level_3_stalactite_fragment.webp",
+        "grade": 2,
+        "weight": 900,
+        "tier": "level_3"
+    },
+    {
+        "itemId": 800034,
+        "name": "[Level 3] Skull Decorated Teacup",
+        "icon": "/assets/icons/level_3_skull_decorated_teacup.webp",
+        "grade": 2,
+        "weight": 900,
+        "tier": "level_3"
+    },
+    {
+        "itemId": 800035,
+        "name": "[Level 3] Round Knife",
+        "icon": "/assets/icons/level_3_round_knife.webp",
+        "grade": 2,
+        "weight": 900,
+        "tier": "level_3"
+    },
+    {
+        "itemId": 800036,
+        "name": "[Level 3] Gooey Monster Blood",
+        "icon": "/assets/icons/level_3_gooey_monster_blood.webp",
+        "grade": 2,
+        "weight": 900,
+        "tier": "level_3"
+    },
+    {
+        "itemId": 800037,
+        "name": "[Level 3] Weasel Leather Coat",
+        "icon": "/assets/icons/level_3_weasel_leather_coat.webp",
+        "grade": 2,
+        "weight": 900,
+        "tier": "level_3"
+    },
+    {
+        "itemId": 800038,
+        "name": "[Level 3] Skull Symbol Carpet",
+        "icon": "/assets/icons/level_3_skull_symbol_carpet.webp",
+        "grade": 2,
+        "weight": 900,
+        "tier": "level_3"
+    },
+    {
+        "itemId": 800039,
+        "name": "[Level 3] Rare Herb Pile",
+        "icon": "/assets/icons/level_3_rare_herb_pile.webp",
+        "grade": 2,
+        "weight": 900,
+        "tier": "level_3"
+    },
+    {
+        "itemId": 800040,
+        "name": "[Level 3] Lopters Fishnet",
+        "icon": "/assets/icons/level_3_lopters_fishnet.webp",
+        "grade": 2,
+        "weight": 900,
+        "tier": "level_3"
+    },
+    {
+        "itemId": 800041,
+        "name": "[Level 3] Ancient Orders",
+        "icon": "/assets/icons/level_3_ancient_orders.webp",
+        "grade": 2,
+        "weight": 900,
+        "tier": "level_3"
+    },
+    {
+        "itemId": 800042,
+        "name": "[Level 3] Blue Candle Bundle",
+        "icon": "/assets/icons/level_3_blue_candle_bundle.webp",
+        "grade": 2,
+        "weight": 900,
+        "tier": "level_3"
+    },
+    {
+        "itemId": 800043,
+        "name": "[Level 4] Marine Knights' Helm",
+        "icon": "/assets/icons/level_4_marine_knights_helm.webp",
+        "grade": 3,
+        "weight": 1000,
+        "tier": "level_4"
+    },
+    {
+        "itemId": 800044,
+        "name": "[Level 4] Stolen Pirate Dagger",
+        "icon": "/assets/icons/level_4_stolen_pirate_dagger.webp",
+        "grade": 3,
+        "weight": 1000,
+        "tier": "level_4"
+    },
+    {
+        "itemId": 800045,
+        "name": "[Level 4] Opulent Thread Spool",
+        "icon": "/assets/icons/level_4_opulent_thread_spool.webp",
+        "grade": 3,
+        "weight": 1000,
+        "tier": "level_4"
+    },
+    {
+        "itemId": 800046,
+        "name": "[Level 4] Amethyst Fragment",
+        "icon": "/assets/icons/level_4_amethyst_fragment.webp",
+        "grade": 3,
+        "weight": 1000,
+        "tier": "level_4"
+    },
+    {
+        "itemId": 800047,
+        "name": "[Level 4] Marine Knights' Spear",
+        "icon": "/assets/icons/level_4_marine_knights_spear.webp",
+        "grade": 3,
+        "weight": 1000,
+        "tier": "level_4"
+    },
+    {
+        "itemId": 800048,
+        "name": "[Level 4] Solidified Lava",
+        "icon": "/assets/icons/level_4_solidified_lava.webp",
+        "grade": 3,
+        "weight": 1000,
+        "tier": "level_4"
+    },
+    {
+        "itemId": 800049,
+        "name": "[Level 4] Green Salt Lump",
+        "icon": "/assets/icons/level_4_green_salt_lump.webp",
+        "grade": 3,
+        "weight": 1000,
+        "tier": "level_4"
+    },
+    {
+        "itemId": 800050,
+        "name": "[Level 4] Boatman's Manual",
+        "icon": "/assets/icons/level_4_boatmans_manual.webp",
+        "grade": 3,
+        "weight": 1000,
+        "tier": "level_4"
+    },
+    {
+        "itemId": 800051,
+        "name": "[Level 4] Old Chest with Gold Coins",
+        "icon": "/assets/icons/level_4_old_chest_with_gold_coins.webp",
+        "grade": 3,
+        "weight": 1000,
+        "tier": "level_4"
+    },
+    {
+        "itemId": 800052,
+        "name": "[Level 4] Seashell Deco",
+        "icon": "/assets/icons/level_4_seashell_deco.webp",
+        "grade": 3,
+        "weight": 1000,
+        "tier": "level_4"
+    },
+    {
+        "itemId": 800053,
+        "name": "[Level 4] Panacea",
+        "icon": "/assets/icons/level_4_panacea.webp",
+        "grade": 3,
+        "weight": 1000,
+        "tier": "level_4"
+    },
+    {
+        "itemId": 800054,
+        "name": "[Level 4] Headless Dragon Figurine",
+        "icon": "/assets/icons/level_4_headless_dragon_figurine.webp",
+        "grade": 3,
+        "weight": 1000,
+        "tier": "level_4"
+    },
+    {
+        "itemId": 800055,
+        "name": "[Level 4] Bronze Candlestick",
+        "icon": "/assets/icons/level_4_bronze_candlestick.webp",
+        "grade": 3,
+        "weight": 1000,
+        "tier": "level_4"
+    },
+    {
+        "itemId": 800056,
+        "name": "[Level 4] Pirate's Key",
+        "icon": "/assets/icons/level_4_pirates_key.webp",
+        "grade": 3,
+        "weight": 1000,
+        "tier": "level_4"
+    },
+    {
+        "itemId": 800057,
+        "name": "[Level 5] Octagonal Box",
+        "icon": "/assets/icons/level_5_octagonal_box.webp",
+        "grade": 4,
+        "weight": 1000,
+        "tier": "level_5"
+    },
+    {
+        "itemId": 800058,
+        "name": "[Level 5] 37 Year Old Herbal Wine",
+        "icon": "/assets/icons/level_5_37_year_old_herbal_wine.webp",
+        "grade": 4,
+        "weight": 1000,
+        "tier": "level_5"
+    },
+    {
+        "itemId": 800059,
+        "name": "[Level 5] Azure Quartz",
+        "icon": "/assets/icons/level_5_azure_quartz.webp",
+        "grade": 4,
+        "weight": 1000,
+        "tier": "level_5"
+    },
+    {
+        "itemId": 800060,
+        "name": "[Level 5] Stuffed Morpho Butterfly",
+        "icon": "/assets/icons/level_5_stuffed_morpho_butterfly.webp",
+        "grade": 4,
+        "weight": 1000,
+        "tier": "level_5"
+    },
+    {
+        "itemId": 800061,
+        "name": "[Level 5] Statue's Tear",
+        "icon": "/assets/icons/level_5_statues_tear.webp",
+        "grade": 4,
+        "weight": 1000,
+        "tier": "level_5"
+    },
+    {
+        "itemId": 800062,
+        "name": "[Level 5] Supreme Gold Candlestick",
+        "icon": "/assets/icons/level_5_supreme_gold_candlestick.webp",
+        "grade": 4,
+        "weight": 1000,
+        "tier": "level_5"
+    },
+    {
+        "itemId": 800063,
+        "name": "[Level 5] Faded Gold Dragon Figurine",
+        "icon": "/assets/icons/level_5_faded_gold_dragon_figurine.webp",
+        "grade": 4,
+        "weight": 1000,
+        "tier": "level_5"
+    },
+    {
+        "itemId": 800064,
+        "name": "[Level 5] Stuffed White Caterpillar",
+        "icon": "/assets/icons/level_5_stuffed_white_caterpillar.webp",
+        "grade": 4,
+        "weight": 1000,
+        "tier": "level_5"
+    },
+    {
+        "itemId": 800065,
+        "name": "[Level 5] Golden Fish Scale",
+        "icon": "/assets/icons/level_5_golden_fish_scale.webp",
+        "grade": 4,
+        "weight": 1000,
+        "tier": "level_5"
+    },
+    {
+        "itemId": 800066,
+        "name": "[Level 5] 102 Year Old Golden Herb",
+        "icon": "/assets/icons/level_5_102_year_old_golden_herb.webp",
+        "grade": 4,
+        "weight": 1000,
+        "tier": "level_5"
+    },
+    {
+        "itemId": 800067,
+        "name": "[Level 5] Portrait of the Ancient",
+        "icon": "/assets/icons/level_5_portrait_of_the_ancient.webp",
+        "grade": 4,
+        "weight": 1000,
+        "tier": "level_5"
+    },
+    {
+        "itemId": 800068,
+        "name": "[Level 5] Elixir of Youth",
+        "icon": "/assets/icons/level_5_elixir_of_youth.webp",
+        "grade": 4,
+        "weight": 1000,
+        "tier": "level_5"
+    },
+    {
+        "itemId": 800069,
+        "name": "[Level 5] Luxury Patterned Fabric",
+        "icon": "/assets/icons/level_5_luxury_patterned_fabric.webp",
+        "grade": 4,
+        "weight": 1000,
+        "tier": "level_5"
+    },
+    {
+        "itemId": 800070,
+        "name": "[Level 5] Mysterious Rock",
+        "icon": "/assets/icons/level_5_mysterious_rock.webp",
+        "grade": 4,
+        "weight": 1000,
+        "tier": "level_5"
+    },
+    {
+        "itemId": 800071,
+        "name": "[Great Ocean] Opulent Coral Trinket",
+        "icon": "/assets/icons/great_ocean_opulent_coral_trinket.webp",
+        "grade": 4,
+        "weight": 1000,
+        "tier": "great_ocean"
+    },
+    {
+        "itemId": 800072,
+        "name": "[Great Ocean] Cox Pirates' Journal",
+        "icon": "/assets/icons/great_ocean_cox_pirates_journal.webp",
+        "grade": 4,
+        "weight": 1000,
+        "tier": "great_ocean"
+    },
+    {
+        "itemId": 800073,
+        "name": "[Great Ocean] Rust Repair Tool",
+        "icon": "/assets/icons/great_ocean_rust_repair_tool.webp",
+        "grade": 4,
+        "weight": 1000,
+        "tier": "great_ocean"
+    },
+    {
+        "itemId": 800074,
+        "name": "[Great Ocean] Otters Fish Hook",
+        "icon": "/assets/icons/great_ocean_otters_fish_hook.webp",
+        "grade": 4,
+        "weight": 1000,
+        "tier": "great_ocean"
+    },
+    {
+        "itemId": 800075,
+        "name": "[Great Ocean] Observatory Report",
+        "icon": "/assets/icons/great_ocean_observatory_report.webp",
+        "grade": 4,
+        "weight": 1000,
+        "tier": "great_ocean"
+    },
+    {
+        "itemId": 800201,
+        "name": "[Level 6] Valencia Sand Shield",
+        "icon": "/assets/icons/level_6_valencia_sand_shield.webp",
+        "grade": 4,
+        "weight": 2000,
+        "tier": "level_6"
+    },
+    {
+        "itemId": 800202,
+        "name": "[Level 6] Valencian Desert Fine Sword",
+        "icon": "/assets/icons/level_6_valencian_desert_fine_sword.webp",
+        "grade": 4,
+        "weight": 2000,
+        "tier": "level_6"
+    },
+    {
+        "itemId": 800203,
+        "name": "[Level 6] Fancy Camel Hide",
+        "icon": "/assets/icons/level_6_fancy_camel_hide.webp",
+        "grade": 4,
+        "weight": 2000,
+        "tier": "level_6"
+    },
+    {
+        "itemId": 800204,
+        "name": "[Level 6] Golden Sand Ring",
+        "icon": "/assets/icons/level_6_golden_sand_ring.webp",
+        "grade": 4,
+        "weight": 2000,
+        "tier": "level_6"
+    },
+    {
+        "itemId": 800205,
+        "name": "[Level 6] Top-Quality Coconut Syrup",
+        "icon": "/assets/icons/level_6_top_quality_coconut_syrup.webp",
+        "grade": 4,
+        "weight": 2000,
+        "tier": "level_6"
+    },
+    {
+        "itemId": 800206,
+        "name": "[Level 6] Traditional Arehazan Tea",
+        "icon": "/assets/icons/level_6_traditional_arehazan_tea.webp",
+        "grade": 4,
+        "weight": 2000,
+        "tier": "level_6"
+    },
+    {
+        "itemId": 800207,
+        "name": "[Level 6] Miniature Arehaza Lighthouse",
+        "icon": "/assets/icons/level_6_miniature_arehaza_lighthouse.webp",
+        "grade": 4,
+        "weight": 2000,
+        "tier": "level_6"
+    },
+    {
+        "itemId": 800208,
+        "name": "[Level 6] Golden Cactus Bouquet",
+        "icon": "/assets/icons/level_6_golden_cactus_bouquet.webp",
+        "grade": 4,
+        "weight": 2000,
+        "tier": "level_6"
+    },
+    {
+        "itemId": 800209,
+        "name": "[Level 6] Forest Fairy Perfume",
+        "icon": "/assets/icons/level_6_forest_fairy_perfume.webp",
+        "grade": 4,
+        "weight": 2000,
+        "tier": "level_6"
+    },
+    {
+        "itemId": 800210,
+        "name": "[Level 6] Kamasylvian Sculpture",
+        "icon": "/assets/icons/level_6_kamasylvian_sculpture.webp",
+        "grade": 4,
+        "weight": 2000,
+        "tier": "level_6"
+    },
+    {
+        "itemId": 800211,
+        "name": "[Level 6] Moonlit Crystal Lamp",
+        "icon": "/assets/icons/level_6_moonlit_crystal_lamp.webp",
+        "grade": 4,
+        "weight": 2000,
+        "tier": "level_6"
+    },
+    {
+        "itemId": 800212,
+        "name": "[Level 6] Mossy Silver Log Decoration",
+        "icon": "/assets/icons/level_6_mossy_silver_log_decoration.webp",
+        "grade": 4,
+        "weight": 2000,
+        "tier": "level_6"
+    },
+    {
+        "itemId": 800213,
+        "name": "[Level 6] Black Rose Bouquet",
+        "icon": "/assets/icons/level_6_black_rose_bouquet.webp",
+        "grade": 4,
+        "weight": 2000,
+        "tier": "level_6"
+    },
+    {
+        "itemId": 800214,
+        "name": "[Level 6] Moonlit Crystal Shard",
+        "icon": "/assets/icons/level_6_moonlit_crystal_shard.webp",
+        "grade": 4,
+        "weight": 2000,
+        "tier": "level_6"
+    },
+    {
+        "itemId": 800215,
+        "name": "[Level 6] Moonshade Aged Wine",
+        "icon": "/assets/icons/level_6_moonshade_aged_wine.webp",
+        "grade": 4,
+        "weight": 2000,
+        "tier": "level_6"
+    },
+    {
+        "itemId": 800216,
+        "name": "[Level 6] Shadow Ornament Mirror",
+        "icon": "/assets/icons/level_6_shadow_ornament_mirror.webp",
+        "grade": 4,
+        "weight": 2000,
+        "tier": "level_6"
+    },
+    {
+        "itemId": 800217,
+        "name": "[Level 6] Bamboo Sap Crate",
+        "icon": "/assets/icons/level_6_bamboo_sap_crate.webp",
+        "grade": 4,
+        "weight": 2000,
+        "tier": "level_6"
+    },
+    {
+        "itemId": 800218,
+        "name": "[Level 6] Nampo Persimmon Crate",
+        "icon": "/assets/icons/level_6_nampo_persimmon_crate.webp",
+        "grade": 4,
+        "weight": 2000,
+        "tier": "level_6"
+    },
+    {
+        "itemId": 800219,
+        "name": "[Level 6] High-quality Ink-scented Box",
+        "icon": "/assets/icons/level_6_high_quality_ink_scented_box.webp",
+        "grade": 4,
+        "weight": 2000,
+        "tier": "level_6"
+    },
+    {
+        "itemId": 800220,
+        "name": "[Level 6] Hanji Country Wild Berry Crate",
+        "icon": "/assets/icons/level_6_hanji_country_wild_berry_crate.webp",
+        "grade": 4,
+        "weight": 2000,
+        "tier": "level_6"
+    },
+    {
+        "itemId": 800221,
+        "name": "[Level 6] Top-Quality Blue Underglaze Porcelain Crate",
+        "icon": "/assets/icons/level_6_top_quality_blue_underglaze_porcelain_crate.webp",
+        "grade": 4,
+        "weight": 2000,
+        "tier": "level_6"
+    },
+    {
+        "itemId": 800222,
+        "name": "[Level 6] Top-Quality Gamtu Crate",
+        "icon": "/assets/icons/level_6_top_quality_gamtu_crate.webp",
+        "grade": 4,
+        "weight": 2000,
+        "tier": "level_6"
+    },
+    {
+        "itemId": 800223,
+        "name": "[Level 6] Brass Bowl Crate",
+        "icon": "/assets/icons/level_6_brass_bowl_crate.webp",
+        "grade": 4,
+        "weight": 2000,
+        "tier": "level_6"
+    },
+    {
+        "itemId": 800224,
+        "name": "[Level 6] Sharp Safflower Blade Crate",
+        "icon": "/assets/icons/level_6_sharp_safflower_blade_crate.webp",
+        "grade": 4,
+        "weight": 2000,
+        "tier": "level_6"
+    },
+    {
+        "itemId": 800225,
+        "name": "[Level 7] Top-Quality Heidelian Wine",
+        "icon": "/assets/icons/level_7_top_quality_heidelian_wine.webp",
+        "grade": 4,
+        "weight": 2000,
+        "tier": "level_7"
+    },
+    {
+        "itemId": 800226,
+        "name": "[Level 7] Golden Flour Sack",
+        "icon": "/assets/icons/level_7_golden_flour_sack.webp",
+        "grade": 4,
+        "weight": 2000,
+        "tier": "level_7"
+    },
+    {
+        "itemId": 800227,
+        "name": "[Level 7] Organic Honey Crate",
+        "icon": "/assets/icons/level_7_organic_honey_crate.webp",
+        "grade": 4,
+        "weight": 2000,
+        "tier": "level_7"
+    },
+    {
+        "itemId": 800228,
+        "name": "[Level 7] Traditional Balenos Decorative Anchor",
+        "icon": "/assets/icons/level_7_traditional_balenos_decorative_anchor.webp",
+        "grade": 4,
+        "weight": 2000,
+        "tier": "level_7"
+    },
+    {
+        "itemId": 800229,
+        "name": "[Level 7] Golden Eagle Brooch",
+        "icon": "/assets/icons/level_7_golden_eagle_brooch.webp",
+        "grade": 4,
+        "weight": 2000,
+        "tier": "level_7"
+    },
+    {
+        "itemId": 800230,
+        "name": "[Level 7] Calpheon Knights' Combat Manual",
+        "icon": "/assets/icons/level_7_calpheon_knights_combat_manual.webp",
+        "grade": 4,
+        "weight": 2000,
+        "tier": "level_7"
+    },
+    {
+        "itemId": 800231,
+        "name": "[Level 7] Calpheon Golden Candle Stand",
+        "icon": "/assets/icons/level_7_calpheon_golden_candle_stand.webp",
+        "grade": 4,
+        "weight": 2000,
+        "tier": "level_7"
+    },
+    {
+        "itemId": 800232,
+        "name": "[Level 7] Calpheonian Artisan's Pearl Necklace",
+        "icon": "/assets/icons/level_7_calpheonian_artisans_pearl_necklace.webp",
+        "grade": 4,
+        "weight": 2000,
+        "tier": "level_7"
+    },
+    {
+        "itemId": 800233,
+        "name": "[Level 7] Sausan Military Supply",
+        "icon": "/assets/icons/level_7_sausan_military_supply.webp",
+        "grade": 4,
+        "weight": 2000,
+        "tier": "level_7"
+    },
+    {
+        "itemId": 800234,
+        "name": "[Level 7] Stonetail Carrot Healthy Food Crate",
+        "icon": "/assets/icons/level_7_stonetail_carrot_healthy_food_crate.webp",
+        "grade": 4,
+        "weight": 2000,
+        "tier": "level_7"
+    },
+    {
+        "itemId": 800235,
+        "name": "[Level 7] Omar Lava Powder",
+        "icon": "/assets/icons/level_7_omar_lava_powder.webp",
+        "grade": 4,
+        "weight": 2000,
+        "tier": "level_7"
+    },
+    {
+        "itemId": 800236,
+        "name": "[Level 7] Tarif Magic Jar",
+        "icon": "/assets/icons/level_7_tarif_magic_jar.webp",
+        "grade": 4,
+        "weight": 2000,
+        "tier": "level_7"
+    },
+    {
+        "itemId": 800237,
+        "name": "[Level 7] Rusalka's Thorny Bouquet",
+        "icon": "/assets/icons/level_7_rusalkas_thorny_bouquet.webp",
+        "grade": 4,
+        "weight": 2000,
+        "tier": "level_7"
+    },
+    {
+        "itemId": 800238,
+        "name": "[Level 7] Sturdy Caphras Timber",
+        "icon": "/assets/icons/level_7_sturdy_caphras_timber.webp",
+        "grade": 4,
+        "weight": 2000,
+        "tier": "level_7"
+    },
+    {
+        "itemId": 800239,
+        "name": "[Level 7] Top-Quality Hakinza Perfume",
+        "icon": "/assets/icons/level_7_top_quality_hakinza_perfume.webp",
+        "grade": 4,
+        "weight": 2000,
+        "tier": "level_7"
+    },
+    {
+        "itemId": 800240,
+        "name": "[Level 7] Throne of Edana Records",
+        "icon": "/assets/icons/level_7_throne_of_edana_records.webp",
+        "grade": 4,
+        "weight": 2000,
+        "tier": "level_7"
+    },
+    {
+        "itemId": 800241,
+        "name": "[Level 7] Artisan's Seashell Necklace",
+        "icon": "/assets/icons/level_7_artisans_seashell_necklace.webp",
+        "grade": 4,
+        "weight": 2000,
+        "tier": "level_7"
+    },
+    {
+        "itemId": 800242,
+        "name": "[Level 7] Balenosian Sailor's Telescope",
+        "icon": "/assets/icons/level_7_balenosian_sailors_telescope.webp",
+        "grade": 4,
+        "weight": 2000,
+        "tier": "level_7"
+    },
+    {
+        "itemId": 800243,
+        "name": "[Level 7] Balenos Whale Sculpture",
+        "icon": "/assets/icons/level_7_balenos_whale_sculpture.webp",
+        "grade": 4,
+        "weight": 2000,
+        "tier": "level_7"
+    },
+    {
+        "itemId": 800244,
+        "name": "[Level 7] Balenos Salt Flower",
+        "icon": "/assets/icons/level_7_balenos_salt_flower.webp",
+        "grade": 4,
+        "weight": 2000,
+        "tier": "level_7"
+    },
+    {
+        "itemId": 800245,
+        "name": "[Level 7] Balenos Starlight Salt",
+        "icon": "/assets/icons/level_7_balenos_starlight_salt.webp",
+        "grade": 4,
+        "weight": 2000,
+        "tier": "level_7"
+    },
+    {
+        "itemId": 800246,
+        "name": "[Level 7] Balenos Relic Fragment",
+        "icon": "/assets/icons/level_7_balenos_relic_fragment.webp",
+        "grade": 4,
+        "weight": 2000,
+        "tier": "level_7"
+    },
+    {
+        "itemId": 800247,
+        "name": "[Level 7] Balenos Rainbow Coral",
+        "icon": "/assets/icons/level_7_balenos_rainbow_coral.webp",
+        "grade": 4,
+        "weight": 2000,
+        "tier": "level_7"
+    },
+    {
+        "itemId": 800248,
+        "name": "[Level 7] Rainbow Sea Crystal Piece",
+        "icon": "/assets/icons/level_7_rainbow_sea_crystal_piece.webp",
+        "grade": 4,
+        "weight": 2000,
+        "tier": "level_7"
+    }
+]

@@ -1,0 +1,17 @@
+{
+  "name": "bdo-bartering-helper",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "serve": "python serve.py",
+    "test": "vitest",
+    "test:run": "vitest run"
+  },
+  "devDependencies": {
+    "vitest": "^1.6.0"
+  },
+  "dependencies": {
+    "tesseract.js": "^7.0.0"
+  }
+}

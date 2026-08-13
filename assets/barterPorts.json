@@ -1,0 +1,807 @@
+{
+  "92": {
+    "name": "Olvia Coast",
+    "barterer": "Brio",
+    "coordinates": [
+      -92954.5,
+      -132983
+    ]
+  },
+  "181": {
+    "name": "Lema Island",
+    "barterer": "Chikao",
+    "npcId": "58954-1",
+    "coordinates": [
+      -56891.3,
+      -397108
+    ]
+  },
+  "182": {
+    "name": "Iliya Island",
+    "barterer": "Priko",
+    "npcId": "58948-1",
+    "coordinates": [
+      153562,
+      -289760
+    ]
+  },
+  "240": {
+    "name": "Epheria Sentry Post",
+    "barterer": "Karpu",
+    "coordinates": [
+      -369289,
+      -26636.3
+    ]
+  },
+  "364": {
+    "name": "Marlene Island",
+    "barterer": "Marcini",
+    "npcId": "58928-1",
+    "coordinates": [
+      -63777.7,
+      -265813
+    ]
+  },
+  "365": {
+    "name": "Balvege Island",
+    "barterer": "Rukio",
+    "npcId": "58925-1",
+    "coordinates": [
+      -93354.5,
+      -266197
+    ]
+  },
+  "366": {
+    "name": "Angie Island",
+    "barterer": "Neruo",
+    "npcId": "58924-1",
+    "coordinates": [
+      -131366,
+      -238017
+    ]
+  },
+  "367": {
+    "name": "Duch Island",
+    "barterer": "Juvio",
+    "npcId": "58926-1",
+    "coordinates": [
+      -95026.4,
+      -207815
+    ]
+  },
+  "368": {
+    "name": "Eveto Island",
+    "barterer": "Havio",
+    "npcId": "58927-1",
+    "coordinates": [
+      -85396,
+      -220655
+    ]
+  },
+  "369": {
+    "name": "Luivano Island",
+    "barterer": "Vedio",
+    "npcId": "58930-1",
+    "coordinates": [
+      -43910,
+      -181358
+    ]
+  },
+  "371": {
+    "name": "Mariveno Island",
+    "barterer": "Renilu",
+    "npcId": "58929-1",
+    "coordinates": [
+      -25890.8,
+      -224844
+    ]
+  },
+  "372": {
+    "name": "Ephde Rune Island",
+    "barterer": "Rishao",
+    "npcId": "58931-1",
+    "coordinates": [
+      7230.57,
+      -165212
+    ]
+  },
+  "373": {
+    "name": "Invernen Island",
+    "barterer": "Pakuo",
+    "npcId": "58923-1",
+    "coordinates": [
+      -123249,
+      -303782
+    ]
+  },
+  "374": {
+    "name": "Tulu Island",
+    "barterer": "Metakio",
+    "npcId": "58939-1",
+    "coordinates": [
+      -87025.5,
+      -326256
+    ]
+  },
+  "375": {
+    "name": "Orffs Island",
+    "barterer": "Pokio",
+    "npcId": "58938-1",
+    "coordinates": [
+      -55021.4,
+      -330371
+    ]
+  },
+  "376": {
+    "name": "Tashu Island",
+    "barterer": "Solavio",
+    "npcId": "58955-1",
+    "coordinates": [
+      -122014,
+      -430941
+    ]
+  },
+  "377": {
+    "name": "Baremi Island",
+    "barterer": "Serapu",
+    "npcId": "58940-1",
+    "coordinates": [
+      6946.34,
+      -290557
+    ]
+  },
+  "378": {
+    "name": "Weita Island",
+    "barterer": "Decario",
+    "npcId": "58941-1",
+    "coordinates": [
+      38273.7,
+      -257200
+    ]
+  },
+  "379": {
+    "name": "Paratama Island",
+    "barterer": "Tepuo",
+    "npcId": "58932-1",
+    "coordinates": [
+      43288.6,
+      -207825
+    ]
+  },
+  "380": {
+    "name": "Kanvera Island",
+    "barterer": "Panishu",
+    "npcId": "58942-1",
+    "coordinates": [
+      82273.7,
+      -241286
+    ]
+  },
+  "381": {
+    "name": "Arakil Island",
+    "barterer": "Curahi",
+    "npcId": "58950-1",
+    "coordinates": [
+      96742.8,
+      -223298
+    ]
+  },
+  "382": {
+    "name": "Beiruwa Island",
+    "barterer": "Gerio",
+    "npcId": "58933-1",
+    "coordinates": [
+      84729.4,
+      -165217
+    ]
+  },
+  "383": {
+    "name": "Taramura Island",
+    "barterer": "Hashin",
+    "npcId": "58934-1",
+    "coordinates": [
+      129340,
+      -191491
+    ]
+  },
+  "384": {
+    "name": "Ostra Island",
+    "barterer": "Belgio",
+    "npcId": "58935-1",
+    "coordinates": [
+      141489,
+      -209881
+    ]
+  },
+  "385": {
+    "name": "Delinghart Island",
+    "barterer": "Serrio",
+    "npcId": "58936-1",
+    "coordinates": [
+      205951,
+      -200129
+    ]
+  },
+  "386": {
+    "name": "Pilava Island",
+    "barterer": "Hika",
+    "npcId": "58937-1",
+    "coordinates": [
+      255801,
+      -191862
+    ]
+  },
+  "387": {
+    "name": "Racid Island",
+    "barterer": "Shuka",
+    "npcId": "58943-1",
+    "coordinates": [
+      69250.5,
+      -408777
+    ]
+  },
+  "388": {
+    "name": "Al-Naha Island",
+    "barterer": "Sherana",
+    "npcId": "58953-1",
+    "coordinates": [
+      36729.7,
+      -370254
+    ]
+  },
+  "389": {
+    "name": "Ajir Island",
+    "barterer": "Jeraki",
+    "npcId": "58966-1",
+    "coordinates": [
+      74721.3,
+      -324086
+    ]
+  },
+  "390": {
+    "name": "Pujara Island",
+    "barterer": "Riamishu",
+    "npcId": "58949-1",
+    "coordinates": [
+      258690,
+      -295960
+    ]
+  },
+  "391": {
+    "name": "Lisz Island",
+    "barterer": "Retao",
+    "npcId": "58919-1",
+    "coordinates": [
+      -233814,
+      -266645
+    ]
+  },
+  "392": {
+    "name": "Narvo Island",
+    "barterer": "Akenisi",
+    "npcId": "58922-1",
+    "coordinates": [
+      -184158,
+      -295736
+    ]
+  },
+  "393": {
+    "name": "Marka Island",
+    "barterer": "Siani",
+    "npcId": "58921-1",
+    "coordinates": [
+      -183092,
+      -247770
+    ]
+  },
+  "394": {
+    "name": "Louruve Island",
+    "barterer": "Julio",
+    "npcId": "58920-1",
+    "coordinates": [
+      -213127,
+      -234473
+    ]
+  },
+  "395": {
+    "name": "Staren Island",
+    "barterer": "Rakio",
+    "npcId": "58918-1",
+    "coordinates": [
+      -248601,
+      -207950
+    ]
+  },
+  "396": {
+    "name": "Randis Island",
+    "barterer": "Hiriva",
+    "npcId": "58963-1",
+    "coordinates": [
+      -383461,
+      -110496
+    ]
+  },
+  "397": {
+    "name": "Serca Island",
+    "barterer": "Shura",
+    "npcId": "58964-1",
+    "coordinates": [
+      -384974,
+      -86495.4
+    ]
+  },
+  "398": {
+    "name": "Daton Island",
+    "barterer": "Priha",
+    "npcId": "58907-1",
+    "coordinates": [
+      -443029,
+      -213565
+    ]
+  },
+  "399": {
+    "name": "Netnume Island",
+    "barterer": "Padio",
+    "npcId": "58908-1",
+    "coordinates": [
+      -417664,
+      -192859
+    ]
+  },
+  "400": {
+    "name": "Oben Island",
+    "barterer": "Shapio",
+    "npcId": "58909-1",
+    "coordinates": [
+      -393076,
+      -206009
+    ]
+  },
+  "401": {
+    "name": "Eberdeen Island",
+    "barterer": "Merio",
+    "npcId": "58911-1",
+    "coordinates": [
+      -360261,
+      -188740
+    ]
+  },
+  "402": {
+    "name": "Dunde Island",
+    "barterer": "Ruishi",
+    "npcId": "58910-1",
+    "coordinates": [
+      -381076,
+      -178841
+    ]
+  },
+  "403": {
+    "name": "Albresser Island",
+    "barterer": "Pukira",
+    "npcId": "58912-1",
+    "coordinates": [
+      -330051,
+      -172260
+    ]
+  },
+  "404": {
+    "name": "Barater Island",
+    "barterer": "Tidio",
+    "npcId": "58913-1",
+    "coordinates": [
+      -325298,
+      -145943
+    ]
+  },
+  "405": {
+    "name": "Ginburrey Island",
+    "barterer": "Denio",
+    "npcId": "58906-1",
+    "coordinates": [
+      -451474,
+      -149315
+    ]
+  },
+  "406": {
+    "name": "Rameda Island",
+    "barterer": "Tarin",
+    "npcId": "58905-1",
+    "coordinates": [
+      -513035,
+      -155219
+    ]
+  },
+  "407": {
+    "name": "Theonil Island",
+    "barterer": "Prao",
+    "npcId": "58903-1",
+    "coordinates": [
+      -485677,
+      -115769
+    ]
+  },
+  "408": {
+    "name": "Modric Island",
+    "barterer": "Trisha",
+    "npcId": "58902-1",
+    "coordinates": [
+      -468288,
+      -99032
+    ]
+  },
+  "409": {
+    "name": "Baeza Island",
+    "barterer": "Cazio",
+    "npcId": "58901-1",
+    "coordinates": [
+      -439636,
+      -85688.5
+    ]
+  },
+  "410": {
+    "name": "Teyamal Island",
+    "barterer": "Purani",
+    "npcId": "58904-1",
+    "coordinates": [
+      -524725,
+      -66122.4
+    ]
+  },
+  "415": {
+    "name": "Sausan Garrison Wharf",
+    "barterer": "Nedio",
+    "coordinates": [
+      249255,
+      -143070
+    ]
+  },
+  "430": {
+    "name": "Hakoven Island",
+    "barterer": "Roshina",
+    "npcId": "58971-1",
+    "coordinates": [
+      1252450,
+      -547567
+    ]
+  },
+  "562": {
+    "name": "Kuit Islands",
+    "barterer": "Ryubio",
+    "npcId": "58967-1",
+    "coordinates": [
+      -348511,
+      -390896
+    ]
+  },
+  "563": {
+    "name": "Almai Island",
+    "barterer": "Arutiha",
+    "npcId": "58916-1",
+    "coordinates": [
+      -395052,
+      -337672
+    ]
+  },
+  "564": {
+    "name": "Padix Island",
+    "barterer": "Keshao",
+    "npcId": "58915-1",
+    "coordinates": [
+      -349233,
+      -342047
+    ]
+  },
+  "565": {
+    "name": "Teste Island",
+    "barterer": "Macio",
+    "npcId": "58914-1",
+    "coordinates": [
+      -428648,
+      -301252
+    ]
+  },
+  "566": {
+    "name": "Arita Island",
+    "barterer": "Terseo",
+    "npcId": "58917-1",
+    "coordinates": [
+      -239524,
+      -342047
+    ]
+  },
+  "570": {
+    "name": "Tinberra Island",
+    "barterer": "Mulicia",
+    "npcId": "58945-1",
+    "coordinates": [
+      218576,
+      -529420
+    ]
+  },
+  "571": {
+    "name": "Lerao Island",
+    "barterer": "Ravio",
+    "npcId": "58946-1",
+    "coordinates": [
+      268242,
+      -520144
+    ]
+  },
+  "572": {
+    "name": "Portanen Island",
+    "barterer": "Supio",
+    "npcId": "58947-1",
+    "coordinates": [
+      290959,
+      -464069
+    ]
+  },
+  "573": {
+    "name": "Shasha Island",
+    "barterer": "Palasio",
+    "npcId": "58968-1",
+    "coordinates": [
+      265965,
+      -413236
+    ]
+  },
+  "574": {
+    "name": "Rosevan Island",
+    "barterer": "Sikario",
+    "npcId": "58969-1",
+    "coordinates": [
+      309771,
+      -414742
+    ]
+  },
+  "662": {
+    "name": "Sokota Island",
+    "barterer": "Sherahi",
+    "npcId": "58951-1",
+    "coordinates": [
+      329275,
+      -138692
+    ]
+  },
+  "663": {
+    "name": "Riyed Island",
+    "barterer": "Rian",
+    "npcId": "58952-1",
+    "coordinates": [
+      393866,
+      -181537
+    ]
+  },
+  "664": {
+    "name": "Esfah Island",
+    "barterer": "Biapin",
+    "npcId": "58958-1",
+    "coordinates": [
+      422234,
+      -239025
+    ]
+  },
+  "665": {
+    "name": "Tigris Island",
+    "barterer": "Perugia",
+    "npcId": "58970-1",
+    "coordinates": [
+      406466,
+      -258086
+    ]
+  },
+  "666": {
+    "name": "Shirna Island",
+    "barterer": "Kiapura",
+    "npcId": "58957-1",
+    "coordinates": [
+      445168,
+      -261867
+    ]
+  },
+  "667": {
+    "name": "Halmad Island",
+    "barterer": "Tixia",
+    "npcId": "58959-1",
+    "coordinates": [
+      558999,
+      -333684
+    ]
+  },
+  "668": {
+    "name": "Kashuma Island",
+    "barterer": "Parian",
+    "npcId": "58960-1",
+    "coordinates": [
+      589314,
+      -372650
+    ]
+  },
+  "669": {
+    "name": "Orisha Island",
+    "barterer": "Tesivin",
+    "npcId": "58956-1",
+    "coordinates": [
+      418555,
+      -324117
+    ]
+  },
+  "671": {
+    "name": "Boa Island",
+    "barterer": "Shamihi",
+    "npcId": "58962-1",
+    "coordinates": [
+      419550,
+      -372439
+    ]
+  },
+  "685": {
+    "name": "Derko Island",
+    "barterer": "Juki",
+    "npcId": "58961-1",
+    "coordinates": [
+      843205,
+      -415735
+    ]
+  },
+  "693": {
+    "name": "Arehaza",
+    "barterer": "Hanipu",
+    "coordinates": [
+      1267170,
+      -177948
+    ]
+  },
+  "966": {
+    "name": "Starry Midnight Port",
+    "barterer": "Orchio",
+    "coordinates": [
+      -321664,
+      598912
+    ]
+  },
+  "983": {
+    "name": "Crow's Nest",
+    "barterer": "Kami"
+  },
+  "994": {
+    "name": "Shipwrecked Haran's Cargo Ship",
+    "barterer": "Haran",
+    "npcId": "50814-1",
+    "coordinates": [
+      -704776,
+      -950571
+    ]
+  },
+  "995": {
+    "name": "Unfinished Adrift Vessel",
+    "barterer": "Heracio",
+    "npcId": "50815-1",
+    "coordinates": [
+      -709930,
+      -1231870
+    ]
+  },
+  "996": {
+    "name": "Lantinia's Combat Raft",
+    "barterer": "Lantinia",
+    "npcId": "50816-1",
+    "coordinates": [
+      -632996,
+      -1132940
+    ]
+  },
+  "997": {
+    "name": "Pakio's Combat Raft",
+    "barterer": "Pakio",
+    "npcId": "50817-1",
+    "coordinates": [
+      -337874,
+      -1158330
+    ]
+  },
+  "998": {
+    "name": "Crow Merchants' Vessel",
+    "barterer": "Olcia Viano",
+    "npcId": "50818-1",
+    "coordinates": [
+      -517383,
+      -862095
+    ]
+  },
+  "999": {
+    "name": "Shipwrecked Rickun's Ship",
+    "barterer": "Rickun",
+    "npcId": "50819-1",
+    "coordinates": [
+      -816088,
+      -669021
+    ]
+  },
+  "1001": {
+    "name": "Shipwrecked Cox Pirate Ship",
+    "barterer": "Picira Baho",
+    "npcId": "50822-1",
+    "coordinates": [
+      -748316,
+      -505615
+    ]
+  },
+  "1002": {
+    "name": "Shipwrecked Marine Vessel",
+    "barterer": "Donalia",
+    "npcId": "50823-1",
+    "coordinates": [
+      -940162,
+      -556455
+    ]
+  },
+  "1003": {
+    "name": "Old Moon Guild's Carrack",
+    "barterer": "Popo",
+    "npcId": "50824-1",
+    "coordinates": [
+      -864896,
+      -1081480
+    ]
+  },
+  "1004": {
+    "name": "Shipwrecked Ancient Relic Cargo Ship",
+    "barterer": "Atinia",
+    "npcId": "50825-1",
+    "coordinates": [
+      -660737,
+      -799925
+    ]
+  },
+  "1005": {
+    "name": "Cholace Chico's Pirate Union",
+    "barterer": "Cholace Chico",
+    "npcId": "50827-1",
+    "coordinates": [
+      -850719,
+      -890429
+    ]
+  },
+  "1006": {
+    "name": "Wandering Merchant's Ship",
+    "barterer": "Harus",
+    "npcId": "50826-1",
+    "coordinates": [
+      -543161,
+      -1030450
+    ]
+  },
+  "1014": {
+    "name": "Grándiha",
+    "barterer": "Sabnipu",
+    "coordinates": [
+      -559743,
+      476904
+    ]
+  },
+  "1243": {
+    "name": "Dallae Pier",
+    "barterer": "Gangdalpo",
+    "coordinates": [
+      -994803,
+      -1341090
+    ]
+  },
+  "1257": {
+    "name": "Haemo Island",
+    "barterer": "Gangnampo",
+    "coordinates": [
+      -1349680,
+      -1025630
+    ]
+  },
+  "1557": {
+    "name": "Sanctuary Coastal Outpost",
+    "barterer": "Anvanio",
+    "coordinates": [
+      495582,
+      -461518
+    ]
+  }
+}

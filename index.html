@@ -1,0 +1,779 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BDO Bartering Helper</title>
+<link rel="stylesheet" href="static/leaflet.css">
+<style>
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; background: #2b2b2b; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+  
+  #app { display: flex; height: 100%; }
+  
+  #sidebar {
+    width: var(--sidebar-width, 480px);
+    min-width: 280px;
+    max-width: 90vw;
+    background: #1e1e1e;
+    color: #e0e0e0;
+    overflow-y: auto;
+    border-right: 1px solid #444;
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+  }
+  
+  #resize-handle {
+    width: 5px;
+    cursor: col-resize;
+    background: #444;
+    flex-shrink: 0;
+    transition: background 0.15s;
+  }
+  
+  #resize-handle:hover, #resize-handle.active {
+    background: #5a9;
+  }
+  
+  #sidebar-header {
+    padding: 16px;
+    background: #252525;
+    border-bottom: 1px solid #444;
+  }
+  
+  #sidebar-header h1 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+  }
+  
+  #sidebar-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px;
+  }
+  
+  .section {
+    margin-bottom: 20px;
+  }
+  
+  .section-title {
+    font-size: 13px;
+    font-weight: 600;
+    text-transform: uppercase;
+    color: #888;
+    margin-bottom: 10px;
+    letter-spacing: 0.5px;
+  }
+  
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+  
+  th {
+    text-align: left;
+    padding: 8px 6px;
+    background: #2a2a2a;
+    color: #aaa;
+    font-weight: 500;
+    border-bottom: 1px solid #444;
+  }
+  
+  td {
+    padding: 6px;
+    border-bottom: 1px solid #333;
+    vertical-align: top;
+  }
+  
+  .filter-input {
+    width: 100%;
+    padding: 6px 8px;
+    background: #2a2a2a;
+    border: 1px solid #444;
+    border-radius: 4px;
+    color: #e0e0e0;
+    font-size: 12px;
+  }
+  
+  .filter-input:focus {
+    outline: none;
+    border-color: #5a9;
+  }
+  
+  .dropdown-wrapper {
+    position: relative;
+  }
+  
+  .input-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
+  
+  .selected-icon {
+    width: 19px;
+    height: 19px;
+    margin-right: 4px;
+    flex-shrink: 0;
+  }
+  
+  .dropdown-list {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    max-height: 200px;
+    overflow-y: auto;
+    background: #2a2a2a;
+    border: 1px solid #444;
+    border-radius: 0 0 4px 4px;
+    z-index: 100;
+    display: none;
+  }
+  
+  .dropdown-list.show {
+    display: block;
+  }
+  
+  .dropdown-item {
+    padding: 6px 8px;
+    cursor: pointer;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  
+  .dropdown-icon {
+    flex-shrink: 0;
+  }
+  
+  .dropdown-item:hover {
+    background: #3a3a3a;
+  }
+  
+  .dropdown-item.selected {
+    background: #2a5a3a;
+  }
+  
+  .config-row {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+    font-size: 13px;
+  }
+  
+  .config-row label {
+    flex: 1;
+    color: #aaa;
+  }
+  
+  .config-row input[type="number"] {
+    width: 100px;
+    padding: 6px 8px;
+    background: #2a2a2a;
+    border: 1px solid #444;
+    border-radius: 4px;
+    color: #e0e0e0;
+    font-size: 12px;
+  }
+  
+  .config-row input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+  }
+  
+  .region-mapping {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  
+  .region-mapping label {
+    font-size: 12px;
+    color: #aaa;
+  }
+  
+  .region-mapping select {
+    width: 100%;
+    padding: 6px 8px;
+    background: #2a2a2a;
+    border: 1px solid #444;
+    border-radius: 4px;
+    color: #e0e0e0;
+    font-size: 12px;
+  }
+  
+  #calculate-btn {
+    width: 100%;
+    padding: 12px;
+    background: #2a7a4a;
+    border: none;
+    border-radius: 6px;
+    color: white;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 10px;
+  }
+  
+  #calculate-btn:hover {
+    background: #3a8a5a;
+  }
+  
+  #calculate-btn:disabled {
+    background: #444;
+    cursor: not-allowed;
+  }
+  
+  #result {
+    margin-top: 16px;
+    padding: 10px 12px;
+    background: #252525;
+    border-radius: 6px;
+    font-size: 12px;
+    line-height: 1.45;
+    display: none;
+  }
+  
+  #result.show {
+    display: block;
+  }
+  
+  /* Walkthrough formatting styles */
+  #result .count-badge {
+    display: inline-block;
+    padding: 1px 5px;
+    background: #3a3a3a;
+    border: 1px solid #5a9;
+    border-radius: 3px;
+    color: #5a9;
+    font-weight: 600;
+    font-size: 10px;
+    margin-right: 3px;
+  }
+  
+  #result .barter-item {
+    display: inline-block;
+    white-space: nowrap;
+  }
+  
+  #result .region-banner {
+    display: block;
+    margin: 10px 0 6px 0;
+    padding: 5px 12px;
+    background: #2a5a3a;
+    border-radius: 4px;
+    color: #fff;
+    font-weight: 600;
+    font-size: 12px;
+    text-align: center;
+  }
+  
+  /* One card per port/step */
+  #result .port-card {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 5px 0;
+    padding: 8px 10px;
+    background: #2f2f2f;
+    border: 1px solid #555;
+    border-radius: 8px;
+  }
+  
+  #result .port-card:first-child {
+    margin-top: 0;
+  }
+  
+  #result .port-main {
+    flex: 1;
+    min-width: 0;
+  }
+  
+  /* Done / active step states */
+  #result .port-card.done {
+    opacity: 0.45;
+    filter: grayscale(0.8);
+  }
+  
+  #result .port-card.done .step-badge {
+    background: #555;
+  }
+  
+  #result .port-card.active {
+    border-color: #7c5;
+    background: #2f2f2f;
+    box-shadow: 0 0 0 1px rgba(124, 200, 90, 0.35);
+  }
+  
+  #result .port-card.active .step-badge {
+    background: #3a9a5a;
+    box-shadow: 0 0 6px rgba(90, 180, 90, 0.5);
+  }
+  
+  #result .step-done {
+    accent-color: #2a7a4a;
+    cursor: pointer;
+    width: 17px;
+    height: 17px;
+    flex-shrink: 0;
+    margin: 0;
+  }
+  
+  #result .port-header {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-weight: 600;
+    color: #e0e0e0;
+  }
+  
+  #result .port-header .step-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 19px;
+    height: 19px;
+    border-radius: 50%;
+    background: #2a7a4a;
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+  
+  #result .port-header svg {
+    color: #5a9;
+    flex-shrink: 0;
+  }
+  
+  #result .port-actions {
+    margin-top: 4px;
+    padding-left: 25px;
+  }
+  
+  #result .action-line {
+    padding: 1px 0;
+  }
+  
+  #result .action-line svg {
+    color: #888;
+    vertical-align: middle;
+  }
+  
+  #result .action-arrow {
+    display: inline-block;
+    margin: 0 5px;
+    vertical-align: middle;
+  }
+  
+  #result img {
+    vertical-align: middle;
+    margin-right: 3px;
+  }
+  
+  #result .action-badge {
+    display: inline-block;
+    background: linear-gradient(135deg, rgba(168,85,247,0.5), rgba(126,34,206,0.5));
+    color: #fff;
+    padding: 1px 7px;
+    border-radius: 10px;
+    font-size: 0.76rem;
+    font-weight: 600;
+    white-space: nowrap;
+    margin-right: 2px;
+  }
+  
+  .drop-zone {
+    border: 1px dashed #555;
+    border-radius: 6px;
+    padding: 10px;
+    margin-bottom: 8px;
+    cursor: pointer;
+    text-align: center;
+    color: #aaa;
+    font-size: 12px;
+    background: #222;
+    outline: none;
+  }
+  
+  .drop-zone:hover,
+  .drop-zone:focus {
+    border-color: #5a9;
+  }
+  
+  .drop-zone.dragover {
+    border-color: #7c5;
+    background: #2a3a2a;
+  }
+  
+  .drop-list {
+    margin-top: 6px;
+    text-align: left;
+  }
+  
+  .drop-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 2px 0;
+  }
+  
+  .drop-item img {
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+  }
+  
+  .drop-item span {
+    flex: 1;
+    font-size: 11px;
+    color: #ccc;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  
+  .drop-item button {
+    background: none;
+    border: none;
+    color: #c55;
+    cursor: pointer;
+    font-size: 14px;
+    line-height: 1;
+  }
+  
+  .hide-done-toggle {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 10px;
+    font-size: 12px;
+    color: #aaa;
+    cursor: pointer;
+    user-select: none;
+  }
+  
+  .hide-done-toggle input {
+    accent-color: #2a7a4a;
+    cursor: pointer;
+  }
+  
+  /* With "Hide completed steps" on, done cards collapse to their header row so
+     their checkbox stays clickable (clicking it again re-expands / un-hides). */
+  #result.hide-done .port-card.done .port-actions {
+    display: none;
+  }
+  
+  #result.hide-done .port-card.done {
+    opacity: 0.6;
+    filter: grayscale(0.7);
+  }
+  
+  #result.hide-done .port-card.done .port-header {
+    cursor: pointer;
+  }
+  
+  #distance-display {
+    margin-top: 10px;
+    padding: 8px;
+    background: #252525;
+    border-radius: 4px;
+    font-size: 12px;
+    color: #5a9;
+    display: none;
+  }
+  
+  #distance-display.show {
+    display: block;
+  }
+  
+  #map-wrap { flex: 1; position: relative; min-width: 0; }
+  
+  #map { width: 100%; height: 100%; }
+  
+  #info {
+    position: absolute; top: 10px; right: 10px; z-index: 1000;
+    background: rgba(0,0,0,0.7); color: #fff; padding: 6px 10px;
+    font: 12px/1.4 monospace; border-radius: 4px; pointer-events: none;
+  }
+  
+  #map-controls {
+    position: absolute; top: 10px; left: 10px; z-index: 1000;
+    background: rgba(30,30,30,0.92); color: #e0e0e0;
+    padding: 10px 12px; border-radius: 6px; font-size: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.5); max-width: 220px;
+  }
+  #map-controls .mc-title {
+    font-size: 11px; font-weight: 600; text-transform: uppercase;
+    color: #888; margin-bottom: 6px; letter-spacing: 0.5px;
+  }
+  #map-controls label {
+    display: flex; align-items: center; gap: 6px; padding: 2px 0;
+    cursor: pointer; white-space: nowrap;
+  }
+  #map-controls input[type="checkbox"] { margin: 0; cursor: pointer; }
+  #map-controls .mc-dot {
+    width: 10px; height: 10px; border-radius: 50%; display: inline-block;
+    border: 1px solid #111;
+  }
+  #map-controls .mc-dot.t5 { background: #4ade80; }
+  #map-controls .mc-dot.t6 { background: #fbbf24; }
+  #map-controls .mc-dot.t7 { background: #f87171; }
+  #map-controls .mc-dot.other { background: #94a3b8; }
+  #map-controls .mc-route {
+    width: 14px; height: 3px; background: #38bdf8; border-radius: 2px;
+    display: inline-block;
+  }
+  #map-controls .mc-divider { border-top: 1px solid #444; margin: 8px 0; }
+  #map-controls #calibrate-btn {
+    width: 100%; padding: 6px 8px; border: 1px solid #5a9; background: #2a4a5a;
+    color: #fff; border-radius: 4px; cursor: pointer; font-size: 12px;
+  }
+  #map-controls #calibrate-btn:hover { background: #356b80; }
+  #map-controls #calib-status { margin-top: 6px; font-size: 11px; color: #facc15; line-height: 1.4; }
+  #map-controls #calib-details {
+    margin: 4px 0 0; padding: 4px 6px; background: rgba(0,0,0,0.4);
+    border-radius: 4px; font: 10px/1.5 monospace; color: #94a3b8;
+    white-space: pre-wrap; word-break: break-all; display: block;
+  }
+  #map-controls #calib-details:empty { display: none; }
+  
+  .route-num { background: transparent; border: none; }
+  .route-num span {
+    display: flex; align-items: center; justify-content: center;
+    width: 22px; height: 22px; border-radius: 50%;
+    background: #1e3a5f; color: #fff; font: bold 12px/1 sans-serif;
+    border: 2px solid #7dd3fc; box-shadow: 0 1px 3px rgba(0,0,0,0.6);
+  }
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="sidebar">
+    <div id="sidebar-header">
+      <h1>BDO Bartering Helper</h1>
+    </div>
+    <div id="sidebar-content">
+      <div class="section">
+        <div class="section-title">Trade Table (T4 → T5)</div>
+        <table id="trade-table">
+          <thead>
+            <tr>
+              <th>Region</th>
+              <th>T5</th>
+              <th>T4 needed</th>
+              <th>Island</th>
+            </tr>
+          </thead>
+          <tbody id="trade-rows"></tbody>
+        </table>
+      </div>
+      
+      <div class="section">
+        <div class="section-title">Scan Barter Screenshots</div>
+        <div class="drop-zone" id="drop-t4t5" tabindex="0">
+          <div class="drop-hint">T4→T5 screenshots — drag &amp; drop here, click to browse, or Ctrl+V to paste</div>
+          <div class="drop-list" id="drop-t4t5-list"></div>
+          <input type="file" id="scan-t4t5" accept="image/png,image/jpeg" multiple hidden>
+        </div>
+        <div class="drop-zone" id="drop-t5t6" tabindex="0">
+          <div class="drop-hint">T5→T6 screenshot — drag &amp; drop here, click to browse, or Ctrl+V to paste</div>
+          <div class="drop-list" id="drop-t5t6-list"></div>
+          <input type="file" id="scan-t5t6" accept="image/png,image/jpeg" hidden>
+        </div>
+        <div class="drop-zone" id="drop-t6t7" tabindex="0">
+          <div class="drop-hint">T6→T7 screenshot (optional — auto-fills region mapping)</div>
+          <div class="drop-list" id="drop-t6t7-list"></div>
+          <input type="file" id="scan-t6t7" accept="image/png,image/jpeg" hidden>
+        </div>
+        <div class="config-row">
+          <label></label>
+          <button id="scan-btn" type="button">Scan &amp; Fill Table</button>
+        </div>
+      </div>
+      
+      <div class="section">
+        <div class="section-title">T6 → T7 Region Mapping</div>
+        <div class="region-mapping">
+          <div>
+            <label>North →</label>
+            <select id="region-north">
+              <option value="A">A (Sanctuary/Sausan)</option>
+              <option value="B">B (Ilya/Lema)</option>
+              <option value="C" selected>C (Olvia/Epheria)</option>
+            </select>
+          </div>
+          <div>
+            <label>South →</label>
+            <select id="region-south">
+              <option value="A">A (Sanctuary/Sausan)</option>
+              <option value="B" selected>B (Ilya/Lema)</option>
+              <option value="C">C (Olvia/Epheria)</option>
+            </select>
+          </div>
+          <div>
+            <label>East →</label>
+            <select id="region-east">
+              <option value="A" selected>A (Sanctuary/Sausan)</option>
+              <option value="B">B (Ilya/Lema)</option>
+              <option value="C">C (Olvia/Epheria)</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      
+      <div class="section">
+        <div class="section-title">T5 Stock</div>
+        <div class="config-row">
+          <label>Assume T5 stock for all regions</label>
+          <input type="checkbox" id="stock-all">
+        </div>
+      </div>
+      
+      <div class="section">
+        <div class="section-title">Configuration</div>
+        <div class="config-row">
+          <label>Free Ship Weight (lt)</label>
+          <input type="number" id="ship-weight" value="22450" min="0">
+        </div>
+        <div class="config-row">
+          <label>Character Weight Limit (lt)</label>
+          <input type="number" id="char-weight" value="5500" min="0">
+        </div>
+        <div class="config-row">
+          <label>Character Used Weight (lt)</label>
+          <input type="number" id="char-used-weight" value="150" min="0">
+        </div>
+        <div class="config-row">
+          <label>Inventory Weight Juggling</label>
+          <input type="checkbox" id="juggling-toggle" checked>
+        </div>
+      </div>
+      
+      <button id="calculate-btn">Calculate Route</button>
+      
+      <div id="distance-display"></div>
+      
+      <label id="hide-done-toggle" class="hide-done-toggle" style="display:none">
+        <input type="checkbox" id="hide-done">
+        <span>Hide completed steps</span>
+      </label>
+      
+      <div id="result"></div>
+    </div>
+  </div>
+  <div id="resize-handle"></div>
+  
+  <div id="map-wrap">
+    <div id="map"></div>
+    <div id="map-controls">
+      <div class="mc-title">Map layers</div>
+      <label><input type="checkbox" id="tgl-t5" checked> <span class="mc-dot t5"></span> T5 islands</label>
+      <label><input type="checkbox" id="tgl-t6" checked> <span class="mc-dot t6"></span> T6 traders</label>
+      <label><input type="checkbox" id="tgl-t7" checked> <span class="mc-dot t7"></span> T7 ports</label>
+      <label><input type="checkbox" id="tgl-other" checked> <span class="mc-dot other"></span> Other</label>
+      <label><input type="checkbox" id="tgl-route" checked> <span class="mc-route"></span> Route</label>
+      <div class="mc-divider"></div>
+      <button id="calibrate-btn" type="button">Calibrate Map</button>
+      <div id="calib-status"></div>
+      <pre id="calib-details"></pre>
+    </div>
+    <div id="info">zoom 15</div>
+  </div>
+</div>
+
+<script src="static/leaflet.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+<script>
+  const MIN_ZOOM = 0;
+  const MAX_ZOOM = 15;
+
+  const crs = L.extend({}, L.CRS.Simple, {
+    transformation: new L.Transformation(1, 0, 1, 0)
+  });
+
+  const bounds = L.latLngBounds([[0, 0], [0.796875, 0.84375]]);
+
+  const map = L.map('map', {
+    crs: crs,
+    minZoom: MIN_ZOOM,
+    maxZoom: MAX_ZOOM,
+    zoomSnap: 0.5,
+    maxBounds: bounds,
+    maxBoundsViscosity: 0.8,
+    zoomControl: true,
+  });
+
+  const BackgroundLayer = L.TileLayer.extend({
+    getTileUrl: function (coords) {
+      const z = Math.max(0, coords.z - 1);
+      return L.Util.template(this._url, {
+        z: z, x: coords.x, y: coords.y, s: this._getSubdomain(coords)
+      });
+    }
+  });
+
+  const bgLayer = new BackgroundLayer('tiles/{z}/{x}_{y}.webp', {
+    minZoom: MIN_ZOOM,
+    maxZoom: MAX_ZOOM,
+    tileSize: 512,
+    noWrap: true,
+    bounds: bounds,
+    zIndex: 1,
+  }).addTo(map);
+
+  const tileLayer = L.tileLayer('tiles/{z}/{x}_{y}.webp', {
+    minZoom: MIN_ZOOM,
+    maxZoom: MAX_ZOOM,
+    tileSize: 256,
+    noWrap: true,
+    bounds: bounds,
+    updateWhenIdle: true,
+    keepBuffer: 4,
+    zIndex: 2,
+  }).addTo(map);
+
+  map.fitBounds(bounds);
+
+  map.on('zoomend moveend', function () {
+    document.getElementById('info').textContent =
+      'zoom ' + map.getZoom().toFixed(1);
+  });
+  
+  // Sidebar resize handle
+  const resizeHandle = document.getElementById('resize-handle');
+  const sidebar = document.getElementById('sidebar');
+  let isResizing = false;
+  
+  resizeHandle.addEventListener('mousedown', (e) => {
+    isResizing = true;
+    resizeHandle.classList.add('active');
+    document.body.style.cursor = 'col-resize';
+    document.body.style.userSelect = 'none';
+    e.preventDefault();
+  });
+  
+  document.addEventListener('mousemove', (e) => {
+    if (!isResizing) return;
+    const newWidth = Math.max(280, Math.min(e.clientX, window.innerWidth * 0.9));
+    document.documentElement.style.setProperty('--sidebar-width', newWidth + 'px');
+  });
+  
+  document.addEventListener('mouseup', () => {
+    if (isResizing) {
+      isResizing = false;
+      resizeHandle.classList.remove('active');
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+      map.invalidateSize();
+    }
+  });
+</script>
+<script type="module" src="js/app.js"></script>
+</body>
+</html>
