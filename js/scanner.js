@@ -585,14 +585,16 @@ export async function scanImages(images) {
     const mime = img.mime || 'image/png';
     const dataUrl = img.data.startsWith('data:') ? img.data : `data:${mime};base64,${img.data}`;
     let boxes = await ocrBoxes(dataUrl);
-    if (img.type === 't4t5') {
+    // The name column (island / trader / port) is small text the full-image OCR
+    // often garbles, dropping the whole row. Re-OCR the left ~30% and override
+    // the full-image names only when the crop read resolves to a real port for
+    // this screenshot's target tier - a garbage read never displaces a good one.
+    const targetTier = { t4t5: 'level_5', t5t6: 'level_6', t6t7: 'level_7' }[img.type];
+    if (targetTier) {
       try {
         const names = await ocrIslandNames(dataUrl);
         if (names.length) {
-          const islands = portsByTarget(ports, 'level_5');
-          // Merge crop name boxes that belong to the same line, then override
-          // the full-image name only when the crop read resolves to a real
-          // island - a garbage crop read never displaces a good full-image one.
+          const anchors = portsByTarget(ports, targetTier);
           const merged = [];
           for (const n of names.slice().sort((a, b) => a.y0 - b.y0)) {
             const last = merged[merged.length - 1];
@@ -600,7 +602,7 @@ export async function scanImages(images) {
             else merged.push({ ...n });
           }
           for (const n of merged) {
-            const canonical = matchName(n.text, islands);
+            const canonical = matchName(n.text, anchors);
             if (!canonical) continue;
             const cy = (n.y0 + n.y1) / 2;
             const target = boxes.find(b => b.x0 < COL_LEFT && Math.abs((b.y0 + b.y1) / 2 - cy) < ANCHOR_MERGE * 3);
@@ -609,7 +611,7 @@ export async function scanImages(images) {
           }
         }
       } catch (e) {
-        console.warn('Island-name OCR failed, using full-image names:', e);
+        console.warn('Name-column OCR failed, using full-image names:', e);
       }
     }
     if (img.type === 't4t5') t4t5.push(...parseT4t5(boxes, goods, ports));
