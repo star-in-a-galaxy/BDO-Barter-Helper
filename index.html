@@ -960,6 +960,9 @@
   const tileLayer = L.tileLayer('tiles/{z}/{x}_{y}.webp', {
     minZoom: MIN_ZOOM,
     maxZoom: MAX_ZOOM,
+    // Deepest tile level available is tiles/14 (tiles/15 was removed to stay
+    // under Cloudflare's free 20k-file limit). Never request beyond it.
+    maxNativeZoom: MAX_ZOOM - 1,
     tileSize: 256,
     noWrap: true,
     bounds: bounds,
