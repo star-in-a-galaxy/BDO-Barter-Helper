@@ -1,0 +1,109 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500" width="100%" height="100%">
+  <defs>
+    <!-- Rich Deep Core Background (Ensures contrast against gray) -->
+    <radialGradient id="sealCoreGrad" cx="50%" cy="50%" r="55%">
+      <stop offset="0%" stop-color="#0e172a" />
+      <stop offset="70%" stop-color="#070c16" />
+      <stop offset="100%" stop-color="#020408" />
+    </radialGradient>
+
+    <!-- Vibrant Cyan / Aqua -->
+    <linearGradient id="aquaGlow" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#00f7ff" />
+      <stop offset="100%" stop-color="#0088ff" />
+    </linearGradient>
+
+    <!-- Crow Coin Gold -->
+    <linearGradient id="crowGold" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#d97706" />
+      <stop offset="45%" stop-color="#fbbf24" />
+      <stop offset="75%" stop-color="#fef08a" />
+      <stop offset="100%" stop-color="#b45309" />
+    </linearGradient>
+
+    <!-- Rim Light for Outer Frame -->
+    <linearGradient id="borderGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#38bdf8" />
+      <stop offset="40%" stop-color="#1e293b" />
+      <stop offset="70%" stop-color="#f59e0b" />
+      <stop offset="100%" stop-color="#0284c7" />
+    </linearGradient>
+
+    <!-- Strong Outer Drop Shadow for Gray/Light Background Isolation -->
+    <filter id="badgeShadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="12" stdDeviation="16" flood-color="#000000" flood-opacity="0.6"/>
+      <feDropShadow dx="0" dy="2" stdDeviation="4" flood-color="#000000" flood-opacity="0.4"/>
+    </filter>
+
+    <!-- Inner Element Glows -->
+    <filter id="cyanGlow" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="0" stdDeviation="8" flood-color="#00f7ff" flood-opacity="0.5"/>
+    </filter>
+    <filter id="goldGlow" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="0" stdDeviation="7" flood-color="#fbbf24" flood-opacity="0.5"/>
+    </filter>
+  </defs>
+
+  <!-- ================= BADGE BASE (Stands out on any Gray) ================= -->
+  <g filter="url(#badgeShadow)">
+    <!-- Outer Shield / Compass Disc -->
+    <circle cx="250" cy="250" r="215" fill="url(#sealCoreGrad)" stroke="url(#borderGrad)" stroke-width="4" />
+    
+    <!-- Secondary Gold Precision Inset -->
+    <circle cx="250" cy="250" r="200" fill="none" stroke="url(#crowGold)" stroke-width="1.5" stroke-dasharray="4 8" opacity="0.75"/>
+    <circle cx="250" cy="250" r="185" fill="none" stroke="#334155" stroke-width="2" opacity="0.6"/>
+  </g>
+
+  <!-- ================= COMPASS CARDINALS ================= -->
+  <g fill="url(#crowGold)" opacity="0.85" filter="url(#goldGlow)">
+    <polygon points="250,42 255,58 245,58" />
+    <polygon points="250,458 255,442 245,442" />
+    <polygon points="42,250 58,245 58,255" />
+    <polygon points="458,250 442,245 442,255" />
+  </g>
+
+  <!-- ================= BARTER TRADE ARCS ================= -->
+  <!-- Top Right Barter Arc (Ocean Route) -->
+  <path d="M 250,75 A 175,175 0 0,1 425,250" fill="none" stroke="url(#aquaGlow)" stroke-width="12" stroke-linecap="round" filter="url(#cyanGlow)"/>
+  <polygon points="425,270 442,240 408,240" fill="#00f7ff" filter="url(#cyanGlow)"/>
+
+  <!-- Bottom Left Barter Arc (Crow Coins/Goods) -->
+  <path d="M 250,425 A 175,175 0 0,1 75,250" fill="none" stroke="url(#crowGold)" stroke-width="12" stroke-linecap="round" filter="url(#goldGlow)"/>
+  <polygon points="75,230 58,260 92,260" fill="#fbbf24" filter="url(#goldGlow)"/>
+
+  <!-- ================= SHIP & SAILS ================= -->
+  <g transform="translate(0, -5)">
+    <!-- Sea Wake / Foam -->
+    <path d="M 120,335 Q 185,310 250,345 Q 315,310 380,335" fill="none" stroke="#00f7ff" stroke-width="3" stroke-linecap="round" opacity="0.4"/>
+    <path d="M 150,358 Q 200,342 250,365 Q 300,342 350,358" fill="none" stroke="url(#aquaGlow)" stroke-width="4" stroke-linecap="round" opacity="0.85" filter="url(#cyanGlow)"/>
+
+    <!-- Hull Base -->
+    <path d="M 145,310 C 195,355 305,355 355,310 C 320,345 275,358 250,358 C 225,358 180,345 145,310 Z" fill="url(#crowGold)" filter="url(#goldGlow)" />
+    <path d="M 130,290 C 190,345 310,345 370,290 C 325,325 280,336 250,336 C 220,336 175,325 130,290 Z" fill="#0a0f1d" stroke="url(#crowGold)" stroke-width="2.5" />
+
+    <!-- Mast -->
+    <line x1="250" y1="120" x2="250" y2="305" stroke="#020408" stroke-width="7" stroke-linecap="round"/>
+    <line x1="250" y1="120" x2="250" y2="305" stroke="url(#crowGold)" stroke-width="2.5" stroke-linecap="round"/>
+
+    <!-- Topsail -->
+    <path d="M 243,125 Q 190,145 180,185 Q 218,175 243,182 Z" fill="url(#aquaGlow)" opacity="0.9" />
+    <path d="M 257,125 Q 310,145 320,185 Q 282,175 257,182 Z" fill="url(#aquaGlow)" opacity="0.75" />
+
+    <!-- Main Course Sails -->
+    <path d="M 241,138 Q 160,180 150,258 Q 212,240 241,252 Z" fill="url(#aquaGlow)" filter="url(#cyanGlow)" />
+    <path d="M 259,138 Q 340,180 350,258 Q 288,240 259,252 Z" fill="url(#aquaGlow)" opacity="0.8" />
+  </g>
+
+  <!-- ================= CROW EMBLEM & STAR ================= -->
+  <!-- Guiding Polaris Star -->
+  <g transform="translate(250, 92)" filter="url(#goldGlow)">
+    <polygon points="0,-20 6,-6 20,0 6,6 0,20 -6,6 -20,0 -6,-6" fill="url(#crowGold)"/>
+    <circle cx="0" cy="0" r="3.5" fill="#070c16" />
+  </g>
+
+  <!-- Central Tier 5 Trade Node Indicator -->
+  <g transform="translate(250, 275)" filter="url(#goldGlow)">
+    <circle cx="0" cy="0" r="15" fill="#070c16" stroke="url(#crowGold)" stroke-width="3" />
+    <polygon points="0,-7 7,5 -7,5" fill="url(#crowGold)" />
+  </g>
+</svg>
