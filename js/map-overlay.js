@@ -41,6 +41,7 @@ let portMarkers = [];        // { tier, marker, port }
 let routeLayer = null;       // L.layerGroup for the solved route
 let routeSegments = [];      // { step, line, label } per segment
 let activeStep = null;       // current walkthrough step (colors the matching segment)
+let aheadSteps = 1;          // how many steps after the current one to highlight
 let routeVisible = true;
 let lastDrawnStops = null;
 let portsCache = null;
@@ -239,16 +240,22 @@ function polylineMidpoint(line) {
   return latlngs[latlngs.length - 1] || [0, 0];
 }
 
-// Color the route segments for the current walkthrough step plus the next one;
-// gray out everything further ahead.
+// Color the route segments for the current walkthrough step plus `aheadSteps`
+// steps after it; gray out everything further ahead.
 export function setActiveStep(step) {
   activeStep = step;
   applyActiveStep();
 }
 
+// How many steps ahead (after the current one) to highlight on the map.
+export function setAheadSteps(n) {
+  aheadSteps = Math.max(0, Math.floor(n) || 0);
+  applyActiveStep();
+}
+
 function applyActiveStep() {
   routeSegments.forEach(seg => {
-    const on = activeStep != null && seg.step >= activeStep && seg.step <= activeStep + 1;
+    const on = activeStep != null && seg.step >= activeStep && seg.step <= activeStep + aheadSteps;
     seg.line.setStyle({
       color: on ? '#facc15' : '#6b7280',
       weight: on ? 5 : 2.5,

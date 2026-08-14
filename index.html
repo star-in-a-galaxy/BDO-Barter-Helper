@@ -712,6 +712,32 @@
     display: flex; align-items: center; gap: 6px; padding: 2px 0;
     cursor: pointer; white-space: nowrap;
   }
+  #route-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-top: 14px;
+  }
+  #route-toolbar .hide-done-toggle {
+    margin-top: 0;  /* cancel the standalone margin now that it's in the toolbar */
+  }
+  #route-toolbar .steps-ahead-label {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 12px;
+    color: #aaa;
+    white-space: nowrap;
+  }
+  #route-toolbar .steps-ahead-label input {
+    width: 46px;
+    padding: 2px 4px;
+    background: #2a2a2a;
+    border: 1px solid #555;
+    border-radius: 4px;
+    color: #e0e0e0;
+  }
   #map-controls input[type="checkbox"] { margin: 0; cursor: pointer; }
   #map-controls .mc-dot {
     width: 10px; height: 10px; border-radius: 50%; display: inline-block;
@@ -862,10 +888,15 @@
       
       <div id="distance-display"></div>
       
-      <label id="hide-done-toggle" class="hide-done-toggle" style="display:none">
-        <input type="checkbox" id="hide-done">
-        <span>Hide completed steps</span>
-      </label>
+      <div id="route-toolbar" style="display:none">
+        <label id="hide-done-toggle" class="hide-done-toggle">
+          <input type="checkbox" id="hide-done">
+          <span>Hide completed steps</span>
+        </label>
+        <label class="steps-ahead-label" title="How many steps after the current one to highlight on the map">Steps ahead:
+          <input type="number" id="steps-ahead" min="0" max="10" value="1">
+        </label>
+      </div>
       
       <div id="result"></div>
     </div>

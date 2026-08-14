@@ -2,7 +2,7 @@ import { getCatalog } from './catalog.js';
 import { planRoute } from './planner.js';
 import { attachStepCheckboxes, getActiveCard, getInventoryForCard } from './walkthrough.js';
 import { formatInventory } from './inventory.js';
-import { initMapOverlay, drawRoute, clearRoute, setActiveStep } from './map-overlay.js';
+import { initMapOverlay, drawRoute, clearRoute, setActiveStep, setAheadSteps } from './map-overlay.js';
 import { scanImages as clientScan } from './scanner.js';
 
 let catalog = null;
@@ -321,11 +321,11 @@ async function calculateRoute() {
     attachStepCheckboxes(resultDiv);
     updateInventoryPanel();
     
-    const hideDoneToggle = document.getElementById('hide-done-toggle');
+    const routeToolbar = document.getElementById('route-toolbar');
     const hideDoneCheckbox = document.getElementById('hide-done');
-    if (hideDoneToggle && hideDoneCheckbox) {
-      hideDoneToggle.style.display = 'flex';
-      hideDoneCheckbox.checked = false;
+    if (routeToolbar) {
+      routeToolbar.style.display = 'flex';
+      if (hideDoneCheckbox) hideDoneCheckbox.checked = false;
     }
     
     clearRoute();
@@ -800,6 +800,13 @@ async function init() {
     setActiveStep(e.detail && e.detail.step);
     updateInventoryPanel();
   });
+
+  // How many steps ahead to highlight on the map (default 1 = current + next).
+  const stepsAhead = document.getElementById('steps-ahead');
+  if (stepsAhead) {
+    setAheadSteps(parseInt(stepsAhead.value, 10) || 1);
+    stepsAhead.addEventListener('change', () => setAheadSteps(parseInt(stepsAhead.value, 10) || 0));
+  }
 }
 
 // Show the current step's boat/player inventory in the map overlay panel.

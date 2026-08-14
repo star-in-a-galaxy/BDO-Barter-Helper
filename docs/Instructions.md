@@ -94,6 +94,9 @@ through it). The result shows the total distance and a numbered walkthrough.
   color-coded by tier (T5 / T6 / T7).
 
 ## Common questions
+QuestionL **Can I use this for all Barter trades**
+<br>
+Answer: Right now this is only for optimizing T4 → T7 barters as that's where the profit is. You will have to make sure yourself, that your stock stays sufficient.
 
 Question: **"Why does my OCR not work?** 
 <br>
