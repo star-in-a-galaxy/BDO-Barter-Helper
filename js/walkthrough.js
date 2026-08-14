@@ -291,6 +291,31 @@ export function getActiveStep(container) {
   return active ? getStepNumber(active) : null;
 }
 
+// Move to the next walkthrough step by marking the current one done (fires the
+// same change that the checkboxes would).
+export function stepNext(container) {
+  const step = getActiveStep(container);
+  const cards = Array.from(container.querySelectorAll('.port-card'));
+  const card = cards.find(c => getStepNumber(c) === step);
+  const cb = card && card.querySelector('.step-done');
+  if (cb && !cb.checked) {
+    cb.checked = true;
+    cb.dispatchEvent(new Event('change', { bubbles: true }));
+  }
+}
+
+// Move back one step by un-marking the previous one done.
+export function stepPrev(container) {
+  const step = getActiveStep(container);
+  const cards = Array.from(container.querySelectorAll('.port-card'));
+  const card = cards.find(c => getStepNumber(c) === step - 1);
+  const cb = card && card.querySelector('.step-done');
+  if (cb && cb.checked) {
+    cb.checked = false;
+    cb.dispatchEvent(new Event('change', { bubbles: true }));
+  }
+}
+
 function notifyActiveStep(container) {
   container.dispatchEvent(new CustomEvent('activestep', {
     detail: { step: getActiveStep(container) }

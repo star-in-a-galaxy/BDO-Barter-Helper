@@ -576,7 +576,7 @@
   }
   
   #inv-controls {
-    position: absolute; left: 10px; bottom: 10px; z-index: 1000;
+    position: absolute; left: 10px; top: 10px; bottom: auto; z-index: 1000;
     background: rgba(30,30,30,0.92); color: #e0e0e0;
     padding: 10px 12px; border-radius: 6px; font-size: 12px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.5); max-width: 360px;
@@ -596,6 +596,19 @@
   }
   #inv-controls #inv-body .inv-panel {
     margin-top: 0;
+  }
+  #inv-controls .inv-nav {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 6px;
+  }
+  #inv-controls .inv-nav button {
+    flex: 1;
+    padding: 4px 6px;
+  }
+  #inv-controls .inv-nav button:disabled {
+    opacity: 0.4;
+    cursor: default;
   }
   
   .drop-zone {
@@ -933,6 +946,10 @@
     </div>
     <div id="inv-controls" style="display:none">
       <div class="mc-title inv-drag">Player &amp; Boat inventory</div>
+      <div class="inv-nav">
+        <button id="inv-prev" class="btn-flat" type="button">&#9664; Previous</button>
+        <button id="inv-next" class="btn-flat" type="button">Next &#9654;</button>
+      </div>
       <div id="inv-body"></div>
     </div>
     <div id="info">zoom 15</div>

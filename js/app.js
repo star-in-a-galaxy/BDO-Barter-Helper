@@ -1,6 +1,6 @@
 import { getCatalog } from './catalog.js';
 import { planRoute } from './planner.js';
-import { attachStepCheckboxes, getActiveCard, getInventoryForCard } from './walkthrough.js';
+import { attachStepCheckboxes, getActiveCard, getInventoryForCard, stepNext, stepPrev } from './walkthrough.js';
 import { formatInventory } from './inventory.js';
 import { initMapOverlay, drawRoute, clearRoute, setActiveStep, setAheadSteps } from './map-overlay.js';
 import { scanImages as clientScan } from './scanner.js';
@@ -772,6 +772,12 @@ async function init() {
   populateTrades(DEFAULT_TRADES);
   initMapOverlay(map);
   makeDraggable(document.getElementById('inv-controls'));
+  positionInventoryDefault();
+  const invPrev = document.getElementById('inv-prev');
+  const invNext = document.getElementById('inv-next');
+  const resultDivForNav = document.getElementById('result');
+  if (invPrev) invPrev.addEventListener('click', () => stepPrev(resultDivForNav));
+  if (invNext) invNext.addEventListener('click', () => stepNext(resultDivForNav));
   
   document.getElementById('calculate-btn').addEventListener('click', calculateRoute);
   document.getElementById('scan-btn').addEventListener('click', scanScreenshots);
@@ -831,6 +837,27 @@ function updateInventoryPanel() {
     playerUsedWeight: inv.playerUsedWeight
   });
   panel.style.display = '';
+
+  // Enable/disable step navigation based on the current position.
+  const cards = Array.from(document.getElementById('result').querySelectorAll('.port-card'));
+  const idx = cards.indexOf(card);
+  const prevBtn = document.getElementById('inv-prev');
+  const nextBtn = document.getElementById('inv-next');
+  if (prevBtn) prevBtn.disabled = idx <= 0;
+  if (nextBtn) nextBtn.disabled = idx < 0 || idx >= cards.length - 1;
+}
+
+// Place the inventory panel directly below the map-layers panel by default
+// (the user can still drag it elsewhere).
+function positionInventoryDefault() {
+  const panel = document.getElementById('inv-controls');
+  const layers = document.getElementById('map-controls');
+  const wrap = document.getElementById('map-wrap');
+  if (!panel || !layers || !wrap) return;
+  const below = layers.getBoundingClientRect().bottom - wrap.getBoundingClientRect().top + 10;
+  panel.style.top = below + 'px';
+  panel.style.left = '10px';
+  panel.style.bottom = 'auto';
 }
 
 // Let the inventory panel be dragged around the map (drag by its title bar).
