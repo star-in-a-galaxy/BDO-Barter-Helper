@@ -177,7 +177,7 @@ describe('planner', () => {
       // South (table order: Starry, Grandiha)
       expect(byInput['[Level 5] Luxury Patterned Fabric']).toBe('Starry Midnight Port');
       expect(byInput['[Level 5] Portrait of the Ancient']).toBe('Grándiha');
-      // East (table order: Arehaza, Hakoven) — each at its own trader
+      // East (table order: Arehaza, Hakoven) - each at its own trader
       expect(byInput['[Level 5] 102 Year Old Golden Herb']).toBe('Arehaza');
       expect(byInput['[Level 5] Golden Fish Scale']).toBe('Hakoven Island');
     });

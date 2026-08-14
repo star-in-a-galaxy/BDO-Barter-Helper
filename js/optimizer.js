@@ -138,7 +138,7 @@ export function generateAllConfigs(trades, ilyaStock, regionMapping, allStock = 
   const regions = ["east", "north", "south"];
   const activeRegions = regions.filter(r => trades.some(t => t.region.toLowerCase() === r));
   
-  // Full within-region ordering permutations (2 per region per type) — used for
+  // Full within-region ordering permutations (2 per region per type) - used for
   // the no-stock baseline so its quality is unchanged.
   const t6Perms = {};
   const t5Perms = {};
@@ -185,7 +185,7 @@ export function generateAllConfigs(trades, ilyaStock, regionMapping, allStock = 
   };
   
   // Reduced within-region ordering (natural + reverse as a unit) for the
-  // stock-subset configs — bounds the extra search cost while still exploring
+  // stock-subset configs - bounds the extra search cost while still exploring
   // ordering. The no-stock baseline (full ordering) is always included, so the
   // overall result can never be worse than plain no-stock.
   const reducedOptions = {};
@@ -219,7 +219,7 @@ export function generateAllConfigs(trades, ilyaStock, regionMapping, allStock = 
     }
   };
   
-  // No-stock baseline — always generated at full ordering quality
+  // No-stock baseline - always generated at full ordering quality
   for (const chainOrder of permutations(activeRegions)) {
     pushFullOrdering({ useIlyaStock: false, stockRegions: [], chainOrder });
   }
@@ -234,7 +234,7 @@ export function generateAllConfigs(trades, ilyaStock, regionMapping, allStock = 
     availableStockRegions = activeRegions.filter(r => ilyaStock[r]);
   }
   
-  // Explore every non-empty subset of stock usage — one, two, or all regions —
+  // Explore every non-empty subset of stock usage - one, two, or all regions -
   // so Ilya stock is an *option* the optimizer can use wherever it shortens the
   // (zero-sum) route, never a forced constraint.
   for (const stockRegions of subsets(availableStockRegions)) {
@@ -371,7 +371,7 @@ function buildOptimizedRoute(config, trades, regionMapping, shipCapacity = 22450
   
   // Trade a region's T6→T7 sets. With region-based T6 names, trades that share
   // the same "[Level 6] {Region} → [Level 7] {Region}" barter must be spread one
-  // per T7 trader — a port only accepts one 5x set of a given barter line.
+  // per T7 trader - a port only accepts one 5x set of a given barter line.
   const tradeRegionT6toT7 = (regionTrades, t7Traders, regionKey) => {
     const groups = new Map();
     for (const tradeData of regionTrades) {
@@ -702,7 +702,7 @@ function buildJugglingRoute(config, trades, regionMapping, shipCapacity = 22450,
   };
   
   // Swap items between ship and player in one batch (mirrors Simulator swap:
-  // remove from both, then add to both — used for the Lema-style shuffle).
+  // remove from both, then add to both - used for the Lema-style shuffle).
   const swapShipPlayer = (playerToShip, shipToPlayer, location) => {
     for (const item of playerToShip) {
       if ((playerItems[item.name] || 0) < item.count) {
@@ -768,7 +768,7 @@ function buildJugglingRoute(config, trades, regionMapping, shipCapacity = 22450,
     return { success: true };
   };
   
-  // Storage pool tracking for mid-route storage (Epheria or Ilya — the
+  // Storage pool tracking for mid-route storage (Epheria or Ilya - the
   // simulator treats storage as a single pool). Used to return restock T5s to
   // Ilya at the end when they were temporarily stored at Epheria.
   const storedItems = {};
@@ -819,7 +819,7 @@ function buildJugglingRoute(config, trades, regionMapping, shipCapacity = 22450,
   
   // Trade a region's T6→T7 sets. With region-based T6 names, trades that share
   // the same "[Level 6] {Region} → [Level 7] {Region}" barter must be spread one
-  // per T7 trader — a port only accepts one 5x set of a given barter line.
+  // per T7 trader - a port only accepts one 5x set of a given barter line.
   const tradeRegionT6toT7 = (regionTrades, t7Traders, regionKey) => {
     const groups = new Map();
     for (const tradeData of regionTrades) {
@@ -1385,7 +1385,7 @@ function refineRoute(route, actions, trades, shipCapacity, characterBaseWeight, 
   };
 
   // The fixed T6 sailing orders (Hakoven→Arehaza East, Grándiha→Starry South)
-  // are hard constraints — a 2-opt reorder must never put them out of sequence.
+  // are hard constraints - a 2-opt reorder must never put them out of sequence.
   const preservesT6Order = (candidateStops) => {
     for (const traders of Object.values(T6_ORDER)) {
       const seen = [];

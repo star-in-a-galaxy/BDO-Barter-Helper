@@ -32,7 +32,7 @@ function norm(s) {
 }
 
 function namePart(s) {
-  // [Level], [Level 5], level5, etc. — tolerate a missing tier number (tesseract
+  // [Level], [Level 5], level5, etc. - tolerate a missing tier number (tesseract
   // sometimes drops it).
   return norm(s).replace(/\[?\s*level\s*\d*\s*\]?\s*/gi, '').replace(/^\d+/, '');
 }
@@ -205,7 +205,7 @@ function anchorWords(boxes) {
   return merged;
 }
 
-// Rows are defined by the left-column anchor boxes — one row per anchor, no
+// Rows are defined by the left-column anchor boxes - one row per anchor, no
 // assumptions about how many rows a screenshot shows. Each row's items come
 // from the vertical band between consecutive anchors, so item text may sit on
 // any line within the row. The anchor is canonicalized against known names on
@@ -244,7 +244,7 @@ function parseRows(boxes, catalog, opts) {
     };
     // Only T4/T5 items can be genuinely ambiguous (the island doesn't pin down
     // the exact item). T6/T7 are port-specific, so a near-twin there is never a
-    // real choice — no warning is generated for them.
+    // real choice - no warning is generated for them.
     const warnable = (tier) => tier === 'level_4' || tier === 'level_5';
     const warnings = [];
     if (midItem && warnable(opts.midTier)) {
@@ -380,7 +380,7 @@ export function buildTrades(t4t5Rows, t5t6Rows, t6t7Rows, tierPorts) {
         ...(t7Row && t7Row.warnings ? t7Row.warnings.filter(w => w.field === 't7') : [])
       ];
 
-      // T6/T7 are port-specific and never ambiguous — resolve them from the
+      // T6/T7 are port-specific and never ambiguous - resolve them from the
       // port's known items instead of asking the user (only T4/T5 go to modal).
       const resolved = new Set();
       for (const w of warnings) {
@@ -433,7 +433,11 @@ async function getWorker() {
   if (!workerPromise) {
     workerPromise = (async () => {
       const T = await getTesseract();
-      const w = await T.createWorker('eng');
+      // cacheMethod: 'none' - don't write the OCR engine/language data to the
+      // browser's persistent storage (IndexedDB). The worker is reused within a
+      // session, and the browser's HTTP cache may still serve the files on later
+      // visits without re-downloading.
+      const w = await T.createWorker('eng', 1, { cacheMethod: 'none' });
       return w;
     })();
   }
@@ -473,7 +477,7 @@ function tsvToBoxes(tsv) {
 }
 
 // Decode the screenshot (PNG via UPNG.js) in pure JS, upscale to the OCR width
-// and grayscale — no canvas readback, which some browsers block ("no user input
+// and grayscale - no canvas readback, which some browsers block ("no user input
 // detected"). Re-encodes to a PNG Blob (the input format tesseract.js handles
 // reliably), or returns null if decoding failed.
 async function decodePreprocess(dataUrl) {
@@ -588,7 +592,7 @@ export async function scanImages(images) {
           const islands = portsByTarget(ports, 'level_5');
           // Merge crop name boxes that belong to the same line, then override
           // the full-image name only when the crop read resolves to a real
-          // island — a garbage crop read never displaces a good full-image one.
+          // island - a garbage crop read never displaces a good full-image one.
           const merged = [];
           for (const n of names.slice().sort((a, b) => a.y0 - b.y0)) {
             const last = merged[merged.length - 1];

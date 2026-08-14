@@ -8,7 +8,7 @@ export async function planRoute(payload) {
   const regionMapping = payload.region_mapping || { north: "A", south: "B", east: "C" };
   // ilya_stock: true means T5 stock is assumed available for ALL regions;
   // an object (e.g. { east: true }) still works for per-region stock.
-  // A plain `false` (or missing value) means no T5 stock — do NOT fall back
+  // A plain `false` (or missing value) means no T5 stock - do NOT fall back
   // to a default here, otherwise an unticked checkbox would re-enable stock.
   const ilyaStock = payload.ilya_stock === undefined || payload.ilya_stock === null ? false : payload.ilya_stock;
   const allStock = ilyaStock === true;

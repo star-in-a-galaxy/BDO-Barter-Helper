@@ -18,3 +18,4 @@ eng.traineddata
 
 *.md
 !README.md
+!docs/Instructions.md

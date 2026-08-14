@@ -56,7 +56,7 @@ function createFilterDropdown(container, options, initialValue, showIcon = false
   
   function getItemIcon(opt) {
     // Icon paths in the data are absolute ("/assets/icons/..."), which break
-    // under a GitHub Pages repo sub-path — make them relative like the rest of
+    // under a GitHub Pages repo sub-path - make them relative like the rest of
     // the app's asset references.
     return typeof opt === 'object' && opt.icon ? String(opt.icon).replace(/^\//, '') : null;
   }
@@ -414,6 +414,142 @@ function clearTradeTable() {
   });
 }
 
+// --- Usage guide -----------------------------------------------------------
+
+const mdEscape = (s) =>
+  String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+function mdInline(s) {
+  return mdEscape(s)
+    .replace(/`([^`]+)`/g, '<code>$1</code>')
+    .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+    .replace(/\*([^*]+)\*/g, '<em>$1</em>')
+    .replace(/!\[([^\]]*)\]\(([^)]+)\)/g, (_, alt, src) =>
+      `<img class="guide-img" src="${src}" alt="${alt}" loading="lazy" onerror="this.style.display='none'">`)
+    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
+}
+
+// Minimal markdown -> HTML for the usage guide (headings, lists with wrapped
+// continuation lines, code blocks, paragraphs, inline code/bold/images/links).
+function mdToHtml(md) {
+  const blocks = md.split(/\n\s*\n/);
+  const out = [];
+  for (const block of blocks) {
+    const lines = block.split('\n');
+    const first = lines[0].trim();
+    if (first.startsWith('```')) {
+      const body = lines.slice(1);
+      if (body.length && body[body.length - 1].trim() === '```') body.pop();
+      out.push(`<pre><code>${mdEscape(body.join('\n'))}</code></pre>`);
+      continue;
+    }
+    const h = first.match(/^(#{1,6})\s+(.*)$/);
+    if (h) { out.push(`<h${h[1].length}>${mdInline(h[2])}</h${h[1].length}>`); continue; }
+    if (/^\s*([-*]|\d+[.)])\s+/.test(first)) {
+      out.push(mdList(lines));
+      continue;
+    }
+    if (first.startsWith('>')) {
+      out.push(`<blockquote>${mdParagraph(lines.map(l => l.replace(/^\s*>\s?/, '')))}</blockquote>`);
+      continue;
+    }
+    out.push(`<p>${mdParagraph(lines)}</p>`);
+  }
+  return out.join('\n');
+}
+
+// Join text lines with a space, but a line ending in two spaces is a hard
+// line break (rendered as <br>), and a line that is just `<br>` also becomes a
+// line break (e.g. to separate a Question from its Answer).
+function mdParagraph(lines) {
+  let html = '';
+  for (const raw of lines) {
+    const t = raw.trim();
+    if (!t) continue;
+    if (/^<br\s*\/?>$/i.test(t)) { html += '<br>'; continue; }
+    const hard = / {2,}$/.test(raw);
+    const piece = mdInline(t.replace(/ {2,}$/, ''));
+    html += (html && !hard ? ' ' : '') + piece + (hard ? '<br>' : '');
+  }
+  return html;
+}
+
+// Render a list block, honoring indentation so nested bullets become nested
+// <ul>/<ol>. Continuation lines (not starting with a bullet) wrap onto the
+// previous item's text; a line ending in two spaces forces a <br>.
+function mdList(lines) {
+  const nodes = [];
+  for (const raw of lines) {
+    const m = raw.match(/^(\s*)([-*]|\d+[.)])\s+(.*)$/);
+    if (m) {
+      const content = m[3];
+      const hard = / {2,}$/.test(content);
+      nodes.push({
+        indent: m[1].replace(/\t/g, '  ').length,
+        ordered: /^\d/.test(m[2]),
+        html: mdInline(content.replace(/ {2,}$/, '')) + (hard ? '<br>' : ''),
+        children: []
+      });
+    } else if (raw.trim() && nodes.length) {
+      const t = raw.trim();
+      if (/^<br\s*\/?>$/i.test(t)) {
+        nodes[nodes.length - 1].html += '<br>';
+        continue;
+      }
+      const hard = / {2,}$/.test(raw);
+      const piece = mdInline(t.replace(/ {2,}$/, ''));
+      const node = nodes[nodes.length - 1];
+      node.html += (hard ? '' : ' ') + piece + (hard ? '<br>' : '');
+    }
+  }
+  const root = { children: [] };
+  const stack = [{ indent: -1, children: root.children }];
+  for (const node of nodes) {
+    while (stack.length > 1 && node.indent <= stack[stack.length - 1].indent) stack.pop();
+    stack[stack.length - 1].children.push(node);
+    stack.push(node);
+  }
+  const render = (children) => {
+    if (!children.length) return '';
+    let html = '';
+    for (let i = 0; i < children.length;) {
+      const type = children[i].ordered;
+      let j = i;
+      while (j < children.length && children[j].ordered === type) j++;
+      html += `<${type ? 'ol' : 'ul'}>`;
+      for (let k = i; k < j; k++) {
+        html += `<li>${children[k].html}${render(children[k].children)}</li>`;
+      }
+      html += `</${type ? 'ol' : 'ul'}>`;
+      i = j;
+    }
+    return html;
+  };
+  return render(root.children);
+}
+
+function setupGuideModal() {
+  const btn = document.getElementById('usage-guide-btn');
+  const modal = document.getElementById('guide-modal');
+  const closeBtn = document.getElementById('guide-close');
+  const body = document.getElementById('guide-body');
+  if (!btn || !modal || !closeBtn || !body) return;
+
+  const close = () => { modal.style.display = 'none'; };
+  btn.addEventListener('click', async () => {
+    try {
+      const res = await fetch('docs/Instructions.md');
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      body.innerHTML = mdToHtml(await res.text());
+    } catch (e) {
+      body.innerHTML = '<p>Could not load the usage guide (docs/Instructions.md).</p>';
+    }
+    modal.style.display = 'flex';
+  });
+  closeBtn.addEventListener('click', close);
+  modal.addEventListener('click', (e) => { if (e.target === modal) close(); });
+}
+
 function renderScanList(type) {
   const list = document.getElementById(`drop-${type}-list`);
   if (!list) return;
@@ -597,7 +733,7 @@ async function scanScreenshots() {
   btn.disabled = true;
   btn.textContent = 'Scanning…';
   try {
-    // In-browser OCR (tesseract.js) only — the same path as GitHub Pages.
+    // In-browser OCR (tesseract.js) only - the same path as GitHub Pages.
     const result = await clientScan(images);
     if (result.error) {
       alert('Scan failed: ' + result.error);
@@ -641,6 +777,7 @@ async function init() {
   document.getElementById('scan-btn').addEventListener('click', scanScreenshots);
   document.getElementById('clear-scan-btn').addEventListener('click', clearScreenshots);
   document.getElementById('clear-table-btn').addEventListener('click', clearTradeTable);
+  setupGuideModal();
   setupDropZone('t4t5');
   setupDropZone('t5t6');
   setupDropZone('t6t7');

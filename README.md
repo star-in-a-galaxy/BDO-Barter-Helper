@@ -19,7 +19,7 @@ A web-based tool to optimize Black Desert Online bartering routes, with screensh
 The app is a static site. Serve it locally:
 
 ```bash
-# Python 3 (recommended — also serves the map tiles)
+# Python 3 (recommended - also serves the map tiles)
 python serve.py
 
 # Or any static server
@@ -30,7 +30,7 @@ npm run serve
 
 Then open http://localhost:8000
 
-Scanning runs entirely in the browser (tesseract.js from a CDN), the same on local and GitHub Pages — no server-side OCR.
+Scanning runs entirely in the browser (tesseract.js from a CDN), the same on local and GitHub Pages - no server-side OCR.
 
 ### Running tests
 

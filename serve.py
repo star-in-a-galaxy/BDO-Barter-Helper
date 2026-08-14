@@ -29,7 +29,14 @@ class Handler(http.server.BaseHTTPRequestHandler):
             content_type = mimetypes.guess_type(full_path)[0] or "application/octet-stream"
             self.serve_file(full_path, content_type)
         else:
-            self.send_error(404)
+            # Generic fallback: serve any file under the project root
+            # (Instructions.md, verify/ screenshots, etc.)
+            full_path = os.path.join(ROOT, path.lstrip("/"))
+            if os.path.isfile(full_path):
+                content_type = mimetypes.guess_type(full_path)[0] or "application/octet-stream"
+                self.serve_file(full_path, content_type)
+            else:
+                self.send_error(404)
 
     def serve_tile(self, path):
         # Request: /tiles/{z}/{x}_{y}.webp
@@ -50,6 +57,11 @@ class Handler(http.server.BaseHTTPRequestHandler):
         if not os.path.isfile(full_path):
             self.send_error(404)
             return
+        # Text content is UTF-8; without an explicit charset some clients
+        # mis-detect it (e.g. Instructions.md with arrows/accents).
+        if content_type and (content_type.startswith("text/") or content_type in
+                             ("application/json", "application/javascript", "image/svg+xml")):
+            content_type += "; charset=utf-8"
         size = os.path.getsize(full_path)
         self.send_response(200)
         self.send_header("Content-Type", content_type)

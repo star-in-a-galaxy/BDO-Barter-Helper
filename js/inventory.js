@@ -113,7 +113,7 @@ export function formatInventory(before, after, swapped, opts = {}) {
       if (max > 0 && used > max) {
         extra = ` <span class="inv-overweight">(overweight ${Math.round((used / max) * 100)}%)</span>`;
       }
-      wt = ` — <span class="inv-weight">${used.toLocaleString()}/${max.toLocaleString()}lt</span>${extra}`;
+      wt = ` - <span class="inv-weight">${used.toLocaleString()}/${max.toLocaleString()}lt</span>${extra}`;
     }
     let line = `${fmt(a)}${wt}`;
     if (swapped) {
