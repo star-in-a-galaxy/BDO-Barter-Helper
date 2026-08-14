@@ -371,7 +371,11 @@ export function buildTrades(t4t5Rows, t5t6Rows, t6t7Rows, tierPorts) {
         t4: r.t4,
         island: r.island,
         t6: m.t6,
-        t7: m.t6 ? t6toT7[norm(m.t6)] : null
+        t7: m.t6 ? t6toT7[norm(m.t6)] : null,
+        // The specific T7 port that actually offers this T6→T7 trade (from the
+        // T6→T7 screenshot) - the optimizer must barter/sell there, not at an
+        // arbitrary port of the mapped region.
+        t7Port: t7Row ? t7Row.port : null
       };
 
       const warnings = [

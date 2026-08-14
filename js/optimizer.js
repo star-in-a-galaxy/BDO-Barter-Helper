@@ -384,7 +384,7 @@ function buildOptimizedRoute(config, trades, regionMapping, shipCapacity = 22450
         return fail(`Not enough T7 traders to run ${tradesGroup.length} identical ${t6Item} barters in ${regionKey}`);
       }
       for (let i = 0; i < tradesGroup.length; i++) {
-        const t7Loc = t7Traders[i];
+        const t7Loc = tradesGroup[i].t7Port || t7Traders[i];
         goTo(t7Loc);
         const tradeResult = trade(t6Item, t7Name(tradesGroup[i]), 5, t7Loc, regionKey);
         if (!tradeResult.success) return tradeResult;
@@ -448,7 +448,7 @@ function buildOptimizedRoute(config, trades, regionMapping, shipCapacity = 22450
         if (!t5t6Result.success) return t5t6Result;
         
         const t7Item = t7Name(tradeData);
-        const t7Loc = t7Traders[i];
+        const t7Loc = tradeData.t7Port || t7Traders[i];
         if (!t7Loc) {
           return fail(`No T7 trader for ${regionKey} trade ${i + 1}`);
         }
@@ -456,10 +456,11 @@ function buildOptimizedRoute(config, trades, regionMapping, shipCapacity = 22450
         const t6t7Result = trade(t6Item, t7Item, 5, t7Loc, regionKey);
         if (!t6t7Result.success) return t6t7Result;
         
-        goTo(t7SellLoc);
-        const moveResult = moveToPlayer([{ name: t7Item, count: 5 }], t7SellLoc);
+        const sellLoc = tradeData.t7Port || t7SellLoc;
+        goTo(sellLoc);
+        const moveResult = moveToPlayer([{ name: t7Item, count: 5 }], sellLoc);
         if (!moveResult.success) return moveResult;
-        const sellResult = sell([{ name: t7Item, count: 5 }], t7SellLoc);
+        const sellResult = sell([{ name: t7Item, count: 5 }], sellLoc);
         if (!sellResult.success) return sellResult;
       }
       return { success: true };
@@ -508,12 +509,13 @@ function buildOptimizedRoute(config, trades, regionMapping, shipCapacity = 22450
     
     // Sell T7: stage each 5x stack to the player, then sell it immediately.
     // Selling one stack at a time keeps the player inventory within threshold.
-    const t7Items = regionTrades.map(t => t7Name(t));
-    goTo(t7SellLoc);
-    for (const t7Item of t7Items) {
-      const moveResult = moveToPlayer([{ name: t7Item, count: 5 }], t7SellLoc);
+    for (const tradeData of regionTrades) {
+      const sellLoc = tradeData.t7Port || t7SellLoc;
+      goTo(sellLoc);
+      const t7Item = t7Name(tradeData);
+      const moveResult = moveToPlayer([{ name: t7Item, count: 5 }], sellLoc);
       if (!moveResult.success) return moveResult;
-      const sellResult = sell([{ name: t7Item, count: 5 }], t7SellLoc);
+      const sellResult = sell([{ name: t7Item, count: 5 }], sellLoc);
       if (!sellResult.success) return sellResult;
     }
     
@@ -806,12 +808,13 @@ function buildJugglingRoute(config, trades, regionMapping, shipCapacity = 22450,
   // Sell a region's T7s. The player may already hold other regions' T5s, so
   // each 5x T7 stack is staged to the player only while below the threshold.
   const sellT7s = (regionTrades, regionKey, t7SellLoc) => {
-    goTo(t7SellLoc);
     for (const tradeData of regionTrades) {
+      const sellLoc = tradeData.t7Port || t7SellLoc;
+      goTo(sellLoc);
       const t7Item = t7Name(tradeData);
-      const moveResult = moveToPlayer([{ name: t7Item, count: 5 }], t7SellLoc);
+      const moveResult = moveToPlayer([{ name: t7Item, count: 5 }], sellLoc);
       if (!moveResult.success) return moveResult;
-      const sellResult = sell([{ name: t7Item, count: 5 }], t7SellLoc);
+      const sellResult = sell([{ name: t7Item, count: 5 }], sellLoc);
       if (!sellResult.success) return sellResult;
     }
     return { success: true };
@@ -832,7 +835,7 @@ function buildJugglingRoute(config, trades, regionMapping, shipCapacity = 22450,
         return fail(`Not enough T7 traders to run ${tradesGroup.length} identical ${t6Item} barters in ${regionKey}`);
       }
       for (let i = 0; i < tradesGroup.length; i++) {
-        const t7Loc = t7Traders[i];
+        const t7Loc = tradesGroup[i].t7Port || t7Traders[i];
         goTo(t7Loc);
         const tradeResult = trade(t6Item, t7Name(tradesGroup[i]), 5, t7Loc, regionKey);
         if (!tradeResult.success) return tradeResult;
@@ -895,7 +898,7 @@ function buildJugglingRoute(config, trades, regionMapping, shipCapacity = 22450,
         if (!t5t6Result.success) return t5t6Result;
         
         const t7Item = t7Name(tradeData);
-        const t7Loc = t7Traders[i];
+        const t7Loc = tradeData.t7Port || t7Traders[i];
         if (!t7Loc) {
           return fail(`No T7 trader for ${regionKey} trade ${i + 1}`);
         }
