@@ -834,7 +834,8 @@ function updateInventoryPanel() {
   body.innerHTML = formatInventory(inv.before, inv.after, inv.swapped, {
     shipMax: inv.shipMax,
     playerMax: inv.playerMax,
-    playerUsedWeight: inv.playerUsedWeight
+    playerUsedWeight: inv.playerUsedWeight,
+    playerWeightLimit: inv.playerWeightLimit
   });
   panel.style.display = '';
 

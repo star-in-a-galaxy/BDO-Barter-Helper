@@ -236,7 +236,7 @@ export function generateWalkthrough(actions, opts = {}) {
 
     const after = inv.snapshot();
     const enc = (o) => JSON.stringify(o).replace(/"/g, '&quot;');
-    steps.push(`<div class="port-card" data-inv-ship="${enc(after.ship)}" data-inv-player="${enc(after.player)}" data-inv-ship-before="${enc(before.ship)}" data-inv-player-before="${enc(before.player)}" data-inv-swapped="${swapped ? 1 : 0}" data-inv-ship-max="${opts.shipMax ?? ''}" data-inv-player-max="${opts.playerMax ?? ''}" data-inv-player-used="${opts.playerUsedWeight ?? ''}">`);
+    steps.push(`<div class="port-card" data-inv-ship="${enc(after.ship)}" data-inv-player="${enc(after.player)}" data-inv-ship-before="${enc(before.ship)}" data-inv-player-before="${enc(before.player)}" data-inv-swapped="${swapped ? 1 : 0}" data-inv-ship-max="${opts.shipMax ?? ''}" data-inv-player-max="${opts.playerMax ?? ''}" data-inv-player-used="${opts.playerUsedWeight ?? ''}" data-inv-player-limit="${opts.playerWeightLimit ?? ''}">`);
     steps.push(...inner);
     steps.push(`<input type="checkbox" class="step-done" aria-label="Mark step ${stepNum} done">`);
     steps.push(`</div>`);
@@ -274,7 +274,8 @@ export function getInventoryForCard(card) {
     swapped: d.invSwapped === '1',
     shipMax: parseFloat(d.invShipMax),
     playerMax: parseFloat(d.invPlayerMax),
-    playerUsedWeight: parseFloat(d.invPlayerUsed)
+    playerUsedWeight: parseFloat(d.invPlayerUsed),
+    playerWeightLimit: parseFloat(d.invPlayerLimit)
   };
 }
 

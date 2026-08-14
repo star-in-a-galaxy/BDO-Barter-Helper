@@ -341,7 +341,8 @@ export async function planRoute(payload) {
   const walkthroughText = generateWalkthrough(validatedActions, {
     shipMax: config.ship_weight,
     playerMax: (config.char_weight * 1.7) - (config.char_used_weight || 150),
-    playerUsedWeight: config.char_used_weight || 150
+    playerUsedWeight: config.char_used_weight || 150,
+    playerWeightLimit: config.char_weight
   });
 
   // Ordered route stops with step numbers matching the walkthrough: consecutive

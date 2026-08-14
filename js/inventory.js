@@ -91,7 +91,9 @@ export function formatInventory(before, after, swapped, opts = {}) {
     Object.entries(items).reduce((sum, [name, c]) => sum + c * itemLt(name), 0);
   const fmt = (items) => {
     const entries = Object.entries(items).filter(([, c]) => c > 0).sort(([a], [b]) => a.localeCompare(b));
-    return entries.length ? entries.map(([name, c]) => formatItemWithIcon(name, c)).join(', ') : '<span class="inv-empty">empty</span>';
+    if (!entries.length) return '<span class="inv-empty">empty</span>';
+    // One row per item so each entry is easy to read at a glance.
+    return entries.map(([name, c]) => `<div class="inv-item">${formatItemWithIcon(name, c)}</div>`).join('');
   };
   // Items that decreased or disappeared between before and after (with the delta).
   const removed = (b, a) => {
@@ -102,27 +104,27 @@ export function formatInventory(before, after, swapped, opts = {}) {
     }
     return out;
   };
-  const row = (icon, label, b, a, maxKey) => {
-    // Player weight = item weight + character's base used weight (equipment).
-    const base = maxKey === 'playerMax' ? (opts.playerUsedWeight || 0) : 0;
+  const block = (icon, label, b, a, base, limit) => {
+    // For the player, `base` is the character's used weight (equipment) and
+    // `limit` is the character weight limit; overweight is shown when the total
+    // exceeds that limit.
     const used = lt(a) + base;
-    const max = opts[maxKey];
     let wt = '';
-    if (typeof max === 'number') {
+    if (typeof limit === 'number') {
       let extra = '';
-      if (max > 0 && used > max) {
-        extra = ` <span class="inv-overweight">(overweight ${Math.round((used / max) * 100)}%)</span>`;
+      if (limit > 0 && used > limit) {
+        extra = ` <span class="inv-overweight">(overweight ${Math.round((used / limit) * 100)}%)</span>`;
       }
-      wt = ` - <span class="inv-weight">${used.toLocaleString()}/${max.toLocaleString()}lt</span>${extra}`;
+      wt = `<span class="inv-weight">${used.toLocaleString()}/${limit.toLocaleString()}lt</span>${extra}`;
     }
-    let line = `${fmt(a)}${wt}`;
+    let items = fmt(a);
     if (swapped) {
       const gone = removed(b, a);
       if (Object.keys(gone).length) {
-        line = `<span class="inv-before">${fmt(gone)}</span> <span class="action-arrow">${ICONS.arrow}</span> ${fmt(a)}${wt}`;
+        items = `<div class="inv-before">${fmt(gone)}</div><div class="inv-arrow">${ICONS.arrow}</div>${fmt(a)}`;
       }
     }
-    return `<div class="inv-row">${icon} <span class="inv-label">${label}:</span> ${line}</div>`;
+    return `<div class="inv-block"><div class="inv-row">${icon} <span class="inv-label">${label}</span>${wt ? ` <span class="inv-sep">-</span> ${wt}` : ''}</div><div class="inv-items">${items}</div></div>`;
   };
-  return `<div class="inv-panel">${row(ICONS.boat, 'Boat', before.ship, after.ship, 'shipMax')}${row(ICONS.player, 'Player', before.player, after.player, 'playerMax')}</div>`;
+  return `<div class="inv-panel">${block(ICONS.boat, 'Boat', before.ship, after.ship, 0, opts.shipMax)}${block(ICONS.player, 'Player', before.player, after.player, opts.playerUsedWeight || 0, opts.playerWeightLimit ?? opts.playerMax)}</div>`;
 }
