@@ -1,0 +1,13 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "bdo-barter-helper",
+  "compatibility_date": "2026-08-01",
+  // Build the deployable site (minified JS) into dist/ before deploying.
+  "build": {
+    "command": "npm install && npm run build"
+  },
+  "assets": {
+    "directory": "./dist",
+    "not_found_handling": "404-page"
+  }
+}

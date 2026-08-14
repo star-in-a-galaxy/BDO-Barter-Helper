@@ -6,6 +6,9 @@ __pycache__/
 # Node
 node_modules/
 
+# Build output
+dist/
+
 # macOS
 .DS_Store
 

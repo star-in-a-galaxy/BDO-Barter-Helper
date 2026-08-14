@@ -5,10 +5,12 @@
   "type": "module",
   "scripts": {
     "serve": "python serve.py",
+    "build": "node build.mjs",
     "test": "vitest",
     "test:run": "vitest run"
   },
   "devDependencies": {
+    "terser": "^5.50.0",
     "vitest": "^1.6.0"
   },
   "dependencies": {
