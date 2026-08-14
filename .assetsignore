@@ -1,0 +1,11 @@
+# Cloudflare Workers static assets: never upload dev/build artifacts as site assets.
+node_modules/
+.venv/
+__pycache__/
+
+# Not part of the static site
+tests/
+verify/
+others/
+serve.py
+*.pyc
