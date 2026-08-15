@@ -121,4 +121,32 @@ describe('T7 barter location', () => {
     const between = r.slice(Math.min(iO, iE) + 1, Math.max(iO, iE));
     expect(between.includes('Iliya Island')).toBe(false);
   });
+
+  it('never swaps ship↔player outside swap-capable ports', async () => {
+    // East uses Ilya T5 stock, so the combined single-stock sweep is attempted
+    // and performs its swap at the current location - which must be a swap port
+    // (Iliya / Lema / Kuit / T6 trader / T7 trader), never a remote T4→T5 island.
+    const trades = [
+      { region: 'North', chain: 'North - Dallae Pier', t5: '[Level 5] Octagonal Box', t4: '[Level 4] Stolen Pirate Dagger', island: 'Ajir Island' },
+      { region: 'North', chain: 'North - Haemo Island', t5: '[Level 5] Mysterious Rock', t4: "[Level 4] Marine Knights' Helm", island: 'Baremi Island' },
+      { region: 'South', chain: 'South - Starry Midnight Port', t5: '[Level 5] Luxury Patterned Fabric', t4: "[Level 4] Pirate's Key", island: 'Orffs Island' },
+      { region: 'South', chain: 'South - Grandiha', t5: '[Level 5] Portrait of the Ancient', t4: '[Level 4] Headless Dragon Figurine', island: 'Narvo Island' },
+      { region: 'East', chain: 'East - Arehaza', t5: '[Level 5] 102 Year Old Golden Herb', t4: '[Level 4] Panacea', island: 'Padix Island' },
+      { region: 'East', chain: 'East - Hakoven Island', t5: '[Level 5] Golden Fish Scale', t4: '[Level 4] Seashell Deco', island: 'Oben Island' }
+    ];
+
+    const allowed = new Set([
+      'Iliya Island', 'Lema Island', 'Kuit Islands',
+      'Haemo Island', 'Dallae Pier', 'Grándiha', 'Starry Midnight Port', 'Hakoven Island', 'Arehaza',
+      'Olvia Coast', 'Epheria Sentry Post', 'Sanctuary Coastal Outpost', 'Sausan Garrison Wharf'
+    ]);
+
+    const result = await optimizeRoute(trades, { north: 'A', south: 'B', east: 'C' }, { east: true }, 22450, 5000, 150, true, false);
+    expect(result.error).toBeUndefined();
+    for (const a of result.actions) {
+      if (a.action === 'swap') {
+        expect(allowed.has(a.location)).toBe(true);
+      }
+    }
+  });
 });

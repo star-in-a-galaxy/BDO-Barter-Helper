@@ -1248,6 +1248,31 @@ function buildJugglingRoute(config, trades, regionMapping, shipCapacity = 22450,
     const swapTargetRegion = nonStockRegions[0];
     const swapTargetT5Names = new Set(trades.filter(t => t.region.toLowerCase() === swapTargetRegion).map(t => t.t5));
     
+    // Ship↔player swaps can only happen at Iliya, Lema, Kuit Islands and the
+    // T5→T6 / T6→T7 trader ports - never at a remote T4→T5 island. Kuit Islands
+    // is always available as a juggle (swap) port even though the route never
+    // naturally sails there; the scoring decides whether hopping to it is worth
+    // it for the combined sweep.
+    const swapPorts = new Set(["Iliya Island", "Lema Island", "Kuit Islands"]);
+    for (const region of ["east", "north", "south"]) {
+      for (const p of (t6Orders[region] || [])) swapPorts.add(p);
+      for (const p of (t7Orders[region] || [])) swapPorts.add(p);
+    }
+    const stockIslandNames = sIslands.length ? sIslands : sTrades.map(t => t.island);
+    const bestSwapPort = () => {
+      // Pick the swap port that keeps the combined trip shortest: close to the
+      // current location and close to the stock region's islands (so the
+      // restock T4s travel as little as possible to their barter islands).
+      let best = null, bestScore = Infinity;
+      for (const p of swapPorts) {
+        const dCur = getDistance(currentLocation, p, ports);
+        const dStock = stockIslandNames.reduce((m, is) => Math.min(m, getDistance(p, is, ports)), Infinity);
+        const score = dCur + dStock;
+        if (score < bestScore) { bestScore = score; best = p; }
+      }
+      return best;
+    };
+    
     const combinedFlow = () => {
       goTo("Iliya Island");
       const loadResult = loadShip(nonStockTrades.map(t => ({ name: t.t4, count: 5 })), "Iliya Island");
@@ -1289,7 +1314,13 @@ function buildJugglingRoute(config, trades, regionMapping, shipCapacity = 22450,
       if (outWeight < sT4Weight) {
         return fail(`Cannot sweep ${sRegion}: not enough non-stock T5s to swap for restock T4s`);
       }
-      const swapResult = swapShipPlayer(sT4Items, swapOutItems, currentLocation);
+      // The swap must happen at a swap-capable port, so sail to the best one.
+      const swapLoc = bestSwapPort();
+      if (!swapLoc) {
+        return fail(`Cannot sweep ${sRegion}: no swap-capable port reachable`);
+      }
+      goTo(swapLoc);
+      const swapResult = swapShipPlayer(sT4Items, swapOutItems, swapLoc);
       if (!swapResult.success) return swapResult;
       
       // S restock islands (nearest-first)
