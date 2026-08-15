@@ -1091,24 +1091,31 @@ function buildJugglingRoute(config, trades, regionMapping, shipCapacity = 22450,
   // Combined Iliya-overstack handoff. When region A is the last region of a
   // non-stock batch group and another batch group B follows, detour to Iliya
   // after A's T5→T6: overstack A's last T6 stack into the player (only one T6
-  // stack fits the player), load B's T4s into the freed space, then run A's
-  // T6→T7 + sell interleaved with B's island T4→T5 sweep. This avoids a
-  // separate return trip to Iliya to load B's T4s. Only handles A with exactly
-  // two T6s (the player can overstack a single stack).
+  // stack fits the player; with a single trade the T6 stays on the ship), load
+  // B's T4s into the freed space, then run A's T6→T7 + sell interleaved with
+  // B's island T4→T5 sweep. This avoids a separate return trip to Iliya to load
+  // B's T4s.
   const processOverstackHandoff = (A, A_trades, B_regions, B_trades) => {
     const regionKey = A.charAt(0).toUpperCase() + A.slice(1);
     const t6Traders = t6Orders[A] || [];
     const t7Traders = t7Orders[A] || [];
     if (t6Traders.length === 0 || t7Traders.length === 0) return fail(`No traders for ${regionKey}`);
-    if (A_trades.length !== 2) return fail(`Overstack handoff for ${regionKey} requires exactly 2 trades`);
+    if (A_trades.length < 1) return fail(`Overstack handoff for ${regionKey} needs at least one trade`);
+    
+    // The player can overstack a single T6 stack (1000lt below the threshold is
+    // still accepted). With ≥2 trades, move the last one to the player to free
+    // space for B's T4s; with a single trade the T6 stays on the ship.
+    const overstacked = A_trades.length >= 2 ? 1 : 0;
     const bT4Weight = B_trades.length * 5 * 1000;
-    if (10000 + bT4Weight > shipCapacity) return fail(`Overstack handoff for ${regionKey}: ship can't hold B T4s alongside the remaining T6`);
+    if ((A_trades.length - overstacked) * 10000 + bT4Weight > shipCapacity) {
+      return fail(`Overstack handoff for ${regionKey}: ship can't hold B T4s alongside the remaining T6s`);
+    }
     
     const prep = prepareRegionChain(A, A_trades, regionKey, t6Traders);
     if (!prep.success) return prep;
     // The player must be empty after retrieving A's T5s so it can accept the
     // overstacked T6 stack.
-    if (playerWeight() !== 0) return fail(`Overstack handoff for ${regionKey}: player inventory not empty`);
+    if (overstacked > 0 && playerWeight() !== 0) return fail(`Overstack handoff for ${regionKey}: player inventory not empty`);
     
     for (const trader of t6Traders) {
       const key = nameKey(trader);
@@ -1119,13 +1126,15 @@ function buildJugglingRoute(config, trades, regionMapping, shipCapacity = 22450,
       if (!tradeResult.success) return tradeResult;
     }
     
-    // Detour to Iliya: overstack A's last T6, load B's T4s.
-    const lastA = A_trades[A_trades.length - 1];
-    const lastT6 = t6Name(lastA);
-    const onBoatA = A_trades.filter(t => t6Name(t) !== lastT6);
+    // Detour to Iliya: overstack A's last T6 (if any), load B's T4s.
+    const lastA = overstacked > 0 ? A_trades[A_trades.length - 1] : null;
+    const lastT6 = lastA ? t6Name(lastA) : null;
+    const onBoatA = lastA ? A_trades.filter(t => t6Name(t) !== lastT6) : A_trades;
     goTo("Iliya Island");
-    const overResult = moveToPlayer([{ name: lastT6, count: 5 }], "Iliya Island");
-    if (!overResult.success) return overResult;
+    if (lastA) {
+      const overResult = moveToPlayer([{ name: lastT6, count: 5 }], "Iliya Island");
+      if (!overResult.success) return overResult;
+    }
     const loadResult = loadShip(B_trades.map(t => ({ name: t.t4, count: 5 })), "Iliya Island");
     if (!loadResult.success) return loadResult;
     
@@ -1152,15 +1161,17 @@ function buildJugglingRoute(config, trades, regionMapping, shipCapacity = 22450,
     const sweepResult = sweepIslands(bSweep);
     if (!sweepResult.success) return sweepResult;
     
-    // Barter the overstacked A T6 at its port and sell.
-    const lastLoc = lastA.t7Port || t7Traders[onBoatA.length];
-    goTo(lastLoc);
-    const backResult = moveToShip([{ name: lastT6, count: 5 }], lastLoc);
-    if (!backResult.success) return backResult;
-    const barterResult = trade(lastT6, t7Name(lastA), 5, lastLoc, regionKey);
-    if (!barterResult.success) return barterResult;
-    const sellResult = sellShip([{ name: t7Name(lastA), count: 5 }], lastLoc);
-    if (!sellResult.success) return sellResult;
+    // Barter the overstacked A T6 (if any) at its port and sell.
+    if (lastA) {
+      const lastLoc = lastA.t7Port || t7Traders[onBoatA.length];
+      goTo(lastLoc);
+      const backResult = moveToShip([{ name: lastT6, count: 5 }], lastLoc);
+      if (!backResult.success) return backResult;
+      const barterResult = trade(lastT6, t7Name(lastA), 5, lastLoc, regionKey);
+      if (!barterResult.success) return barterResult;
+      const sellResult = sellShip([{ name: t7Name(lastA), count: 5 }], lastLoc);
+      if (!sellResult.success) return sellResult;
+    }
     
     return { success: true };
   };
@@ -1396,16 +1407,16 @@ function buildJugglingRoute(config, trades, regionMapping, shipCapacity = 22450,
       const sweepResult = sweepIslands(sweepItems);
       if (!sweepResult.success) return sweepResult;
       
-      // If the next group exists and this group's last region is a clean 2-trade
-      // chain, try the overstack handoff (interleaves this region's T6→T7 with
-      // the next group's load, skipping a return trip to Iliya). Fall back to
-      // the plain flow if it's infeasible.
+      // If the next group exists, try the overstack handoff for this group's
+      // last region (interleaves its T6→T7 with the next group's load, skipping
+      // a return trip to Iliya). It stays an option: fall back to the plain
+      // flow when it's infeasible, and the caller picks the shortest route.
       const nextGroup = groups[gi + 1];
       const lastRegion = group[group.length - 1];
       const lastRegionTrades = groupTrades.filter(t => t.region.toLowerCase() === lastRegion);
       const nextGroupTrades = nextGroup ? trades.filter(t => nextGroup.includes(t.region.toLowerCase())) : null;
       
-      if (nextGroup && nextGroupTrades && lastRegionTrades.length === 2) {
+      if (nextGroup && nextGroupTrades && lastRegionTrades.length >= 1) {
         const baseRoute = route.slice();
         const baseActions = actions.slice();
         const baseShip = { ...shipItems };
