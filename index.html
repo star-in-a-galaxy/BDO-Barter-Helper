@@ -187,6 +187,16 @@
   #resolve-body { padding: 16px; }
 
   .guide-card { width: min(680px, 94vw); }
+  .zoom-card { width: min(1100px, 96vw); }
+  .zoom-body { padding: 8px; background: #141414; }
+  .zoom-body img {
+    display: block;
+    max-width: 100%;
+    max-height: 82vh;
+    margin: 0 auto;
+    object-fit: contain;
+    image-rendering: pixelated;
+  }
   .guide-body {
     padding: 16px 20px;
     font-size: 13px;
@@ -622,6 +632,12 @@
   #inv-controls .mc-title {
     font-size: 11px; font-weight: 600; text-transform: uppercase;
     color: #888; margin-bottom: 6px; letter-spacing: 0.5px;
+    display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  }
+  #inv-controls .mc-title .inv-port {
+    font-weight: 600; text-transform: none; letter-spacing: 0;
+    color: #facc15; font-size: 11px; overflow: hidden;
+    text-overflow: ellipsis; white-space: nowrap; max-width: 230px;
   }
   #inv-controls .inv-drag {
     cursor: move;
@@ -998,7 +1014,7 @@
       <pre id="calib-details"></pre>
     </div>
     <div id="inv-controls" style="display:none">
-      <div class="mc-title inv-drag">Player &amp; Boat inventory</div>
+      <div class="mc-title inv-drag">Player &amp; Boat inventory<span class="inv-port"></span></div>
       <div class="inv-nav">
         <button id="inv-prev" class="btn-flat" type="button">&#9664; Previous</button>
         <button id="inv-next" class="btn-flat" type="button">Next &#9654;</button>
@@ -1027,6 +1043,16 @@
       <button id="guide-close" type="button" title="Close">×</button>
     </div>
     <div id="guide-body" class="guide-body"></div>
+  </div>
+</div>
+
+<div id="zoom-modal" class="resolve-modal" style="display:none">
+  <div class="resolve-card zoom-card">
+    <div class="resolve-header">
+      <span id="zoom-title">Screenshot</span>
+      <button id="zoom-close" type="button" title="Close">×</button>
+    </div>
+    <div id="zoom-body" class="zoom-body"></div>
   </div>
 </div>
 

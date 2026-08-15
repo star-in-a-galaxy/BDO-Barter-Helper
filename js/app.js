@@ -558,7 +558,12 @@ function renderScanList(type) {
     const item = document.createElement('div');
     item.className = 'drop-item';
     const thumb = document.createElement('img');
-    thumb.src = 'data:image/png;base64,' + img.data;
+    thumb.src = dataUrlFor(img);
+    thumb.title = 'Click to view full size';
+    thumb.addEventListener('click', (e) => {
+      e.stopPropagation();
+      openZoomModal(img);
+    });
     const label = document.createElement('span');
     label.textContent = img.name;
     const rm = document.createElement('button');
@@ -572,6 +577,33 @@ function renderScanList(type) {
     item.append(thumb, label, rm);
     list.appendChild(item);
   });
+}
+
+function dataUrlFor(img) {
+  return 'data:' + (img.mime || 'image/png') + ';base64,' + img.data;
+}
+
+// Open a full-size view of a scanned screenshot in a modal.
+function openZoomModal(img) {
+  const modal = document.getElementById('zoom-modal');
+  const title = document.getElementById('zoom-title');
+  const body = document.getElementById('zoom-body');
+  if (!modal || !body) return;
+  title.textContent = img.name || 'Screenshot';
+  body.innerHTML = '';
+  const big = document.createElement('img');
+  big.src = dataUrlFor(img);
+  body.appendChild(big);
+  modal.style.display = 'flex';
+}
+
+function setupZoomModal() {
+  const modal = document.getElementById('zoom-modal');
+  const closeBtn = document.getElementById('zoom-close');
+  if (!modal || !closeBtn) return;
+  const close = () => { modal.style.display = 'none'; };
+  closeBtn.addEventListener('click', close);
+  modal.addEventListener('click', (e) => { if (e.target === modal) close(); });
 }
 
 function setupDropZone(type) {
@@ -784,6 +816,7 @@ async function init() {
   document.getElementById('clear-scan-btn').addEventListener('click', clearScreenshots);
   document.getElementById('clear-table-btn').addEventListener('click', clearTradeTable);
   setupGuideModal();
+  setupZoomModal();
   setupDropZone('t4t5');
   setupDropZone('t5t6');
   setupDropZone('t6t7');
@@ -819,18 +852,23 @@ async function init() {
 function updateInventoryPanel() {
   const panel = document.getElementById('inv-controls');
   const body = document.getElementById('inv-body');
+  const portEl = document.querySelector('#inv-controls .inv-port');
   if (!panel || !body) return;
   const card = getActiveCard(document.getElementById('result'));
   if (!card) {
     panel.style.display = 'none';
     body.innerHTML = '';
+    if (portEl) portEl.textContent = '';
     return;
   }
   const inv = getInventoryForCard(card);
   if (!inv) {
     panel.style.display = 'none';
+    if (portEl) portEl.textContent = '';
     return;
   }
+  const portName = card.querySelector('.port-header strong');
+  if (portEl) portEl.textContent = (portName && portName.textContent) || '';
   body.innerHTML = formatInventory(inv.before, inv.after, inv.swapped, {
     shipMax: inv.shipMax,
     playerMax: inv.playerMax,
