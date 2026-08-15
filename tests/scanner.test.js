@@ -2,10 +2,13 @@ import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'fs';
 import { join } from 'path';
 
-import { findNearTwins, buildTrades } from '../js/scanner.js';
+import { findNearTwins, buildTrades, parseT4t5 } from '../js/scanner.js';
 
 const goods = JSON.parse(
   readFileSync(join(process.cwd(), 'assets', 'barterGoods.json'), 'utf-8')
+);
+const ports = JSON.parse(
+  readFileSync(join(process.cwd(), 'assets', 'barterPorts.json'), 'utf-8')
 );
 
 describe('scanner near-twin warnings', () => {
@@ -63,5 +66,18 @@ describe('scanner near-twin warnings', () => {
     const trades = buildTrades(rows, t5t6, [], tierPorts);
     expect(trades[0].t6).toBe("[Level 6] Moonlit Crystal Lamp"); // Grandiha's item
     expect(trades[0].warnings).toBeUndefined();
+  });
+
+  it('resolves a run-on duplicated anchor to the canonical island', () => {
+    const boxes = [
+      { x0: 0.02, y0: 0.1, y1: 0.14, text: 'Pujara Island Pujara Island ujara Islan' },
+      { x0: 0.35, y0: 0.1, y1: 0.14, text: 'Level 4 Panacea' },
+      { x0: 0.7, y0: 0.1, y1: 0.14, text: 'Level 5 Portrait of the Ancient' }
+    ];
+    const rows = parseT4t5(boxes, goods, ports);
+    expect(rows).toHaveLength(1);
+    expect(rows[0].island).toBe('Pujara Island');
+    expect(rows[0].t4).toBe('[Level 4] Panacea');
+    expect(rows[0].t5).toBe('[Level 5] Portrait of the Ancient');
   });
 });

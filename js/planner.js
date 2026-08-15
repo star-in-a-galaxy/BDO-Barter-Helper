@@ -207,8 +207,9 @@ export async function planRoute(payload) {
     }
     else if (act === 'sell') {
       const items = action.items || [];
+      const from = action.fromShip ? sim.ship : sim.player;
       for (const item of items) {
-        if (!sim.player.remove(item.name, item.count)) {
+        if (!from.remove(item.name, item.count)) {
           errors.push(`Cannot sell ${item.count}x ${item.name} at ${action.location}`);
           valid = false;
         }

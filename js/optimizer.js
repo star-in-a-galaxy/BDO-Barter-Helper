@@ -757,6 +757,21 @@ function buildJugglingRoute(config, trades, regionMapping, shipCapacity = 22450,
     return { success: true };
   };
   
+  // Sell items directly from the ship (a barter port's trade NPC accepts cargo
+  // from the boat). Used by the overstack handoff, where the player is holding
+  // the overstacked T6 and the freshly bartered T7 stays on the ship.
+  const sellShip = (items, location) => {
+    for (const item of items) {
+      if ((shipItems[item.name] || 0) < item.count) {
+        return fail(`Cannot sell ${item.count}x ${item.name} at ${location}: not in ship inventory`);
+      }
+      shipItems[item.name] -= item.count;
+      if (shipItems[item.name] === 0) delete shipItems[item.name];
+    }
+    actions.push({ location, action: "sell", items, fromShip: true });
+    return { success: true };
+  };
+  
   // Store items from the ship into Iliya storage (mirrors Simulator store)
   const storeIlya = (items, location) => {
     for (const item of items) {
@@ -979,6 +994,72 @@ function buildJugglingRoute(config, trades, regionMapping, shipCapacity = 22450,
     return { success: true };
   };
   
+  // Retrieve a region's T5s from the player back to the ship, and offload other
+  // regions' T5s to the player so this region's T6 output (n × 5 × 2000lt) fits
+  // alongside at most maxOtherOnShip other T5s. Shared by the plain batched
+  // region flow and the overstack handoff.
+  const prepareRegionChain = (region, regionTrades, regionKey, t6Traders) => {
+    const rT5Names = new Set(regionTrades.map(t => t.t5));
+    
+    const toRetrieve = Object.entries(playerItems)
+      .filter(([name, count]) => rT5Names.has(name) && count > 0)
+      .map(([name, count]) => ({ name, count }));
+    
+    if (toRetrieve.length > 0) {
+      const loc = t6Traders[0];
+      goTo(loc);
+      const retrieveResult = moveToShip(toRetrieve, loc);
+      if (!retrieveResult.success) return retrieveResult;
+    }
+    
+    const rT6Weight = regionTrades.length * 5 * 2000;
+    const maxOtherOnShip = Math.max(0, Math.floor((shipCapacity - rT6Weight) / 1000));
+    
+    const otherOnShip = Object.entries(shipItems)
+      .filter(([name, count]) => !rT5Names.has(name) && tierMap[name] === 5 && count > 0);
+    
+    const otherCount = otherOnShip.reduce((sum, [, count]) => sum + count, 0);
+    if (otherCount > maxOtherOnShip) {
+      const toMove = otherCount - maxOtherOnShip;
+      const moves = [];
+      let remaining = toMove;
+      for (const [name, count] of otherOnShip) {
+        if (remaining <= 0) break;
+        const take = Math.min(count, remaining);
+        moves.push({ name, count: take });
+        remaining -= take;
+      }
+      if (remaining > 0) {
+        return fail(`Cannot batch ${regionKey}: cannot offload enough other-region T5 items`);
+      }
+      const loc = t6Traders[0];
+      goTo(loc);
+      const moveResult = moveToPlayer(moves, loc);
+      if (!moveResult.success) return moveResult;
+    }
+    return { success: true };
+  };
+  
+  // Run a region's T5→T6 → T6→T7 → sell chain with the ship already holding the
+  // region's T5s (used by processBatchedRegions and the overstack handoff).
+  const runRegionChain = (region, regionTrades, regionKey, t6Traders, t7Traders) => {
+    for (const trader of t6Traders) {
+      const key = nameKey(trader);
+      const tradeData = regionTrades.find(t => nameKey(traderOf(t)) === key);
+      if (!tradeData) {
+        return fail(`No trade configured for ${regionKey} T6 trader ${trader}`);
+      }
+      goTo(trader);
+      const tradeResult = trade(tradeData.t5, t6Name(tradeData), 5, trader, regionKey);
+      if (!tradeResult.success) return tradeResult;
+    }
+    
+    const t6t7Result = tradeRegionT6toT7(regionTrades, t7Traders, regionKey);
+    if (!t6t7Result.success) return t6t7Result;
+    
+    return sellT7s(regionTrades, regionKey, t7Traders[t7Traders.length - 1]);
+  };
+  
   // Process a batch of regions sharing one ship load. For each region in
   // order: retrieve its T5s from the player, offload other regions' T5s to the
   // player so this region's T6 output fits the ship, then run the region's
@@ -998,69 +1079,89 @@ function buildJugglingRoute(config, trades, regionMapping, shipCapacity = 22450,
         return fail(`No T7 traders configured for ${regionKey}`);
       }
       
-      const rT5Names = new Set(regionTrades.map(t => t.t5));
+      const prep = prepareRegionChain(region, regionTrades, regionKey, t6Traders);
+      if (!prep.success) return prep;
       
-      // Retrieve this region's T5s from the player back to the ship
-      const toRetrieve = Object.entries(playerItems)
-        .filter(([name, count]) => rT5Names.has(name) && count > 0)
-        .map(([name, count]) => ({ name, count }));
-      
-      if (toRetrieve.length > 0) {
-        const loc = t6Traders[0];
-        goTo(loc);
-        const retrieveResult = moveToShip(toRetrieve, loc);
-        if (!retrieveResult.success) return retrieveResult;
-      }
-      
-      // Offload other regions' T5s to the player so this region's T6 output fits.
-      // After all T5→T6 trades the ship carries this region's T6s (n × 5 × 2000lt)
-      // plus whatever "other" T5s remain on board, so leave at most maxOtherOnShip.
-      const rT6Weight = regionTrades.length * 5 * 2000;
-      const maxOtherOnShip = Math.max(0, Math.floor((shipCapacity - rT6Weight) / 1000));
-      
-      const otherOnShip = Object.entries(shipItems)
-        .filter(([name, count]) => !rT5Names.has(name) && tierMap[name] === 5 && count > 0);
-      
-      const otherCount = otherOnShip.reduce((sum, [, count]) => sum + count, 0);
-      if (otherCount > maxOtherOnShip) {
-        const toMove = otherCount - maxOtherOnShip;
-        const moves = [];
-        let remaining = toMove;
-        for (const [name, count] of otherOnShip) {
-          if (remaining <= 0) break;
-          const take = Math.min(count, remaining);
-          moves.push({ name, count: take });
-          remaining -= take;
-        }
-        if (remaining > 0) {
-          return fail(`Cannot batch ${regionKey}: cannot offload enough other-region T5 items`);
-        }
-        const loc = t6Traders[0];
-        goTo(loc);
-        const moveResult = moveToPlayer(moves, loc);
-        if (!moveResult.success) return moveResult;
-      }
-      
-      // T5→T6 trades
-      for (const trader of t6Traders) {
-        const key = nameKey(trader);
-        const tradeData = regionTrades.find(t => nameKey(traderOf(t)) === key);
-        if (!tradeData) {
-          return fail(`No trade configured for ${regionKey} T6 trader ${trader}`);
-        }
-        goTo(trader);
-        const tradeResult = trade(tradeData.t5, t6Name(tradeData), 5, trader, regionKey);
-        if (!tradeResult.success) return tradeResult;
-      }
-      
-      // T6→T7 trades (spread identical region-based barters across T7 traders)
-      const t6t7Result = tradeRegionT6toT7(regionTrades, t7Traders, regionKey);
-      if (!t6t7Result.success) return t6t7Result;
-      
-      // Sell T7s
-      const sellResult = sellT7s(regionTrades, regionKey, t7SellLoc);
+      const chainResult = runRegionChain(region, regionTrades, regionKey, t6Traders, t7Traders);
+      if (!chainResult.success) return chainResult;
+    }
+    return { success: true };
+  };
+  
+  // Combined Iliya-overstack handoff. When region A is the last region of a
+  // non-stock batch group and another batch group B follows, detour to Iliya
+  // after A's T5→T6: overstack A's last T6 stack into the player (only one T6
+  // stack fits the player), load B's T4s into the freed space, then run A's
+  // T6→T7 + sell interleaved with B's island T4→T5 sweep. This avoids a
+  // separate return trip to Iliya to load B's T4s. Only handles A with exactly
+  // two T6s (the player can overstack a single stack).
+  const processOverstackHandoff = (A, A_trades, B_regions, B_trades) => {
+    const regionKey = A.charAt(0).toUpperCase() + A.slice(1);
+    const t6Traders = t6Orders[A] || [];
+    const t7Traders = t7Orders[A] || [];
+    if (t6Traders.length === 0 || t7Traders.length === 0) return fail(`No traders for ${regionKey}`);
+    if (A_trades.length !== 2) return fail(`Overstack handoff for ${regionKey} requires exactly 2 trades`);
+    const bT4Weight = B_trades.length * 5 * 1000;
+    if (10000 + bT4Weight > shipCapacity) return fail(`Overstack handoff for ${regionKey}: ship can't hold B T4s alongside the remaining T6`);
+    
+    const prep = prepareRegionChain(A, A_trades, regionKey, t6Traders);
+    if (!prep.success) return prep;
+    // The player must be empty after retrieving A's T5s so it can accept the
+    // overstacked T6 stack.
+    if (playerWeight() !== 0) return fail(`Overstack handoff for ${regionKey}: player inventory not empty`);
+    
+    for (const trader of t6Traders) {
+      const key = nameKey(trader);
+      const tradeData = A_trades.find(t => nameKey(traderOf(t)) === key);
+      if (!tradeData) return fail(`No trade configured for ${regionKey} T6 trader ${trader}`);
+      goTo(trader);
+      const tradeResult = trade(tradeData.t5, t6Name(tradeData), 5, trader, regionKey);
+      if (!tradeResult.success) return tradeResult;
+    }
+    
+    // Detour to Iliya: overstack A's last T6, load B's T4s.
+    const lastA = A_trades[A_trades.length - 1];
+    const lastT6 = t6Name(lastA);
+    const onBoatA = A_trades.filter(t => t6Name(t) !== lastT6);
+    goTo("Iliya Island");
+    const overResult = moveToPlayer([{ name: lastT6, count: 5 }], "Iliya Island");
+    if (!overResult.success) return overResult;
+    const loadResult = loadShip(B_trades.map(t => ({ name: t.t4, count: 5 })), "Iliya Island");
+    if (!loadResult.success) return loadResult;
+    
+    // Barter A's on-boat T6s at their ports and sell each.
+    for (let i = 0; i < onBoatA.length; i++) {
+      const tradeData = onBoatA[i];
+      const loc = tradeData.t7Port || t7Traders[i];
+      goTo(loc);
+      const t6Item = t6Name(tradeData);
+      const barterResult = trade(t6Item, t7Name(tradeData), 5, loc, regionKey);
+      if (!barterResult.success) return barterResult;
+      const sellResult = sellShip([{ name: t7Name(tradeData), count: 5 }], loc);
       if (!sellResult.success) return sellResult;
     }
+    
+    // Sweep B's islands (T4→T5) while travelling toward A's last T7 port.
+    const bSweep = [];
+    for (const region of B_regions) {
+      const regionTrades = B_trades.filter(t => t.region.toLowerCase() === region);
+      for (const tradeData of regionTrades) {
+        bSweep.push({ island: tradeData.island, t4: tradeData.t4, t5: tradeData.t5, regionKey: region.charAt(0).toUpperCase() + region.slice(1) });
+      }
+    }
+    const sweepResult = sweepIslands(bSweep);
+    if (!sweepResult.success) return sweepResult;
+    
+    // Barter the overstacked A T6 at its port and sell.
+    const lastLoc = lastA.t7Port || t7Traders[onBoatA.length];
+    goTo(lastLoc);
+    const backResult = moveToShip([{ name: lastT6, count: 5 }], lastLoc);
+    if (!backResult.success) return backResult;
+    const barterResult = trade(lastT6, t7Name(lastA), 5, lastLoc, regionKey);
+    if (!barterResult.success) return barterResult;
+    const sellResult = sellShip([{ name: t7Name(lastA), count: 5 }], lastLoc);
+    if (!sellResult.success) return sellResult;
+    
     return { success: true };
   };
   
@@ -1262,8 +1363,18 @@ function buildJugglingRoute(config, trades, regionMapping, shipCapacity = 22450,
     }
     if (current.length > 0) groups.push(current);
     
-    for (const group of groups) {
+    let handoffGroupIndex = -1;
+    for (let gi = 0; gi < groups.length; gi++) {
+      const group = groups[gi];
       const groupTrades = trades.filter(t => group.includes(t.region.toLowerCase()));
+      
+      // A previous group's overstack handoff already loaded this group's T4s and
+      // swept its islands - just run the T5→T6 → T6→T7 → sell chains.
+      if (gi === handoffGroupIndex) {
+        const batchResult = processBatchedRegions(group, groupTrades);
+        if (!batchResult.success) return batchResult;
+        continue;
+      }
       
       goTo("Iliya Island");
       const loadResult = loadShip(groupTrades.map(t => ({ name: t.t4, count: 5 })), "Iliya Island");
@@ -1285,9 +1396,47 @@ function buildJugglingRoute(config, trades, regionMapping, shipCapacity = 22450,
       const sweepResult = sweepIslands(sweepItems);
       if (!sweepResult.success) return sweepResult;
       
-      // Process each region's T5→T6 → T6→T7 → sell
-      const batchResult = processBatchedRegions(group, groupTrades);
-      if (!batchResult.success) return batchResult;
+      // If the next group exists and this group's last region is a clean 2-trade
+      // chain, try the overstack handoff (interleaves this region's T6→T7 with
+      // the next group's load, skipping a return trip to Iliya). Fall back to
+      // the plain flow if it's infeasible.
+      const nextGroup = groups[gi + 1];
+      const lastRegion = group[group.length - 1];
+      const lastRegionTrades = groupTrades.filter(t => t.region.toLowerCase() === lastRegion);
+      const nextGroupTrades = nextGroup ? trades.filter(t => nextGroup.includes(t.region.toLowerCase())) : null;
+      
+      if (nextGroup && nextGroupTrades && lastRegionTrades.length === 2) {
+        const baseRoute = route.slice();
+        const baseActions = actions.slice();
+        const baseShip = { ...shipItems };
+        const basePlayer = { ...playerItems };
+        const baseLoc = currentLocation;
+        
+        let handoffOk = false;
+        const prepResult = processBatchedRegions(group.slice(0, -1), groupTrades);
+        if (prepResult.success) {
+          const hf = processOverstackHandoff(lastRegion, lastRegionTrades, nextGroup, nextGroupTrades);
+          handoffOk = hf.success;
+        }
+        if (handoffOk) {
+          handoffGroupIndex = gi + 1;
+          continue;
+        }
+        
+        // Restore state and use the plain flow for the whole group.
+        route.length = 0; route.push(...baseRoute);
+        actions.length = 0; actions.push(...baseActions);
+        Object.keys(shipItems).forEach(k => delete shipItems[k]); Object.assign(shipItems, baseShip);
+        Object.keys(playerItems).forEach(k => delete playerItems[k]); Object.assign(playerItems, basePlayer);
+        currentLocation = baseLoc;
+        
+        const batchResult = processBatchedRegions(group, groupTrades);
+        if (!batchResult.success) return batchResult;
+      } else {
+        // Process each region's T5→T6 → T6→T7 → sell
+        const batchResult = processBatchedRegions(group, groupTrades);
+        if (!batchResult.success) return batchResult;
+      }
     }
   }
   

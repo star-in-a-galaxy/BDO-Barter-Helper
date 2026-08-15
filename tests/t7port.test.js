@@ -76,4 +76,49 @@ describe('T7 barter location', () => {
     expect(sellByItem['[Level 7] Omar Lava Powder']).toBe('Sausan Garrison Wharf');
     expect(sellByItem['[Level 7] Top-Quality Hakinza Perfume']).toBe('Sanctuary Coastal Outpost');
   });
+
+  it('overstack handoff interleaves the next group\'s islands between T6→T7 ports', async () => {
+    const trades = [
+      { region: 'South', chain: 'South - Grándiha', island: 'Ajir Island',
+        t4: "[Level 4] Old Chest with Gold Coins", t5: '[Level 5] Golden Fish Scale',
+        t6: '[Level 6] Kamasylvian Sculpture', t7: '[Level 7] Omar Lava Powder',
+        t7Port: 'Sausan Garrison Wharf' },
+      { region: 'South', chain: 'South - Starry Midnight Port', island: 'Balvege Island',
+        t4: '[Level 4] Solidified Lava', t5: '[Level 5] Supreme Gold Candlestick',
+        t6: '[Level 6] Moonlit Crystal Shard', t7: "[Level 7] Rusalka's Thorny Bouquet",
+        t7Port: 'Sanctuary Coastal Outpost' },
+      { region: 'East', chain: 'East - Hakoven Island', island: 'Rameda Island',
+        t4: "[Level 4] Marine Knights' Helm", t5: '[Level 5] Octagonal Box',
+        t6: '[Level 6] Valencian Desert Fine Sword', t7: '[Level 7] Top-Quality Heidelian Wine',
+        t7Port: 'Olvia Coast' },
+      { region: 'East', chain: 'East - Arehaza', island: 'Oben Island',
+        t4: '[Level 4] Opulent Thread Spool', t5: '[Level 5] Azure Quartz',
+        t6: '[Level 6] Traditional Arehazan Tea', t7: '[Level 7] Golden Eagle Brooch',
+        t7Port: 'Epheria Sentry Post' },
+      { region: 'North', chain: 'North - Haemo Island', island: 'Orffs Island',
+        t4: '[Level 4] Green Salt Lump', t5: '[Level 5] Faded Gold Dragon Figurine',
+        t6: '[Level 6] Nampo Persimmon Crate', t7: '[Level 7] Balenos Rainbow Coral',
+        t7Port: 'Lema Island' },
+      { region: 'North', chain: 'North - Dallae Pier', island: 'Pujara Island',
+        t4: '[Level 4] Panacea', t5: '[Level 5] Portrait of the Ancient',
+        t6: '[Level 6] Top-Quality Gamtu Crate', t7: "[Level 7] Balenosian Sailor's Telescope",
+        t7Port: 'Iliya Island' }
+    ];
+
+    const result = await optimizeRoute(trades, { north: 'B', south: 'C', east: 'A' }, false, 22450, 5400, 150, true, false);
+    expect(result.error).toBeUndefined();
+    expect(result.route).toBeTruthy();
+
+    // The East T6→T7 ports (Olvia/Epheria) are no longer visited back-to-back:
+    // the overstack handoff interleaves the next group's T5 islands between them
+    // instead of returning to Iliya.
+    const r = result.route;
+    const iO = r.indexOf('Olvia Coast');
+    const iE = r.indexOf('Epheria Sentry Post');
+    expect(iO).toBeGreaterThanOrEqual(0);
+    expect(iE).toBeGreaterThanOrEqual(0);
+    expect(Math.abs(iO - iE)).toBeGreaterThan(1);
+    const between = r.slice(Math.min(iO, iE) + 1, Math.max(iO, iE));
+    expect(between.includes('Iliya Island')).toBe(false);
+  });
 });

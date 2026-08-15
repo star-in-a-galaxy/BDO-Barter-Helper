@@ -78,8 +78,12 @@ function lcsRatio(a, b) {
 const STOPWORDS = new Set(['required', 'parley', 'parleys', 'exchanges', 'exchange', 'exchanged', 'left', 'total', 'barters', 'grade', 'grades', 'lv']);
 
 function extractWords(s) {
+  // Dedup repeated words: the anchor merge can produce run-on fragments like
+  // "Pujara Island Pujara Island ujara Islan", which would otherwise dilute the
+  // similarity below the match threshold.
   return (String(s || '').toLowerCase().match(/[a-z][a-z]*/g) || [])
-    .filter(w => w.length >= 3 && !STOPWORDS.has(w));
+    .filter(w => w.length >= 3 && !STOPWORDS.has(w))
+    .filter((w, i, arr) => arr.indexOf(w) === i);
 }
 
 function wordSimilar(a, b) {
