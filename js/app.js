@@ -270,7 +270,8 @@ function createTradeRow(trade) {
       t4: t4Dropdown.getValue(),
       island: islandDropdown.getValue(),
       t6: trade.t6,
-      t7: trade.t7
+      t7: trade.t7,
+      t7Port: trade.t7Port
     }),
     // Resolve an ambiguity: set the field to the chosen option.
     setValue: (field, value) => {
@@ -279,6 +280,7 @@ function createTradeRow(trade) {
       else if (field === 'island') islandDropdown.setValue(value);
       else if (field === 't6') trade.t6 = value;
       else if (field === 't7') trade.t7 = value;
+      else if (field === 't7Port') trade.t7Port = value;
     },
     clearWarnings: () => {
       trade.warnings = undefined;
@@ -365,6 +367,7 @@ function populateTrades(trades) {
       island: scanned ? scanned.island : undefined,
       t6: scanned ? scanned.t6 : undefined,
       t7: scanned ? scanned.t7 : undefined,
+      t7Port: scanned ? scanned.t7Port : undefined,
       warnings: scanned ? scanned.warnings : undefined
     });
     tbody.appendChild(row.element);
@@ -731,23 +734,67 @@ function openResolutionModal(trades) {
 
     const optionsWrap = document.createElement('div');
     optionsWrap.className = 'resolve-options';
-    const options = [w.item, ...w.alternatives];
-    options.forEach(opt => {
-      const btn = document.createElement('button');
-      btn.type = 'button';
-      btn.className = 'resolve-option' + (opt === w.item ? ' current' : '');
-      btn.innerHTML = itemIconImg(opt) + `<span>${opt}</span>`;
-      btn.title = opt === w.item ? 'Keep the matched item' : 'Choose this alternative';
-      btn.addEventListener('click', () => {
-        for (const { row } of targets) {
-          row.setValue(w.field, opt);
-          row.clearWarnings();
-        }
-        i++;
-        show();
+
+    if (w.kind === 'trader') {
+      // The T5 was read at more than one trader (one read is a misread). Let the
+      // user pick the correct chain rather than silently keeping the first.
+      field.textContent = `"${w.item}" was read at more than one trader - pick the correct chain`;
+      const opts = [
+        { label: `${trade.region} ${trade.chain}`, candidate: null },
+        ...(trade.alternativeTraders || []).map(a => ({ label: `${a.region} ${a.chain}`, candidate: a }))
+      ];
+      opts.forEach(o => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'resolve-option trader-opt' + (o.candidate === null ? ' current' : '');
+        const sub = o.candidate
+          ? ` → ${o.candidate.t6 || '?'} → ${o.candidate.t7 || '?'} @ ${o.candidate.t7Port || '?'}`
+          : ` → ${trade.t6 || '?'} → ${trade.t7 || '?'} @ ${trade.t7Port || '?'}`;
+        btn.innerHTML = `<span>${o.label}</span><span class="resolve-sub">${sub}</span>`;
+        btn.title = o.candidate === null ? 'Keep the matched chain' : 'Use this chain instead';
+        btn.addEventListener('click', () => {
+          const curRow = targets[0].row;
+          if (o.candidate) {
+            const chosenRow = tradeRows.find(r => normChainName(r.chain) === normChainName(o.candidate.chain)) || curRow;
+            chosenRow.setValue('t5', trade.t5);
+            chosenRow.setValue('t4', trade.t4);
+            chosenRow.setValue('island', trade.island);
+            chosenRow.setValue('t6', o.candidate.t6);
+            chosenRow.setValue('t7', o.candidate.t7);
+            chosenRow.setValue('t7Port', o.candidate.t7Port);
+            if (chosenRow !== curRow) {
+              curRow.setValue('t5', '');
+              curRow.setValue('t4', '');
+              curRow.setValue('island', '');
+              curRow.setValue('t6', undefined);
+              curRow.setValue('t7', undefined);
+              curRow.setValue('t7Port', undefined);
+            }
+          }
+          i++;
+          show();
+        });
+        optionsWrap.appendChild(btn);
       });
-      optionsWrap.appendChild(btn);
-    });
+    } else {
+      const options = [w.item, ...w.alternatives];
+      options.forEach(opt => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'resolve-option' + (opt === w.item ? ' current' : '');
+        btn.innerHTML = itemIconImg(opt) + `<span>${opt}</span>`;
+        btn.title = opt === w.item ? 'Keep the matched item' : 'Choose this alternative';
+        btn.addEventListener('click', () => {
+          for (const { row } of targets) {
+            row.setValue(w.field, opt);
+            row.clearWarnings();
+          }
+          i++;
+          show();
+        });
+        optionsWrap.appendChild(btn);
+      });
+    }
     body.appendChild(optionsWrap);
   };
 

@@ -359,9 +359,19 @@ export function buildTrades(t4t5Rows, t5t6Rows, t6t7Rows, tierPorts) {
   }
   const trades = [];
   const seen = new Set();
+  const seenRow = new Set();
   for (const r of t4t5Rows) {
     if (!(r.t4 && r.t5)) continue;
-    for (const m of (byT5[r.t5] || [])) {
+    // A T4→T5 island produces exactly one T5→T6 trade, so each island row maps
+    // to at most one trader. If the same T5 was read for several traders (an
+    // OCR misread, e.g. "102 Year Old Golden Herb" read as "37 Year Old Herbal
+    // Wine"), we keep only one trade but flag the ambiguity so the user can pick
+    // the correct chain instead of silently guessing.
+    const rowKey = norm(r.island) + '|' + norm(r.t4) + '|' + norm(r.t5);
+    if (seenRow.has(rowKey)) continue;
+    seenRow.add(rowKey);
+    const candidates = byT5[r.t5] || [];
+    for (const m of candidates) {
       const key = norm(r.t5) + '|' + norm(m.trader);
       if (seen.has(key)) continue;
       seen.add(key);
@@ -403,6 +413,36 @@ export function buildTrades(t4t5Rows, t5t6Rows, t6t7Rows, tierPorts) {
       const remaining = warnings.filter(w => !resolved.has(w));
       if (remaining.length) trade.warnings = remaining;
       trades.push(trade);
+
+      // The same T5 was read at more than one trader - one of those reads is a
+      // misread. Surface the other chains so the user can pick the right one
+      // instead of us silently keeping the first.
+      if (candidates.length > 1) {
+        trade.alternativeTraders = candidates
+          .filter(c => c !== m && norm(c.trader) !== norm(m.trader))
+          .map(c => {
+            const ch = CHAIN_MAP[norm(c.trader)];
+            if (!ch) return null;
+            const altT7Row = c.t6 ? t6toRow[norm(c.t6)] : null;
+            return {
+              region: ch[0],
+              chain: ch[1],
+              t6: c.t6 || null,
+              t7: (c.t6 && t6toT7[norm(c.t6)]) || null,
+              t7Port: altT7Row ? altT7Row.port : null
+            };
+          })
+          .filter(Boolean);
+        if (trade.alternativeTraders.length) {
+          trade.warnings = [...(trade.warnings || []), {
+            kind: 'trader',
+            field: 't5',
+            item: trade.t5,
+            alternatives: trade.alternativeTraders.map(o => `${o.region} - ${o.chain}`)
+          }];
+        }
+      }
+      break; // one T4→T5 island row → one trade
     }
   }
   return trades;
