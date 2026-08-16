@@ -407,6 +407,7 @@ async function addScanImages(type, files) {
     scanStore[type].push({ name, type, data, mime: file.type });
   }
   renderScanList(type);
+  saveScanImages();
 }
 
 // Clear all pending screenshots from every scan zone.
@@ -415,6 +416,7 @@ function clearScreenshots() {
     scanStore[type] = [];
     renderScanList(type);
   }
+  saveScanImages();
 }
 
 // Clear every trade row's T5/T4/Island (and any scanned T6/T7) back to blank.
@@ -589,6 +591,7 @@ function renderScanList(type) {
       e.stopPropagation();
       scanStore[type].splice(i, 1);
       renderScanList(type);
+      saveScanImages();
     });
     item.append(thumb, label, rm);
     list.appendChild(item);
@@ -695,21 +698,26 @@ function itemIconImg(itemName) {
 // so it is asked once and the chosen answer is applied to all of them.
 // Returns true if it opened a modal.
 function openResolutionModal(trades) {
-  const groups = new Map();
+  // Resolve each occurrence independently. Every item is used exactly once in a
+  // barter set, so two rows reading the same ambiguous item (e.g. two "Marine
+  // Knights'…" reads) can legitimately need different choices (one Spear, one
+  // Helm) - applying one answer to all rows would be wrong. Dedup only within a
+  // single row/field (the same T6 read in two scan roles).
+  const queue = [];
+  const seen = new Set();
   (trades || []).forEach((trade) => {
     // Find the rendered row by chain (the table is always in the fixed order,
     // which doesn't match the scan's output order).
     const row = tradeRows.find(r => normChainName(r.chain) === normChainName(trade.chain));
     if (!row) return;
     (trade.warnings || []).forEach(w => {
-      const key = `${w.field}|${w.item}|${(w.alternatives || []).join('|')}`;
-      if (!groups.has(key)) groups.set(key, { w, targets: [] });
-      groups.get(key).targets.push({ trade, row });
+      const key = `${normChainName(trade.chain)}|${w.field}|${w.item}`;
+      if (seen.has(key)) return;
+      seen.add(key);
+      queue.push({ w, trade, row });
     });
   });
-  if (!groups.size) return false;
-
-  const queue = [...groups.values()];
+  if (!queue.length) return false;
 
   const modal = document.getElementById('resolve-modal');
   const body = document.getElementById('resolve-body');
@@ -723,13 +731,35 @@ function openResolutionModal(trades) {
   modal.onclick = (e) => { if (e.target === modal) close(); };
 
   let i = 0;
+  // Every item is used exactly once, so within the same ambiguity pair (same
+  // field + same alternatives), assigning one item consumes it and forces the
+  // remaining choice(s).
+  const usedByGroup = new Map();
+  const groupKeyOf = (w) => `${w.field}|${[w.item, ...(w.alternatives || [])].map(normChainName).sort().join('|')}`;
   const show = () => {
     if (i >= queue.length) { close(); return; }
-    const { w, targets } = queue[i];
-    const trade = targets[0].trade;
+    const { w, trade, row } = queue[i];
     progress.textContent = `Resolving ${i + 1} of ${queue.length}`;
     title.textContent = 'Resolve scan uncertainty';
     body.innerHTML = '';
+
+    // If this ambiguity's other item(s) are already used, only one choice
+    // remains - apply it automatically without prompting.
+    let gkUsed = null;
+    let gkAvailable = null;
+    if (w.kind !== 'trader') {
+      const gk = groupKeyOf(w);
+      gkUsed = usedByGroup.get(gk);
+      if (!gkUsed) { gkUsed = new Set(); usedByGroup.set(gk, gkUsed); }
+      gkAvailable = [w.item, ...(w.alternatives || [])].filter(x => !gkUsed.has(x));
+      if (gkAvailable.length === 1) {
+        row.setValue(w.field, gkAvailable[0]);
+        row.clearWarnings();
+        gkUsed.add(gkAvailable[0]);
+        saveState();
+        i++; show(); return;
+      }
+    }
 
     const context = document.createElement('div');
     context.className = 'resolve-context';
@@ -750,7 +780,47 @@ function openResolutionModal(trades) {
 
     if (w.kind === 'trader') {
       // The T5 was read at more than one trader (one read is a misread). Let the
-      // user pick the correct chain rather than silently keeping the first.
+      // user pick the correct chain, then - if that empties the previous row -
+      // offer the orphaned T5s to recover it, so nothing is lost.
+      const orphans = trade.orphanT5Options || [];
+      const fmtAlt = (a) => {
+        const t6 = a.t6 || '?';
+        if (a.t7 && a.t7Port) return `${itemIconImg(a.t6)} → ${itemIconImg(a.t7)} @ ${a.t7Port}`;
+        if (a.t7) return `${itemIconImg(a.t6)} → ${itemIconImg(a.t7)}`;
+        if (a.t7Port) return `${itemIconImg(a.t6)} @ ${a.t7Port} (T7 not read)`;
+        return `${itemIconImg(a.t6)} (T6→T7 not read)`;
+      };
+
+      const phase2 = (emptiedRow, emptiedLabel) => {
+        optionsWrap.innerHTML = '';
+        // The previous island shown was the misread's source - drop it.
+        context.textContent = emptiedLabel;
+        field.textContent = `${emptiedLabel} is now empty - was its T5 actually one of these?`;
+        orphans.forEach(o => {
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = 'resolve-option trader-opt';
+          btn.innerHTML = itemIconImg(o.t5) + `<span>${o.t5}</span>` +
+            `<span class="resolve-sub"><span class="resolve-port">@ ${o.island}</span> · needs ${itemIconImg(o.t4)} <span>${o.t4}</span></span>`;
+          btn.title = 'Use this orphaned T5';
+          btn.addEventListener('click', () => {
+            emptiedRow.setValue('t5', o.t5);
+            emptiedRow.setValue('t4', o.t4);
+            emptiedRow.setValue('island', o.island);
+            emptiedRow.clearWarnings();
+            saveState();
+            i++; show();
+          });
+          optionsWrap.appendChild(btn);
+        });
+        const blank = document.createElement('button');
+        blank.type = 'button';
+        blank.className = 'resolve-option';
+        blank.innerHTML = `<span>Leave it blank</span>`;
+        blank.addEventListener('click', () => { saveState(); i++; show(); });
+        optionsWrap.appendChild(blank);
+      };
+
       field.textContent = `"${w.item}" was read at more than one trader - pick the correct chain`;
       const opts = [
         { label: `${trade.region} ${trade.chain}`, candidate: null },
@@ -760,13 +830,11 @@ function openResolutionModal(trades) {
         const btn = document.createElement('button');
         btn.type = 'button';
         btn.className = 'resolve-option trader-opt' + (o.candidate === null ? ' current' : '');
-        const sub = o.candidate
-          ? ` → ${o.candidate.t6 || '?'} → ${o.candidate.t7 || '?'} @ ${o.candidate.t7Port || '?'}`
-          : ` → ${trade.t6 || '?'} → ${trade.t7 || '?'} @ ${trade.t7Port || '?'}`;
-        btn.innerHTML = `<span>${o.label}</span><span class="resolve-sub">${sub}</span>`;
+        const sub = o.candidate ? fmtAlt(o.candidate) : fmtAlt(trade);
+        btn.innerHTML = itemIconImg(trade.t5) + `<span>${o.label}</span><span class="resolve-sub">${sub}</span>`;
         btn.title = o.candidate === null ? 'Keep the matched chain' : 'Use this chain instead';
         btn.addEventListener('click', () => {
-          const curRow = targets[0].row;
+          const curRow = row;
           if (o.candidate) {
             const chosenRow = tradeRows.find(r => normChainName(r.chain) === normChainName(o.candidate.chain)) || curRow;
             chosenRow.setValue('t5', trade.t5);
@@ -782,16 +850,18 @@ function openResolutionModal(trades) {
               curRow.setValue('t6', undefined);
               curRow.setValue('t7', undefined);
               curRow.setValue('t7Port', undefined);
+              saveState();
+              // The moved-away chain is now empty; recover it from the orphans.
+              if (orphans.length) { phase2(curRow, `${trade.region} ${trade.chain}`); return; }
             }
           }
           saveState();
-          i++;
-          show();
+          i++; show();
         });
         optionsWrap.appendChild(btn);
       });
     } else {
-      const options = [w.item, ...w.alternatives];
+      const options = gkAvailable || [w.item, ...w.alternatives];
       options.forEach(opt => {
         const btn = document.createElement('button');
         btn.type = 'button';
@@ -799,10 +869,9 @@ function openResolutionModal(trades) {
         btn.innerHTML = itemIconImg(opt) + `<span>${opt}</span>`;
         btn.title = opt === w.item ? 'Keep the matched item' : 'Choose this alternative';
         btn.addEventListener('click', () => {
-          for (const { row } of targets) {
-            row.setValue(w.field, opt);
-            row.clearWarnings();
-          }
+          row.setValue(w.field, opt);
+          row.clearWarnings();
+          if (gkUsed) gkUsed.add(opt);
           saveState();
           i++;
           show();
@@ -858,6 +927,7 @@ async function scanScreenshots() {
 // --- persistence ------------------------------------------------------------
 
 const STORAGE_KEY = 'barter.state';
+const SCAN_KEY = 'barter.scans';
 
 // Settings (sidebar config + map layer toggles) that persist across sessions.
 const SETTING_IDS = [
@@ -888,6 +958,26 @@ function saveState() {
       activeStep: getActiveStep(document.getElementById('result'))
     }));
   } catch (e) { /* storage may be unavailable; ignore */ }
+}
+
+// Persist the uploaded screenshots (base64) so they survive a reload. Stored
+// under a separate key so a quota failure on the large images never breaks the
+// settings/trade/route state.
+function saveScanImages() {
+  try {
+    localStorage.setItem(SCAN_KEY, JSON.stringify(scanStore));
+  } catch (e) { /* storage full / unavailable; ignore */ }
+}
+
+function loadScanImages() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(SCAN_KEY) || 'null');
+    if (saved && typeof saved === 'object') {
+      for (const type of ['t4t5', 't5t6', 't6t7']) {
+        if (Array.isArray(saved[type])) scanStore[type] = saved[type];
+      }
+    }
+  } catch (e) { /* ignore */ }
 }
 
 // Apply saved settings to the inputs (called before the map overlay reads the
@@ -988,7 +1078,9 @@ async function init() {
   loadSettings();
   
   populateTrades(DEFAULT_TRADES, false);
-  initMapOverlay(map);
+  await initMapOverlay(map);
+  loadScanImages();
+  for (const t of ['t4t5', 't5t6', 't6t7']) renderScanList(t);
   makeDraggable(document.getElementById('inv-controls'));
   positionInventoryDefault();
   const invPrev = document.getElementById('inv-prev');
