@@ -1158,7 +1158,8 @@ function buildJugglingRoute(config, trades, regionMapping, shipCapacity = 22450,
         bSweep.push({ island: tradeData.island, t4: tradeData.t4, t5: tradeData.t5, regionKey: region.charAt(0).toUpperCase() + region.slice(1) });
       }
     }
-    const sweepResult = sweepIslands(bSweep);
+    const bNextDest = lastA ? (lastA.t7Port || t7Traders[onBoatA.length]) : null;
+    const sweepResult = sweepIslands(bSweep, bNextDest);
     if (!sweepResult.success) return sweepResult;
     
     // Barter the overstacked A T6 (if any) at its port and sell.
@@ -1177,11 +1178,24 @@ function buildJugglingRoute(config, trades, regionMapping, shipCapacity = 22450,
   };
   
   // Visit a list of { island, t4, t5, regionKey } barter stops in nearest-neighbor
-  // order from the current location, then barter each T4→T5. Straight-line
-  // distance is a rough proxy, but the T6 travel order is fixed by T6_ORDER so
-  // this only reorders the T5 island sweep.
-  const sweepIslands = (items) => {
+  // order from the current location, then barter each T4→T5. When a post-sweep
+  // destination is known (`nextDest`), the island closest to it is visited LAST,
+  // so the sweep ends where the route needs to go next (e.g. the first T6
+  // trader) instead of greedily ignoring the onward leg. Straight-line distance
+  // is a rough proxy, but the T6 travel order is fixed by T6_ORDER so this only
+  // reorders the T5 island sweep.
+  const sweepIslands = (items, nextDest) => {
     const remaining = items.slice();
+    let last = null;
+    if (nextDest && remaining.length > 1) {
+      let bestIdx = 0;
+      let bestD = Infinity;
+      for (let i = 0; i < remaining.length; i++) {
+        const d = getDistance(remaining[i].island, nextDest, ports);
+        if (d < bestD) { bestD = d; bestIdx = i; }
+      }
+      last = remaining.splice(bestIdx, 1)[0];
+    }
     while (remaining.length > 0) {
       let bestIdx = 0;
       let bestD = Infinity;
@@ -1195,6 +1209,11 @@ function buildJugglingRoute(config, trades, regionMapping, shipCapacity = 22450,
       }
       goTo(item.island);
       const tradeResult = trade(item.t4, item.t5, 5, item.island, item.regionKey);
+      if (!tradeResult.success) return tradeResult;
+    }
+    if (last) {
+      goTo(last.island);
+      const tradeResult = trade(last.t4, last.t5, 5, last.island, last.regionKey);
       if (!tradeResult.success) return tradeResult;
     }
     return { success: true };
@@ -1281,7 +1300,14 @@ function buildJugglingRoute(config, trades, regionMapping, shipCapacity = 22450,
       const loadPlayerResult = loadPlayer(sTrades.map(t => ({ name: t.t4, count: 5 })), "Iliya Island");
       if (!loadPlayerResult.success) return loadPlayerResult;
       
-      // Non-stock island sweep (nearest-first)
+      // The swap must happen at a swap-capable port; pick it up front so the
+      // non-stock island sweep can end closest to it.
+      const swapLoc = bestSwapPort();
+      if (!swapLoc) {
+        return fail(`Cannot sweep ${sRegion}: no swap-capable port reachable`);
+      }
+      
+      // Non-stock island sweep, ending closest to the swap port.
       const sweepItems = [];
       for (const region of nonStockRegions) {
         const regionTrades = nonStockTrades.filter(t => t.region.toLowerCase() === region);
@@ -1290,7 +1316,7 @@ function buildJugglingRoute(config, trades, regionMapping, shipCapacity = 22450,
           sweepItems.push({ island: tradeData.island, t4: tradeData.t4, t5: tradeData.t5, regionKey: region.charAt(0).toUpperCase() + region.slice(1) });
         }
       }
-      const sweepResult = sweepIslands(sweepItems);
+      const sweepResult = sweepIslands(sweepItems, swapLoc);
       if (!sweepResult.success) return sweepResult;
       
       // Swap: move S restock T4s to the ship, exchanging an equal weight of
@@ -1313,11 +1339,6 @@ function buildJugglingRoute(config, trades, regionMapping, shipCapacity = 22450,
       }
       if (outWeight < sT4Weight) {
         return fail(`Cannot sweep ${sRegion}: not enough non-stock T5s to swap for restock T4s`);
-      }
-      // The swap must happen at a swap-capable port, so sail to the best one.
-      const swapLoc = bestSwapPort();
-      if (!swapLoc) {
-        return fail(`Cannot sweep ${sRegion}: no swap-capable port reachable`);
       }
       goTo(swapLoc);
       const swapResult = swapShipPlayer(sT4Items, swapOutItems, swapLoc);
@@ -1435,7 +1456,10 @@ function buildJugglingRoute(config, trades, regionMapping, shipCapacity = 22450,
           });
         }
       }
-      const sweepResult = sweepIslands(sweepItems);
+      // Sweep the T4→T5 islands, ending closest to the first T6 trader of the
+      // group so the onward leg into the chains is short.
+      const firstTrader = (t6Orders[group[0]] || [])[0];
+      const sweepResult = sweepIslands(sweepItems, firstTrader);
       if (!sweepResult.success) return sweepResult;
       
       // If the next group exists, try the overstack handoff for this group's
