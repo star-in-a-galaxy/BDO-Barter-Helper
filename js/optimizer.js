@@ -79,25 +79,36 @@ function normName(name) {
     .toLowerCase();
 }
 
+// Memoized sea-aware distance. The config loop and the island sweep query the
+// same port pairs repeatedly, so cache them (order-independent).
+const distanceCache = new Map();
 function getDistance(loc1, loc2, ports) {
+  const k1 = normName(loc1);
+  const k2 = normName(loc2);
+  const key = k1 < k2 ? k1 + '|' + k2 : k2 + '|' + k1;
+  const cached = distanceCache.get(key);
+  if (cached !== undefined) return cached;
+  
   // Sea-aware distance first: routes around the landmass via "preceding-node"
   // waypoints where the straight line would cross land.
   const sea = seaPath(loc1, loc2, ports);
-  if (sea) return sea.distance;
-
-  // Fall back to a straight line for unrouted / unresolvable pairs.
-  const key1 = normName(loc1);
-  const key2 = normName(loc2);
+  if (sea) {
+    distanceCache.set(key, sea.distance);
+    return sea.distance;
+  }
   
-  const port1 = Object.values(ports).find(p => normName(p.name) === key1);
-  const port2 = Object.values(ports).find(p => normName(p.name) === key2);
+  // Fall back to a straight line for unrouted / unresolvable pairs.
+  const port1 = Object.values(ports).find(p => normName(p.name) === k1);
+  const port2 = Object.values(ports).find(p => normName(p.name) === k2);
   
   if (!port1 || !port2 || !port1.coordinates || !port2.coordinates) return 0;
   
   const [x1, y1] = port1.coordinates;
   const [x2, y2] = port2.coordinates;
   
-  return Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2);
+  const d = Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2);
+  distanceCache.set(key, d);
+  return d;
 }
 
 function calculateRouteDistance(route, ports) {
