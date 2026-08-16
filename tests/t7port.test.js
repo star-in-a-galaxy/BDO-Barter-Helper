@@ -66,14 +66,15 @@ describe('T7 barter location', () => {
     expect(barterByInput['[Level 6] Moonlit Crystal Lamp']).toBe('Sausan Garrison Wharf');
     expect(barterByInput['[Level 6] Moonshade Aged Wine']).toBe('Sanctuary Coastal Outpost');
 
-    // The T7 sells happen at the same actual ports.
+    // T7 sells are deferred: after bartering all of a region's T6→T7s (ship
+    // weight is unchanged), the T7s are sold at the last T6→T7 port.
     const sellByItem = {};
     for (const a of result.actions) {
       if (a.action === 'sell') {
         for (const it of a.items) sellByItem[it.name] = a.location;
       }
     }
-    expect(sellByItem['[Level 7] Omar Lava Powder']).toBe('Sausan Garrison Wharf');
+    expect(sellByItem['[Level 7] Omar Lava Powder']).toBe('Sanctuary Coastal Outpost');
     expect(sellByItem['[Level 7] Top-Quality Hakinza Perfume']).toBe('Sanctuary Coastal Outpost');
   });
 

@@ -514,19 +514,20 @@ function buildOptimizedRoute(config, trades, regionMapping, shipCapacity = 22450
       if (!tradeResult.success) return tradeResult;
     }
     
-    // T6→T7 (spread identical region-based barters across the T7 traders)
-    const t6t7Result = tradeRegionT6toT7(regionTrades, t7Traders, regionKey);
-    if (!t6t7Result.success) return t6t7Result;
-    
-    // Sell T7: stage each 5x stack to the player, then sell it immediately.
-    // Selling one stack at a time keeps the player inventory within threshold.
+    // T6→T7: barter them all at their offering ports, then sell the T7s at the
+    // last port - consecutive T6→T7s don't change ship weight, so defer sells.
+    for (let i = 0; i < regionTrades.length; i++) {
+      const tradeData = regionTrades[i];
+      const loc = tradeData.t7Port || t7Traders[i];
+      goTo(loc);
+      const barterResult = trade(t6Name(tradeData), t7Name(tradeData), 5, loc, regionKey);
+      if (!barterResult.success) return barterResult;
+    }
     for (const tradeData of regionTrades) {
-      const sellLoc = tradeData.t7Port || t7SellLoc;
-      goTo(sellLoc);
-      const t7Item = t7Name(tradeData);
-      const moveResult = moveToPlayer([{ name: t7Item, count: 5 }], sellLoc);
+      const item = { name: t7Name(tradeData), count: 5 };
+      const moveResult = moveToPlayer([item], currentLocation);
       if (!moveResult.success) return moveResult;
-      const sellResult = sell([{ name: t7Item, count: 5 }], sellLoc);
+      const sellResult = sell([item], currentLocation);
       if (!sellResult.success) return sellResult;
     }
     
@@ -969,10 +970,7 @@ function buildJugglingRoute(config, trades, regionMapping, shipCapacity = 22450,
       if (!tradeResult.success) return tradeResult;
     }
     
-    const t6t7Result = tradeRegionT6toT7(regionTrades, t7Traders, regionKey);
-    if (!t6t7Result.success) return t6t7Result;
-    
-    return sellT7s(regionTrades, regionKey, t7SellLoc);
+    return tradeAndSellT6T7(regionTrades, t7Traders, regionKey);
   };
   
   // Re-barter a stocked region's T4→T5 at its islands and return the produced
@@ -1051,6 +1049,29 @@ function buildJugglingRoute(config, trades, regionMapping, shipCapacity = 22450,
     return { success: true };
   };
   
+  // T6→T7 barters followed by a deferred sell. Consecutive T6→T7 trades don't
+  // change ship weight (T6 in = T7 out), so we barter them all at their actual
+  // offering ports and only offload the T7s afterwards, at the last port - no
+  // sell between each barter.
+  const tradeAndSellT6T7 = (regionTrades, t7Traders, regionKey) => {
+    for (let i = 0; i < regionTrades.length; i++) {
+      const tradeData = regionTrades[i];
+      const loc = tradeData.t7Port || t7Traders[i];
+      if (!loc) return fail(`No T7 trader for ${regionKey} trade ${i + 1}`);
+      goTo(loc);
+      const barterResult = trade(t6Name(tradeData), t7Name(tradeData), 5, loc, regionKey);
+      if (!barterResult.success) return barterResult;
+    }
+    for (const tradeData of regionTrades) {
+      const item = { name: t7Name(tradeData), count: 5 };
+      const moveResult = moveToPlayer([item], currentLocation);
+      if (!moveResult.success) return moveResult;
+      const sellResult = sell([item], currentLocation);
+      if (!sellResult.success) return sellResult;
+    }
+    return { success: true };
+  };
+  
   // Run a region's T5→T6 → T6→T7 → sell chain with the ship already holding the
   // region's T5s (used by processBatchedRegions and the overstack handoff).
   const runRegionChain = (region, regionTrades, regionKey, t6Traders, t7Traders) => {
@@ -1065,10 +1086,7 @@ function buildJugglingRoute(config, trades, regionMapping, shipCapacity = 22450,
       if (!tradeResult.success) return tradeResult;
     }
     
-    const t6t7Result = tradeRegionT6toT7(regionTrades, t7Traders, regionKey);
-    if (!t6t7Result.success) return t6t7Result;
-    
-    return sellT7s(regionTrades, regionKey, t7Traders[t7Traders.length - 1]);
+    return tradeAndSellT6T7(regionTrades, t7Traders, regionKey);
   };
   
   // Process a batch of regions sharing one ship load. For each region in
