@@ -351,15 +351,47 @@ export function buildTrades(t4t5Rows, t5t6Rows, t6t7Rows, tierPorts) {
   const t6toRow = {};
   if (t6t7Rows) {
     for (const r of t6t7Rows) {
-      if (r.t6 && r.t7) {
-        t6toT7[norm(r.t6)] = r.t7;
-        t6toRow[norm(r.t6)] = r;
-      }
+      if (!r.t6) continue;
+      // Keep the row for the offering port even when the T7 item wasn't read
+      // (garbled right column) - the port is still authoritative for routing.
+      if (r.t7) t6toT7[norm(r.t6)] = r.t7;
+      t6toRow[norm(r.t6)] = r;
+    }
+  }
+  // T5s produced at an island that no trader was read for (orphaned). When a T5
+  // is misread as another trader's T5, the misread trader's real T5 is left
+  // orphaned - offer to reassign it.
+  const orphans = [];
+  {
+    const seenOrphan = new Set();
+    for (const r of t4t5Rows) {
+      if (!(r.t4 && r.t5)) continue;
+      if ((byT5[r.t5] || []).length) continue;
+      const ok = norm(r.island) + '|' + norm(r.t5);
+      if (seenOrphan.has(ok)) continue;
+      seenOrphan.add(ok);
+      orphans.push({ island: r.island, t4: r.t4, t5: r.t5 });
     }
   }
   const trades = [];
   const seen = new Set();
   const seenRow = new Set();
+  // Best T6→T7 row for a T6 name: exact key first, then a fuzzy word match so a
+  // near-miss OCR read of the T6 still links to its offering port / T7 item.
+  const findT6t7Row = (t6Name) => {
+    if (!t6Name) return null;
+    const exact = t6toRow[norm(t6Name)];
+    if (exact) return exact;
+    let best = null, bestScore = 0.6;
+    for (const r of t6t7Rows) {
+      if (!r.t6) continue;
+      const score = wordSimilar(t6Name, r.t6);
+      if (score > bestScore) { bestScore = score; best = r; }
+    }
+    return best;
+  };
+  const t7For = (t6Name, t7Row) =>
+    (t6Name && (t6toT7[norm(t6Name)] || (t7Row && t7Row.t7))) || null;
   for (const r of t4t5Rows) {
     if (!(r.t4 && r.t5)) continue;
     // A T4→T5 island produces exactly one T5→T6 trade, so each island row maps
@@ -377,7 +409,7 @@ export function buildTrades(t4t5Rows, t5t6Rows, t6t7Rows, tierPorts) {
       seen.add(key);
       const chain = CHAIN_MAP[norm(m.trader)];
       if (!chain) continue;
-      const t7Row = m.t6 ? t6toRow[norm(m.t6)] : null;
+      const t7Row = m.t6 ? findT6t7Row(m.t6) : null;
       const trade = {
         region: chain[0],
         chain: chain[1],
@@ -385,7 +417,7 @@ export function buildTrades(t4t5Rows, t5t6Rows, t6t7Rows, tierPorts) {
         t4: r.t4,
         island: r.island,
         t6: m.t6,
-        t7: m.t6 ? t6toT7[norm(m.t6)] : null,
+        t7: t7For(m.t6, t7Row),
         // The specific T7 port that actually offers this T6→T7 trade (from the
         // T6→T7 screenshot) - the optimizer must barter/sell there, not at an
         // arbitrary port of the mapped region.
@@ -423,12 +455,12 @@ export function buildTrades(t4t5Rows, t5t6Rows, t6t7Rows, tierPorts) {
           .map(c => {
             const ch = CHAIN_MAP[norm(c.trader)];
             if (!ch) return null;
-            const altT7Row = c.t6 ? t6toRow[norm(c.t6)] : null;
+            const altT7Row = c.t6 ? findT6t7Row(c.t6) : null;
             return {
               region: ch[0],
               chain: ch[1],
               t6: c.t6 || null,
-              t7: (c.t6 && t6toT7[norm(c.t6)]) || null,
+              t7: t7For(c.t6, altT7Row),
               t7Port: altT7Row ? altT7Row.port : null
             };
           })
@@ -440,6 +472,12 @@ export function buildTrades(t4t5Rows, t5t6Rows, t6t7Rows, tierPorts) {
             item: trade.t5,
             alternatives: trade.alternativeTraders.map(o => `${o.region} - ${o.chain}`)
           }];
+        }
+        // The trader whose T5 read is suspect may actually be one of the orphaned
+        // T5s (an island T5 that no trader was read for). Offer those so the
+        // whole trade (T5 + its real island/T4) can be fixed in one click.
+        if (orphans.length) {
+          trade.orphanT5Options = orphans.map(o => ({ island: o.island, t4: o.t4, t5: o.t5 }));
         }
       }
       break; // one T4→T5 island row → one trade

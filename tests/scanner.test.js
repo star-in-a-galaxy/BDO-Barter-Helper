@@ -108,6 +108,50 @@ describe('scanner near-twin warnings', () => {
     expect(trades[0].warnings.some(w => w.kind === 'trader')).toBe(true);
   });
 
+  it('keeps the offering port for an alternative even when the T7 item was not read', () => {
+    const rows = [{
+      island: 'Balvege Island',
+      t4: "[Level 4] Marine Knights' Spear",
+      t5: '[Level 5] 37 Year Old Herbal Wine'
+    }];
+    const t5t6 = [
+      { trader: 'Grándiha', t5: '[Level 5] 37 Year Old Herbal Wine', t6: '[Level 6] Kamasylvian Sculpture' },
+      { trader: 'Starry Midnight Port', t5: '[Level 5] 37 Year Old Herbal Wine', t6: '[Level 6] Moonlit Crystal Shard' }
+    ];
+    const t6t7 = [
+      { port: 'Lema Island', t6: '[Level 6] Kamasylvian Sculpture', t7: '[Level 7] Balenos Rainbow Coral' },
+      { port: 'Iliya Island', t6: '[Level 6] Moonlit Crystal Shard', t7: null }
+    ];
+    const trades = buildTrades(rows, t5t6, t6t7);
+    const alt = trades[0].alternativeTraders[0];
+    expect(alt.chain).toBe('Starry Midnight Port');
+    expect(alt.t6).toBe('[Level 6] Moonlit Crystal Shard');
+    expect(alt.t7).toBeNull();
+    expect(alt.t7Port).toBe('Iliya Island');
+  });
+
+  it('offers the orphaned T5 so a misread trade can be reassigned to the correct island', () => {
+    const rows = [
+      { island: 'Balvege Island', t4: "[Level 4] Marine Knights' Spear", t5: '[Level 5] 37 Year Old Herbal Wine' },
+      { island: 'Narvo Island', t4: '[Level 4] Stolen Pirate Dagger', t5: '[Level 5] 102 Year Old Golden Herb' }
+    ];
+    const t5t6 = [
+      { trader: 'Grándiha', t5: '[Level 5] 37 Year Old Herbal Wine', t6: '[Level 6] Kamasylvian Sculpture' },
+      { trader: 'Starry Midnight Port', t5: '[Level 5] 37 Year Old Herbal Wine', t6: '[Level 6] Moonlit Crystal Shard' }
+    ];
+    const t6t7 = [
+      { port: 'Lema Island', t6: '[Level 6] Kamasylvian Sculpture', t7: '[Level 7] Balenos Rainbow Coral' },
+      { port: 'Iliya Island', t6: '[Level 6] Moonlit Crystal Shard', t7: "[Level 7] Balenosian Sailor's Telescope" }
+    ];
+    const trades = buildTrades(rows, t5t6, t6t7);
+    const amb = trades.find(t => t.alternativeTraders);
+    expect(amb.orphanT5Options).toHaveLength(1);
+    const o = amb.orphanT5Options[0];
+    expect(o.t5).toBe('[Level 5] 102 Year Old Golden Herb');
+    expect(o.island).toBe('Narvo Island');
+    expect(o.t4).toBe('[Level 4] Stolen Pirate Dagger');
+  });
+
   it('collapses the same island row seen in both T4→T5 screenshots', () => {
     const rows = [
       { island: 'Balvege Island', t4: "[Level 4] Marine Knights' Spear", t5: '[Level 5] 37 Year Old Herbal Wine' },
