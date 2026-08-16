@@ -1,6 +1,6 @@
 import { getCatalog } from './catalog.js';
 import { planRoute } from './planner.js';
-import { attachStepCheckboxes, getActiveCard, getInventoryForCard, stepNext, stepPrev } from './walkthrough.js';
+import { attachStepCheckboxes, getActiveCard, getActiveStep, getInventoryForCard, stepNext, stepPrev } from './walkthrough.js';
 import { formatInventory } from './inventory.js';
 import { initMapOverlay, drawRoute, clearRoute, setActiveStep, setAheadSteps } from './map-overlay.js';
 import { scanImages as clientScan } from './scanner.js';
@@ -250,10 +250,13 @@ function createTradeRow(trade) {
   // If the user changes the T5 (or T4), the scanned real T6/T7 names no longer
   // apply, so drop them and let the optimizer fall back to region-based names.
   const clearRealT6T7 = () => { trade.t6 = undefined; trade.t7 = undefined; };
+  const persistEdit = () => { clearRealT6T7(); saveState(); };
   const t5Input = t5Cell.querySelector('.filter-input');
   const t4Input = t4Cell.querySelector('.filter-input');
-  if (t5Input) t5Input.addEventListener('change', clearRealT6T7);
-  if (t4Input) t4Input.addEventListener('change', clearRealT6T7);
+  const islandInput = islandCell.querySelector('.filter-input');
+  if (t5Input) t5Input.addEventListener('change', persistEdit);
+  if (t4Input) t4Input.addEventListener('change', persistEdit);
+  if (islandInput) islandInput.addEventListener('change', saveState);
   
   row.appendChild(regionCell);
   row.appendChild(t5Cell);
@@ -336,7 +339,15 @@ async function calculateRoute() {
     const distanceDisplay = document.getElementById('distance-display');
     distanceDisplay.textContent = `Total distance: ${(result.total_distance / 100).toFixed(1)}`;
     distanceDisplay.classList.add('show');
-    
+
+    lastRoute = {
+      walkthrough: resultDiv.innerHTML,
+      stops: result.stops || [],
+      route: result.route || [],
+      distance: result.total_distance
+    };
+    saveState();
+
   } catch (err) {
     document.getElementById('result').textContent = 'Error: ' + err.message;
     document.getElementById('result').classList.add('show');
@@ -346,7 +357,7 @@ async function calculateRoute() {
   btn.textContent = 'Calculate Route';
 }
 
-function populateTrades(trades) {
+function populateTrades(trades, persist = true) {
   const tbody = document.getElementById('trade-rows');
   tbody.innerHTML = '';
   tradeRows = [];
@@ -373,6 +384,7 @@ function populateTrades(trades) {
     tbody.appendChild(row.element);
     tradeRows.push(row);
   });
+  if (persist) saveState();
 }
 
 const scanStore = { t4t5: [], t5t6: [], t6t7: [] };
@@ -415,6 +427,7 @@ function clearTradeTable() {
     row.setValue('t7', undefined);
     row.clearWarnings();
   });
+  saveState();
 }
 
 // --- Usage guide -----------------------------------------------------------
@@ -771,6 +784,7 @@ function openResolutionModal(trades) {
               curRow.setValue('t7Port', undefined);
             }
           }
+          saveState();
           i++;
           show();
         });
@@ -789,6 +803,7 @@ function openResolutionModal(trades) {
             row.setValue(w.field, opt);
             row.clearWarnings();
           }
+          saveState();
           i++;
           show();
         });
@@ -824,6 +839,7 @@ async function scanScreenshots() {
       if (result.mapping.south) document.getElementById('region-south').value = result.mapping.south;
       if (result.mapping.east) document.getElementById('region-east').value = result.mapping.east;
     }
+    saveState();
     const trades = result.trades || [];
     const openedModal = openResolutionModal(trades);
     if (!openedModal) {
@@ -839,6 +855,125 @@ async function scanScreenshots() {
   }
 }
 
+// --- persistence ------------------------------------------------------------
+
+const STORAGE_KEY = 'barter.state';
+
+// Settings (sidebar config + map layer toggles) that persist across sessions.
+const SETTING_IDS = [
+  'region-north', 'region-south', 'region-east',
+  'stock-all', 'ship-weight', 'char-weight', 'char-used-weight', 'juggling-toggle',
+  'steps-ahead', 'hide-done',
+  'tgl-t5', 'tgl-t6', 'tgl-t7', 'tgl-other', 'tgl-route'
+];
+
+let lastRoute = null; // { walkthrough, stops, route, distance }
+
+function readState() {
+  try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null'); } catch { return null; }
+}
+
+function saveState() {
+  try {
+    const settings = {};
+    for (const id of SETTING_IDS) {
+      const el = document.getElementById(id);
+      if (!el) continue;
+      settings[id] = el.type === 'checkbox' ? el.checked : el.value;
+    }
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({
+      settings,
+      trades: tradeRows.map(r => ({ ...r.getData(), key: r.chain })),
+      route: lastRoute,
+      activeStep: getActiveStep(document.getElementById('result'))
+    }));
+  } catch (e) { /* storage may be unavailable; ignore */ }
+}
+
+// Apply saved settings to the inputs (called before the map overlay reads the
+// layer toggles and the steps-ahead setup reads its value).
+function loadSettings() {
+  const state = readState();
+  if (!state || !state.settings) return;
+  for (const id of SETTING_IDS) {
+    const el = document.getElementById(id);
+    if (!el || state.settings[id] === undefined) continue;
+    if (el.type === 'checkbox') el.checked = !!state.settings[id];
+    else el.value = state.settings[id];
+  }
+}
+
+// Re-render the trade table from saved row data (getData() + the base chain key).
+function restoreTrades(savedRows) {
+  const byChain = new Map();
+  (savedRows || []).forEach(t => {
+    const key = normChainName(t && t.key);
+    if (key && !byChain.has(key)) byChain.set(key, t);
+  });
+  const tbody = document.getElementById('trade-rows');
+  tbody.innerHTML = '';
+  tradeRows = [];
+  DEFAULT_TRADES.forEach(base => {
+    const saved = byChain.get(normChainName(base.chain));
+    const row = createTradeRow({
+      region: base.region,
+      chain: base.chain,
+      t5: saved ? saved.t5 : undefined,
+      t4: saved ? saved.t4 : undefined,
+      island: saved ? saved.island : undefined,
+      t6: saved ? saved.t6 : undefined,
+      t7: saved ? saved.t7 : undefined,
+      t7Port: saved ? saved.t7Port : undefined,
+      warnings: saved ? saved.warnings : undefined
+    });
+    tbody.appendChild(row.element);
+    tradeRows.push(row);
+  });
+}
+
+// Re-mark the first `step - 1` steps done so `step` becomes the active one.
+function restoreActiveStep(step) {
+  const container = document.getElementById('result');
+  if (!container || !step || step <= 1) return;
+  const cards = Array.from(container.querySelectorAll('.port-card'));
+  const cb = cards[step - 2] && cards[step - 2].querySelector('.step-done');
+  if (cb && !cb.checked) {
+    cb.checked = true;
+    cb.dispatchEvent(new Event('change', { bubbles: true }));
+  }
+}
+
+function restoreRoute(r, activeStep) {
+  const resultDiv = document.getElementById('result');
+  resultDiv.innerHTML = r.walkthrough;
+  resultDiv.classList.add('show');
+  resultDiv.classList.remove('hide-done');
+  attachStepCheckboxes(resultDiv);
+  updateInventoryPanel();
+  clearRoute();
+  drawRoute(r.stops || []);
+  const distanceDisplay = document.getElementById('distance-display');
+  if (r.distance != null) {
+    distanceDisplay.textContent = `Total distance: ${(r.distance / 100).toFixed(1)}`;
+    distanceDisplay.classList.add('show');
+  }
+  const routeToolbar = document.getElementById('route-toolbar');
+  if (routeToolbar) routeToolbar.style.display = 'flex';
+  const hideDoneCheckbox = document.getElementById('hide-done');
+  if (hideDoneCheckbox) resultDiv.classList.toggle('hide-done', hideDoneCheckbox.checked);
+  if (activeStep) restoreActiveStep(activeStep);
+  updateInventoryPanel();
+}
+
+// Restore the saved trade table + last route + current step (called at the end
+// of init, once the map overlay and step listeners are ready).
+function loadState() {
+  const state = readState();
+  if (!state) return;
+  if (Array.isArray(state.trades)) restoreTrades(state.trades);
+  if (state.route && state.route.walkthrough) restoreRoute(state.route, state.activeStep);
+}
+
 async function init() {
   try {
     catalog = await getCatalog();
@@ -848,7 +983,11 @@ async function init() {
     return;
   }
   
-  populateTrades(DEFAULT_TRADES);
+  // Restore saved settings before the map overlay reads the layer toggles and
+  // the steps-ahead setup reads its value.
+  loadSettings();
+  
+  populateTrades(DEFAULT_TRADES, false);
   initMapOverlay(map);
   makeDraggable(document.getElementById('inv-controls'));
   positionInventoryDefault();
@@ -885,6 +1024,13 @@ async function init() {
   resultDiv.addEventListener('activestep', (e) => {
     setActiveStep(e.detail && e.detail.step);
     updateInventoryPanel();
+    saveState();
+  });
+
+  // Persist any setting change (config inputs, region mapping, toggles, etc.).
+  SETTING_IDS.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener('change', saveState);
   });
 
   // How many steps ahead to highlight on the map (default 1 = current + next).
@@ -893,6 +1039,9 @@ async function init() {
     setAheadSteps(parseInt(stepsAhead.value, 10) || 1);
     stepsAhead.addEventListener('change', () => setAheadSteps(parseInt(stepsAhead.value, 10) || 0));
   }
+
+  // Restore the saved trade table, last route, and current step.
+  loadState();
 }
 
 // Show the current step's boat/player inventory in the map overlay panel.
