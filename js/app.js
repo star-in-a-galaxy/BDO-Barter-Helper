@@ -429,7 +429,26 @@ function clearTradeTable() {
     row.setValue('t7', undefined);
     row.clearWarnings();
   });
+  clearRouteView();
   saveState();
+}
+
+// The route is derived from the table, so clearing the table clears it too.
+function clearRouteView() {
+  lastRoute = null;
+  const resultDiv = document.getElementById('result');
+  if (resultDiv) {
+    resultDiv.innerHTML = '';
+    resultDiv.classList.remove('show');
+  }
+  const distanceDisplay = document.getElementById('distance-display');
+  if (distanceDisplay) {
+    distanceDisplay.textContent = '';
+    distanceDisplay.classList.remove('show');
+  }
+  const routeToolbar = document.getElementById('route-toolbar');
+  if (routeToolbar) routeToolbar.style.display = 'none';
+  clearRoute();
 }
 
 // --- Usage guide -----------------------------------------------------------
