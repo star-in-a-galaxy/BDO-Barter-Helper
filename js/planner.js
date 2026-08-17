@@ -30,7 +30,6 @@ export async function planRoute(payload) {
     config.ship_weight,
     config.char_weight,
     config.char_used_weight || 150,
-    config.juggling === true,
     allStock
   );
   

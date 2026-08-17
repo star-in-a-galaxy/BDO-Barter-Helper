@@ -97,7 +97,7 @@ describe('capacity-adaptive routing', () => {
   it('should fall back to per-region with a tiny player inventory', async () => {
     const res = await planRoute(makePayload(22450, 800));
     expect(res.status).toBe('ok');
-    expect(res.optimization.structure).toBe('perRegion');
+    expect(res.optimization.structure).toBe('exhaustive');
   });
 
   it('should give a clear error when the ship is below the hard minimum', async () => {

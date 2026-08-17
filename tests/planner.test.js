@@ -158,7 +158,7 @@ describe('planner', () => {
         samplePayload.trades,
         { north: 'A', south: 'B', east: 'C' },
         { east: true, north: false, south: false },
-        22450, 5000, 150, true, false
+        22450, 5000, 150
       );
       expect(result.error).toBeUndefined();
       return result.actions.filter(a => a.action === 'trade' && a.output && a.output.includes('Level 6'));
