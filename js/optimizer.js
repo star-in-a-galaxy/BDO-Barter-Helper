@@ -464,15 +464,26 @@ function buildRoute(config, grouping, trades, shipCapacity, baseWeight, usedWeig
       const r = trade(td.t5, t6Name(td), 5, trader);
       if (!r.success) return r;
     }
-    for (let i = 0; i < regionTrades.length; i++) {
-      const td = regionTrades[i];
-      const loc = t7LocFor(td, t7Traders, i);
-      if (!loc) return fail(`No T7 trader for ${regionKey} trade ${i + 1}`);
-      goTo(loc);
-      const r = trade(t6Name(td), t7Name(td), 5, loc);
+    // T6→T7 phase, ordered by the config's t7Orders so the exhaustive search
+    // explores both orders of the region's two ports (and which is "last" for
+    // the sells) instead of being locked to the table order. Each trade still
+    // barters at its own authoritative t7Port.
+    const t7Phase = regionTrades.map((td, i) => ({ td, port: t7LocFor(td, t7Traders, i) }));
+    for (const p of t7Phase) {
+      if (!p.port) return fail(`No T7 trader for ${regionKey} trade`);
+    }
+    const t7rank = new Map(t7Traders.map((p, i) => [nameKey(p), i]));
+    t7Phase.sort((a, b) => {
+      const ra = t7rank.has(nameKey(a.port)) ? t7rank.get(nameKey(a.port)) : t7Traders.length;
+      const rb = t7rank.has(nameKey(b.port)) ? t7rank.get(nameKey(b.port)) : t7Traders.length;
+      return ra - rb;
+    });
+    for (const { td, port } of t7Phase) {
+      goTo(port);
+      const r = trade(t6Name(td), t7Name(td), 5, port);
       if (!r.success) return r;
     }
-    for (const td of regionTrades) {
+    for (const { td } of t7Phase) {
       const it = { name: t7Name(td), count: 5 };
       const m = moveToPlayer([it], currentLocation);
       if (!m.success) return m;
