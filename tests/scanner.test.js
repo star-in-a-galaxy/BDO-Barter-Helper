@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'fs';
 import { join } from 'path';
 
-import { findNearTwins, buildTrades, parseT4t5 } from '../js/scanner.js';
+import { findNearTwins, buildTrades, parseT4t5, parseT6t7 } from '../js/scanner.js';
 
 const goods = JSON.parse(
   readFileSync(join(process.cwd(), 'assets', 'barterGoods.json'), 'utf-8')
@@ -47,8 +47,7 @@ describe('scanner near-twin warnings', () => {
     expect(trades[0].warnings[0].alternatives).toContain("[Level 4] Marine Knights' Spear");
   });
 
-  it('resolves T6 ambiguity from the port list (no warning)', () => {
-    const tierPorts = JSON.parse(
+  it('resolves T6 ambiguity from the port list (no warning)', () => {    const tierPorts = JSON.parse(
       readFileSync(join(process.cwd(), 'assets', 'barterTierPorts.json'), 'utf-8')
     );
     const rows = [{ island: 'Orffs Island', t4: '[Level 4] X', t5: '[Level 5] Luxury Patterned Fabric' }];
@@ -162,5 +161,51 @@ describe('scanner near-twin warnings', () => {
     ];
     const trades = buildTrades(rows, t5t6, []);
     expect(trades).toHaveLength(1);
+  });
+
+  it('does not let an unreadable T6→T7 port name through (strict anchor)', () => {
+    const boxes = [
+      { x0: 0.1, y0: 0.1, y1: 0.14, text: 'IIVERHELT' },
+      { x0: 0.4, y0: 0.11, y1: 0.15, text: '[Level 6] Top-Quality Coconut Syrup' },
+      { x0: 0.8, y0: 0.11, y1: 0.15, text: "[Level 7] Artisan's Seashell Necklace" }
+    ];
+    const rows = parseT6t7(boxes, goods, ports);
+    expect(rows).toHaveLength(1);
+    // A garbled port that matches none of the 6 valid T6→T7 ports is dropped,
+    // never passed through as raw OCR text.
+    expect(rows[0].port).toBeNull();
+    // The T6 item is still read from the same row.
+    expect(rows[0].t6).toBe('[Level 6] Top-Quality Coconut Syrup');
+  });
+
+  it('infers an unreadable port from its pair partner in the same screenshot', () => {    // Two T6→T7 rows from one region's pair: Lema read confidently, the other
+    // (Iliya) garbled -> the garbled row is inferred as Iliya, Lema's partner.
+    const boxes = [
+      { x0: 0.1, y0: 0.1, y1: 0.14, text: 'Lema Island' },
+      { x0: 0.4, y0: 0.11, y1: 0.15, text: '[Level 6] Valencia Sand Shield' },
+      { x0: 0.8, y0: 0.11, y1: 0.15, text: '[Level 7] Balenos Rainbow Coral' },
+      { x0: 0.1, y0: 0.3, y1: 0.34, text: 'IIVERHELT' },
+      { x0: 0.4, y0: 0.31, y1: 0.35, text: '[Level 6] Top-Quality Coconut Syrup' },
+      { x0: 0.8, y0: 0.31, y1: 0.35, text: "[Level 7] Artisan's Seashell Necklace" }
+    ];
+    const rows = parseT6t7(boxes, goods, ports);
+    expect(rows).toHaveLength(2);
+    expect(rows[0].port).toBe('Lema Island');
+    expect(rows[1].port).toBe('Iliya Island');
+  });
+
+  it('derives the T6→T7 port from the T7 item (authoritative), overriding OCR', () => {
+    const tierPorts = JSON.parse(
+      readFileSync(join(process.cwd(), 'assets', 'barterTierPorts.json'), 'utf-8')
+    );
+    const rows = [{ island: 'Pujara Island', t4: '[Level 4] Panacea', t5: '[Level 5] Portrait of the Ancient' }];
+    const t5t6 = [{ trader: 'Dallae Pier', t5: '[Level 5] Portrait of the Ancient', t6: '[Level 6] Top-Quality Blue Underglaze Porcelain Crate' }];
+    // OCR misread the port as Lema, but Artisan's Seashell Necklace is actually
+    // offered at Iliya - the authoritative item lookup must win.
+    const t6t7 = [{ port: 'Lema Island', t6: '[Level 6] Top-Quality Blue Underglaze Porcelain Crate', t7: "[Level 7] Artisan's Seashell Necklace" }];
+    const trades = buildTrades(rows, t5t6, t6t7, tierPorts);
+    expect(trades).toHaveLength(1);
+    expect(trades[0].t7).toBe("[Level 7] Artisan's Seashell Necklace");
+    expect(trades[0].t7Port).toBe('Iliya Island');
   });
 });

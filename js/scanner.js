@@ -237,7 +237,13 @@ function parseRows(boxes, catalog, opts) {
       .sort((p, q) => p.x0 - q.x0)
       .map(b => b.text)
       .join(' ');
-    const anchor = matchName(a.text, opts.anchors) || a.text.trim();
+    // Anchor is canonicalized against known names when possible. For a strict
+    // anchor (T6→T7 ports - there are exactly 6 valid ones) an unreadable name
+    // is never passed through as-is: it becomes null so the caller falls back to
+    // the region's mapped port instead of routing to a garbage location. For
+    // islands/traders (many options) the raw text is kept so the row survives
+    // and its items still match.
+    const anchor = matchName(a.text, opts.anchors) || (opts.strictAnchor ? null : a.text.trim());
     const midItem = matchItem(midText, catalog, opts.midTier);
     const rightItem = matchItem(rightText, catalog, opts.rightTier);
 
@@ -292,10 +298,39 @@ export function parseT5t6(boxes, catalog, ports) {
 }
 
 export function parseT6t7(boxes, catalog, ports) {
-  return parseRows(boxes, catalog, {
+  const rows = parseRows(boxes, catalog, {
     anchors: portsByTarget(ports, 'level_7'),
-    anchorKey: 'port', midTier: 'level_6', rightTier: 'level_7', midKey: 't6', rightKey: 't7'
+    anchorKey: 'port', midTier: 'level_6', rightTier: 'level_7', midKey: 't6', rightKey: 't7',
+    strictAnchor: true
   });
+  inferPartnerPorts(rows);
+  return rows;
+}
+
+// The 6 T6→T7 ports are fixed pairs (one per mapped region). A T6→T7 screenshot
+// shows the trades of a single region, i.e. one pair, so if one row's port is
+// read confidently the other row's unreadable port is its partner.
+const T7_PAIRS = [
+  ['Olvia Coast', 'Epheria Sentry Post'],
+  ['Iliya Island', 'Lema Island'],
+  ['Sanctuary Coastal Outpost', 'Sausan Garrison Wharf']
+];
+
+function inferPartnerPorts(rows) {
+  const known = rows.filter(r => r.port);
+  if (!known.length) return;
+  let pair = null;
+  for (const [a, b] of T7_PAIRS) {
+    if (known.some(r => nameKey(r.port) === nameKey(a) || nameKey(r.port) === nameKey(b))) {
+      if (pair) return; // known ports span more than one pair - ambiguous
+      pair = [a, b];
+    }
+  }
+  if (!pair) return;
+  const used = new Set(known.map(r => nameKey(r.port)));
+  const free = pair.filter(p => !used.has(nameKey(p)));
+  if (free.length !== 1) return;
+  for (const r of rows) if (!r.port) r.port = free[0];
 }
 
 const CHAIN_MAP = {
@@ -329,6 +364,20 @@ function portItemsFor(tierPorts, tier, portName) {
   if (!group || !portName) return null;
   const entry = Object.entries(group).find(([p]) => nameKey(p) === nameKey(portName));
   return entry ? entry[1] : null;
+}
+
+// Reverse authoritative lookup: T7 items are port-specific, so the T6→T7 port
+// for a trade is the port that actually offers its T7 item (from barterTierPorts,
+// built from assets/barter_items/T7_items.txt). This is definitive and works even
+// when the screenshot's port label was unreadable or misread.
+function portForT7(t7Item, tierPorts) {
+  if (!t7Item) return null;
+  const group = tierPorts && tierPorts.t7;
+  if (!group) return null;
+  for (const [port, items] of Object.entries(group)) {
+    if ((items || []).some(p => namePart(p) === namePart(t7Item))) return port;
+  }
+  return null;
 }
 
 // T6/T7 items are port-specific, so if the OCR read the wrong one the true item
@@ -444,6 +493,11 @@ export function buildTrades(t4t5Rows, t5t6Rows, t6t7Rows, tierPorts) {
       }
       const remaining = warnings.filter(w => !resolved.has(w));
       if (remaining.length) trade.warnings = remaining;
+      // The T7 item is port-specific, so the authoritative T6→T7 port is the one
+      // that actually offers it (barterTierPorts) - definitive and independent of
+      // whether the screenshot's port label was readable. Fall back to the OCR
+      // port only if the T7 item couldn't be matched.
+      trade.t7Port = portForT7(trade.t7, tierPorts) || (t7Row ? t7Row.port : null);
       trades.push(trade);
 
       // The same T5 was read at more than one trader - one of those reads is a
@@ -461,7 +515,7 @@ export function buildTrades(t4t5Rows, t5t6Rows, t6t7Rows, tierPorts) {
               chain: ch[1],
               t6: c.t6 || null,
               t7: t7For(c.t6, altT7Row),
-              t7Port: altT7Row ? altT7Row.port : null
+              t7Port: portForT7(t7For(c.t6, altT7Row), tierPorts) || (altT7Row ? altT7Row.port : null)
             };
           })
           .filter(Boolean);
