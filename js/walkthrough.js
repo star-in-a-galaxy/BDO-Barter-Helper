@@ -4,23 +4,23 @@ function formatCount(count) {
   return `<span class="count-badge">${count}x</span>`;
 }
 
-function actionBadge(text) {
-  return `<span class="action-badge">${text}</span>`;
+function actionBadge(text, variant) {
+  return `<span class="action-badge action-badge--${variant || 'default'}">${text}</span>`;
 }
 
 function formatBarterAction(input, output, count) {
-  return `<div class="action-line">${ICONS.barter} ${actionBadge('Barter:')} ${formatItemWithIcon(input, count)} <span class="action-arrow">${ICONS.arrow}</span> ${formatItemWithIcon(output, count)}</div>`;
+  return `<div class="action-line">${ICONS.barter} ${actionBadge('Barter:', 'barter')} ${formatItemWithIcon(input, count)} <span class="action-arrow">${ICONS.arrow}</span> ${formatItemWithIcon(output, count)}</div>`;
 }
 
 function formatSellAction(items) {
   const itemList = items.map(item => formatItemWithIcon(item, 5)).join(', ');
-  return `<div class="action-line">${ICONS.sell} Sell: ${itemList}</div>`;
+  return `<div class="action-line">${ICONS.sell} ${actionBadge('Sell:', 'sell')} ${itemList}</div>`;
 }
 
 function formatLoadAction(target, items) {
   const targetIcon = target === 'Player' ? ICONS.player : ICONS.boat;
   const itemList = items.map(item => formatItemWithIcon(item.name, item.count)).join(', ');
-  return `<div class="action-line">${ICONS.load} ${actionBadge('Load:')} ${targetIcon} ${target} ${itemList}</div>`;
+  return `<div class="action-line">${ICONS.load} ${actionBadge('Load:', 'load')} ${targetIcon} ${target} ${itemList}</div>`;
 }
 
 function formatStoreAction(items) {
@@ -132,7 +132,7 @@ export function generateWalkthrough(actions, opts = {}) {
       else if (actType === 'sell_t7') {
         const t7Items = Object.keys(inv.ship).filter(name => getItemTier(name) === 7);
         const itemList = t7Items.map(item => formatItemWithIcon(item, inv.ship[item])).join(', ');
-        formattedAction = `<div class="action-line">${ICONS.sell} Sell: ${itemList}</div>`;
+        formattedAction = `<div class="action-line">${ICONS.sell} ${actionBadge('Sell:', 'sell')} ${itemList}</div>`;
         t7Items.forEach(item => inv.remove('ship', item, inv.ship[item]));
       }
       else if (actType === 'load_t4_and_player_items') {
@@ -211,17 +211,17 @@ export function generateWalkthrough(actions, opts = {}) {
       }
       else if (actType === 'move_to_player') {
         const items = locAction.items;
-        formattedAction = `<div class="action-line">${ICONS.swap} ${actionBadge('Move:')} ${ICONS.player} ${items.map(i => formatItemWithIcon(i.name, i.count)).join(', ')}</div>`;
+        formattedAction = `<div class="action-line">${ICONS.swap} ${actionBadge('Move:', 'move')} ${ICONS.player} ${items.map(i => formatItemWithIcon(i.name, i.count)).join(', ')}</div>`;
         items.forEach(item => inv.move(item.name, item.count, 'ship', 'player'));
       }
       else if (actType === 'move_to_ship') {
         const items = locAction.items;
-        formattedAction = `<div class="action-line">${ICONS.swap} ${actionBadge('Move:')} ${ICONS.boat} ${items.map(i => formatItemWithIcon(i.name, i.count)).join(', ')}</div>`;
+        formattedAction = `<div class="action-line">${ICONS.swap} ${actionBadge('Move:', 'move')} ${ICONS.boat} ${items.map(i => formatItemWithIcon(i.name, i.count)).join(', ')}</div>`;
         items.forEach(item => inv.move(item.name, item.count, 'player', 'ship'));
       }
       else if (actType === 'sell') {
         const items = locAction.items;
-        formattedAction = `<div class="action-line">${ICONS.sell} Sell: ${items.map(i => formatItemWithIcon(i.name, i.count)).join(', ')}</div>`;
+        formattedAction = `<div class="action-line">${ICONS.sell} ${actionBadge('Sell:', 'sell')} ${items.map(i => formatItemWithIcon(i.name, i.count)).join(', ')}</div>`;
         items.forEach(item => inv.remove('player', item.name, item.count));
       }
       
