@@ -166,6 +166,16 @@ function wireToggles() {
       }
     });
   }
+  const tradesToggle = document.getElementById('tgl-trades');
+  if (tradesToggle) {
+    tradesToggle.addEventListener('change', () => {
+      tradesVisible = tradesToggle.checked;
+      if (tradesLayer) {
+        if (tradesVisible) mapInstance.addLayer(tradesLayer);
+        else mapInstance.removeLayer(tradesLayer);
+      }
+    });
+  }
 }
 
 export function drawRoute(stops) {
@@ -269,6 +279,79 @@ function applyActiveStep() {
 export function clearRoute() {
   if (routeLayer && mapInstance) mapInstance.removeLayer(routeLayer);
   routeLayer = null;
+}
+
+// --- Trade FROM → TO badges -------------------------------------------------
+
+// Item icon <img> for a "[Level N] Item Name" string (mirrors walkthrough.js).
+function itemIconImg(itemName) {
+  const name = String(itemName || '');
+  const tierMatch = name.match(/\[Level (\d)\]/);
+  const tier = tierMatch ? tierMatch[1] : '';
+  const cleanName = name.replace(/\[Level \d+\]\s*/, '');
+  // Region-based T6/T7 placeholders (e.g. "[Level 6] North") have no icon file.
+  if (tier >= 6 && /^(North|South|East)$/i.test(cleanName.trim())) return '';
+  const safe = cleanName.toLowerCase()
+    .replace(/['"]/g, '').replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '');
+  return `<img src="assets/icons/level_${tier}_${safe}.webp" alt="" loading="lazy">`;
+}
+
+let tradesLayer = null;       // L.layerGroup for the FROM→TO badges
+let tradesVisible = true;
+
+// Fallback icon for a barter leg whose item wasn't read: a colored circle with
+// the chain region's letter (N / S / E) so the trade is still visible on the map.
+function regionBadgeIcon(region) {
+  const letter = String(region || '?').charAt(0).toUpperCase();
+  const color = { N: '#60a5fa', S: '#4ade80', E: '#f472b6' }[letter] || '#94a3b8';
+  return `<svg class="trade-region-icon" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">` +
+    `<circle cx="12" cy="12" r="10" fill="rgba(10,14,18,0.7)" stroke="${color}" stroke-width="2"/>` +
+    `<text x="12" y="16" text-anchor="middle" font-size="13" font-weight="700" fill="${color}">${letter}</text></svg>`;
+}
+
+// Icon for a barter leg: the real item icon when known, else the region letter.
+function tradeIcon(item, region) {
+  if (item) return itemIconImg(item);
+  return regionBadgeIcon(region);
+}
+
+// A badge showing the FROM → TO item icons of one barter step, floating above
+// the port where that step happens. Missing items fall back to the chain
+// region's letter icon (N/S/E) so an inferred port still shows its trade.
+function addTradeBadge(portName, from, to, fromTier, toTier, region) {
+  if (!portName) return;
+  const port = findPort(portName);
+  if (!port) return;
+  const [lat, lng] = projectToLatLng(port.coordinates[0], port.coordinates[1]);
+  const icon = L.divIcon({
+    className: 'trade-badge-wrap',
+    html: `<div class="trade-badge">${tradeIcon(from, region)}<span class="tb-arrow">→</span>${tradeIcon(to, region)}</div>`,
+    iconSize: [72, 30],
+    iconAnchor: [36, 42] // bottom-center, floated above the port marker
+  });
+  const marker = L.marker([lat, lng], { icon });
+  const displayFrom = from || `[Level ${fromTier}] ${region || '?'}`;
+  const displayTo = to || `[Level ${toTier}] ${region || '?'}`;
+  marker.bindTooltip(`${displayFrom} → ${displayTo}`, { direction: 'top', offset: [0, -8] });
+  tradesLayer.addLayer(marker);
+}
+
+function traderOfChain(chain) {
+  return String(chain || '').split(' - ').pop().trim();
+}
+
+// Show the trade-table's barters on the map: each chain renders its T4→T5 at
+// the island, its T5→T6 at the trader, and its T6→T7 at the T7 port.
+export function drawTrades(trades) {
+  if (!mapInstance) return;
+  if (tradesLayer) mapInstance.removeLayer(tradesLayer);
+  tradesLayer = L.layerGroup();
+  (trades || []).forEach(t => {
+    addTradeBadge(t.island, t.t4, t.t5, 4, 5, t.region);
+    addTradeBadge(traderOfChain(t.chain), t.t5, t.t6, 5, 6, t.region);
+    addTradeBadge(t.t7Port, t.t6, t.t7, 6, 7, t.region);
+  });
+  if (tradesVisible) tradesLayer.addTo(mapInstance);
 }
 
 // --- Calibration -----------------------------------------------------------
