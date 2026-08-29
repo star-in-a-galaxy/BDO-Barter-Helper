@@ -221,8 +221,12 @@ export function generateWalkthrough(actions, opts = {}) {
       }
       else if (actType === 'sell') {
         const items = locAction.items;
+        // A `fromShip` sell (sellShip) removes from the boat, not the player -
+        // otherwise the sold T7 would wrongly persist in the tracked boat
+        // inventory and make the ship look overweight.
+        const from = locAction.fromShip ? 'ship' : 'player';
         formattedAction = `<div class="action-line">${ICONS.sell} ${actionBadge('Sell:', 'sell')} ${items.map(i => formatItemWithIcon(i.name, i.count)).join(', ')}</div>`;
-        items.forEach(item => inv.remove('player', item.name, item.count));
+        items.forEach(item => inv.remove(from, item.name, item.count));
       }
       
       if (formattedAction) {

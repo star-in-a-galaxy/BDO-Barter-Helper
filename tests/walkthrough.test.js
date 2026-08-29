@@ -134,19 +134,31 @@ describe('walkthrough', () => {
       expect(walkthrough).toContain('Golden Fish Scale');
     });
 
-    it('should generate complete walkthrough for multiple actions', () => {
+    it('removes a fromShip sell from the boat inventory (not the player)', () => {
       const actions = [
-        { location: 'Iliya Island', action: 'load_east_stock', items: ['Herb'] },
-        { location: 'Arehaza', action: 'trade_t5_to_t6', items: ['Herb'], region: 'East' },
-        { location: 'Olvia Coast', action: 'trade_t6_to_t7', region: 'C' },
-        { location: 'Epheria Sentry Post', action: 'sell_t7' }
+        { location: 'Olvia Coast', action: 'trade', input: '[Level 6] Fancy Camel Hide', output: '[Level 7] Traditional Balenos Decorative Anchor', count: 5 },
+        { location: 'Olvia Coast', action: 'sell', items: [{ name: '[Level 7] Traditional Balenos Decorative Anchor', count: 5 }], fromShip: true }
       ];
-
       const walkthrough = generateWalkthrough(actions);
-      expect(walkthrough).toContain('Iliya Island');
-      expect(walkthrough).toContain('Arehaza');
-      expect(walkthrough).toContain('Olvia Coast');
-      expect(walkthrough).toContain('Epheria Sentry Post');
+      expect(walkthrough).toContain('Sell:');
+      // The sold T7 must be gone from the tracked boat inventory - otherwise the
+      // ship would look permanently overweight.
+      const ships = [...walkthrough.matchAll(/data-inv-ship="([^"]*)"/g)].map(m => m[1].replace(/&quot;/g, '"'));
+      const finalShip = JSON.parse(ships[ships.length - 1]);
+      expect(finalShip).toEqual({});
+    });
+
+    it('keeps a ship-sold item on the boat when the sell is from the player only', () => {
+      // A normal `sell` (no fromShip) removes from the player, so the item stays
+      // on the boat - used when the T7 was moved to the player first.
+      const actions = [
+        { location: 'Olvia Coast', action: 'trade', input: '[Level 6] Fancy Camel Hide', output: '[Level 7] Traditional Balenos Decorative Anchor', count: 5 },
+        { location: 'Olvia Coast', action: 'sell', items: [{ name: '[Level 7] Traditional Balenos Decorative Anchor', count: 5 }] }
+      ];
+      const walkthrough = generateWalkthrough(actions);
+      const ships = [...walkthrough.matchAll(/data-inv-ship="([^"]*)"/g)].map(m => m[1].replace(/&quot;/g, '"'));
+      const finalShip = JSON.parse(ships[ships.length - 1]);
+      expect(finalShip['[Level 7] Traditional Balenos Decorative Anchor']).toBe(5);
     });
   });
 });
