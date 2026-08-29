@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'fs';
 import { join } from 'path';
 
-import { findNearTwins, buildTrades, parseT4t5, parseT6t7 } from '../js/scanner.js';
+import { findNearTwins, buildTrades, parseT4t5, parseT5t6, parseT6t7, scanMapping } from '../js/scanner.js';
 
 const goods = JSON.parse(
   readFileSync(join(process.cwd(), 'assets', 'barterGoods.json'), 'utf-8')
@@ -207,5 +207,131 @@ describe('scanner near-twin warnings', () => {
     expect(trades).toHaveLength(1);
     expect(trades[0].t7).toBe("[Level 7] Artisan's Seashell Necklace");
     expect(trades[0].t7Port).toBe('Iliya Island');
+  });
+
+  it('drops the T7 port warning when the T7 item already determines the port', () => {
+    const tierPorts = JSON.parse(
+      readFileSync(join(process.cwd(), 'assets', 'barterTierPorts.json'), 'utf-8')
+    );
+    const rows = [{ island: 'Balvege Island', t4: '[Level 4] X', t5: '[Level 5] 102 Year Old Golden Herb' }];
+    const t5t6 = [{ trader: 'Arehaza', t5: '[Level 5] 102 Year Old Golden Herb', t6: '[Level 6] Miniature Arehaza Lighthouse' }];
+    // The port label was unreadable (kind:'port' warning), but the T7 item
+    // (Balenos Salt Flower -> Iliya) pins the port authoritatively - the user
+    // should NOT be asked to resolve a port that the item already determines.
+    const t6t7 = [{
+      port: null,
+      t6: '[Level 6] Miniature Arehaza Lighthouse',
+      t7: '[Level 7] Balenos Salt Flower',
+      warnings: [{ field: 'port', kind: 'port', read: 'IEMXA', candidates: [{ name: 'Lema Island', score: 0.4 }] }]
+    }];
+    const trades = buildTrades(rows, t5t6, t6t7, tierPorts);
+    expect(trades).toHaveLength(1);
+    expect(trades[0].t7Port).toBe('Iliya Island');
+    expect(trades[0].warnings || []).toHaveLength(0);
+  });
+
+  it('corrects a garbled trader from the T6 item (trader-specific)', () => {
+    const tierPorts = JSON.parse(
+      readFileSync(join(process.cwd(), 'assets', 'barterTierPorts.json'), 'utf-8')
+    );
+    const rows = [{ island: 'Theonil Island', t4: "[Level 4] Pirate's Key", t5: '[Level 5] Portrait of the Ancient' }];
+    // OCR read the trader as "FACLEVE]" and guessed Dallae Pier, but the T6 item
+    // (Miniature Arehaza Lighthouse) is produced only at Arehaza - the trade must
+    // land in the East - Arehaza chain so its T7 port pair stays complete.
+    const t5t6 = [{
+      trader: 'Dallae Pier',
+      t5: '[Level 5] Portrait of the Ancient',
+      t6: '[Level 6] Miniature Arehaza Lighthouse',
+      warnings: [{ field: 'trader', kind: 'port', read: 'FACLEVE]', item: 'Dallae Pier', candidates: [] }]
+    }];
+    const trades = buildTrades(rows, t5t6, [], tierPorts);
+    expect(trades).toHaveLength(1);
+    expect(trades[0].region).toBe('East');
+    expect(trades[0].chain).toBe('Arehaza');
+    expect(trades[0].t6).toBe('[Level 6] Miniature Arehaza Lighthouse');
+    // The trader is now authoritative - no port warning remains.
+    expect(trades[0].warnings || []).toHaveLength(0);
+  });
+
+  it('scanMapping recovers the regions from T6/T7 items despite garbled names', () => {
+    const tierPorts = JSON.parse(
+      readFileSync(join(process.cwd(), 'assets', 'barterTierPorts.json'), 'utf-8')
+    );
+    // Arehaza's trader is misread as Dallae (North) and its T6→T7 port label is
+    // garbled (null) - the mapping must still come out as a clean bijection.
+    const t5t6 = [
+      { trader: 'Dallae Pier', t5: '[Level 5] Portrait of the Ancient', t6: '[Level 6] Miniature Arehaza Lighthouse' },
+      { trader: 'Haemo Island', t5: '[Level 5] Azure Quartz', t6: '[Level 6] High-quality Ink-scented Box' },
+      { trader: 'Grandiha', t5: '[Level 5] Luxury Patterned Fabric', t6: '[Level 6] Moonlit Crystal Lamp' }
+    ];
+    const t6t7 = [
+      { port: null, t6: '[Level 6] Miniature Arehaza Lighthouse', t7: '[Level 7] Balenos Salt Flower' },
+      { port: 'Olvia Coast', t6: '[Level 6] High-quality Ink-scented Box', t7: '[Level 7] Traditional Balenos Decorative Anchor' },
+      { port: 'Sausan Garrison Wharf', t6: '[Level 6] Moonlit Crystal Lamp', t7: '[Level 7] Sausan Military Supply' }
+    ];
+    const mapping = scanMapping(t5t6, t6t7, tierPorts);
+    expect(mapping).toEqual({ north: 'A', east: 'B', south: 'C' });
+  });
+
+  it('never lets raw OCR text through as a port - best-guess real island + port warning', () => {
+    // A garbled island read ("SILVERHARD" for Pilava Island) must not land in
+    // the table: the anchor becomes a real known port and a `port` warning is
+    // recorded so the UI asks the user to pick.
+    const boxes = [
+      { x0: 0.02, y0: 0.1, y1: 0.14, text: 'SILVERHARD' },
+      { x0: 0.35, y0: 0.1, y1: 0.14, text: 'Level 4 Panacea' },
+      { x0: 0.7, y0: 0.1, y1: 0.14, text: 'Level 5 Portrait of the Ancient' }
+    ];
+    const rows = parseT4t5(boxes, goods, ports);
+    expect(rows).toHaveLength(1);
+    expect(rows[0].island).not.toBe('SILVERHARD');
+    const known = Object.values(ports).filter(p => p.target_tier === 'level_5').map(p => p.name);
+    expect(known).toContain(rows[0].island);
+    expect(rows[0].warnings.some(w => w.kind === 'port' && w.field === 'island')).toBe(true);
+    const pw = rows[0].warnings.find(w => w.kind === 'port');
+    expect(pw.read).toBe('SILVERHARD');
+    expect(pw.candidates.length).toBeGreaterThan(0);
+  });
+
+  it('keeps a garbled trader as a real known port + warning (so the row survives)', () => {
+    const boxes = [
+      { x0: 0.02, y0: 0.1, y1: 0.14, text: 'HARBUGLEC' },
+      { x0: 0.35, y0: 0.1, y1: 0.14, text: 'Level 5 Mysterious Rock' },
+      { x0: 0.7, y0: 0.1, y1: 0.14, text: 'Level 6 Moonlit Crystal Shard' }
+    ];
+    const rows = parseT5t6(boxes, goods, ports);
+    expect(rows).toHaveLength(1);
+    expect(rows[0].trader).not.toBe('HARBUGLEC');
+    const known = Object.values(ports).filter(p => p.target_tier === 'level_6').map(p => p.name);
+    expect(known).toContain(rows[0].trader);
+    expect(rows[0].warnings.some(w => w.kind === 'port' && w.field === 'trader')).toBe(true);
+  });
+
+  it('resolves a lightly-garbled trader read (Aerhaza -> Arehaza) so the chain is not dropped', () => {
+    // The original "misses East Arehaza" bug: a near-miss OCR read of the
+    // trader must still resolve to the real port (no prompt needed) instead of
+    // the row being dropped.
+    const boxes = [
+      { x0: 0.02, y0: 0.1, y1: 0.14, text: 'Aerhaza' },
+      { x0: 0.35, y0: 0.1, y1: 0.14, text: 'Level 5 102 Year Old Golden Herb' },
+      { x0: 0.7, y0: 0.1, y1: 0.14, text: 'Level 6 Golden Cactus Bouquet' }
+    ];
+    const rows = parseT5t6(boxes, goods, ports);
+    expect(rows).toHaveLength(1);
+    expect(rows[0].trader).toBe('Arehaza');
+    expect(rows[0].warnings).toBeUndefined();
+  });
+
+  it('propagates an unresolved port warning through buildTrades', () => {
+    const rows = [{
+      island: 'Pilava Island',
+      t4: '[Level 4] Panacea',
+      t5: '[Level 5] Mysterious Rock',
+      warnings: [{ field: 'island', kind: 'port', read: 'SILVERHARD', candidates: [{ name: 'Pilava Island', score: 0.4 }] }]
+    }];
+    const t5t6 = [{ trader: 'Haemo Island', t5: '[Level 5] Mysterious Rock', t6: null }];
+    const trades = buildTrades(rows, t5t6, []);
+    expect(trades).toHaveLength(1);
+    expect(trades[0].warnings.some(w => w.kind === 'port' && w.field === 'island')).toBe(true);
   });
 });

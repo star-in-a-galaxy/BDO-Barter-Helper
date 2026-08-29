@@ -9,7 +9,7 @@
 // warning so the user can resolve them manually (see app.js resolution modal).
 import { loadBarterGoods, loadBarterTierPorts } from './catalog.js';
 
-const TESSERACT_CDN = 'https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js';
+const TESSERACT_CDN = 'https://cdn.jsdelivr.net/npm/tesseract.js@7/dist/tesseract.min.js';
 
 // Reference layout (the verify/ screenshots). Column splits + row spacing are
 // expressed as fractions of the image width/height so any screenshot size works.
@@ -18,7 +18,11 @@ const REF_H = 537;
 const COL_LEFT = 260 / REF_W;   // x0 < this = left (anchor) column
 const COL_MID = 640 / REF_W;    // left <= x0 < this = middle (T4/T5/T6)
                                 // x0 >= this = right (T5/T6/T7)
-const TARGET_W = 2860;          // OCR width (3x reference: 2x misreads T5 names/items)
+const TARGET_W = 2860;          // OCR width (3x reference: 2x misreads T5 names/items).
+                                // Lower resolutions read fewer rows in slower
+                                // (non-SIMD) browsers, so keep the full image at 3x.
+const NAME_W = 2860;            // OCR width for the name-column crop (same as the
+                                // full image; the small port names need the 3x).
 const ANCHOR_PAD = 14 / REF_H;  // row band starts slightly above the anchor box
 const LAST_ROW_PAD = 70 / REF_H; // last row's band height (no next anchor)
 const ANCHOR_MERGE = 6 / REF_H; // merge left-column boxes on the same line
@@ -105,20 +109,29 @@ function wordBagScore(fragment, itemName) {
   return (2 * matched) / (fw.length + iw.length);
 }
 
-// Match a left-column fragment against a list of known names. Returns the best
-// name or null. Names are normalized before matching.
-function matchName(fragment, names) {
+// Rank every known name against an OCR fragment by similarity (best first).
+// Used to offer the most likely ports when OCR can't confidently read one.
+function rankCandidates(fragment, names) {
   const f = norm(fragment);
-  if (f.length < 3) return null;
-  let best = null, bestRatio = 0;
+  if (f.length < 3) return [];
+  const scored = [];
   for (const name of names) {
     const n = norm(name);
     // lcsRatio catches letter-level OCR noise; wordBagScore catches word-order
     // transpositions ("Island Baremi" vs "Baremi Island").
     const ratio = Math.max(lcsRatio(f, n), wordBagScore(fragment, name));
-    if (ratio > bestRatio) { bestRatio = ratio; best = name; }
+    if (ratio > 0) scored.push({ name, score: ratio });
   }
-  return bestRatio >= 0.55 ? best : null;
+  scored.sort((a, b) => b.score - a.score);
+  return scored;
+}
+
+// Best known name for a fragment, or null when nothing is close enough to be
+// worth offering. `minScore` is a similarity floor (1 = identical); the default
+// is a confident read.
+function matchName(fragment, names, minScore = 0.55) {
+  const ranked = rankCandidates(fragment, names);
+  return ranked.length && ranked[0].score >= minScore ? ranked[0].name : null;
 }
 
 // --- catalog matching -----------------------------------------------------
@@ -237,13 +250,18 @@ function parseRows(boxes, catalog, opts) {
       .sort((p, q) => p.x0 - q.x0)
       .map(b => b.text)
       .join(' ');
-    // Anchor is canonicalized against known names when possible. For a strict
-    // anchor (T6→T7 ports - there are exactly 6 valid ones) an unreadable name
-    // is never passed through as-is: it becomes null so the caller falls back to
-    // the region's mapped port instead of routing to a garbage location. For
-    // islands/traders (many options) the raw text is kept so the row survives
-    // and its items still match.
-    const anchor = matchName(a.text, opts.anchors) || (opts.strictAnchor ? null : a.text.trim());
+    // Anchor is canonicalized against known names. Only real, known ports ever
+    // become the anchor - raw OCR text is never passed through (a misread like
+    // "SILVERHARD" for Pilava Island would otherwise land in the table). When
+    // the read isn't confident, the best-guess known port is kept for
+    // islands/traders (so the row survives and its items still match), while a
+    // strict anchor (T6→T7 - exactly 6 valid ports, fixed pairs) becomes null
+    // so the pair partner can be inferred. In both cases a `port` warning is
+    // added so the UI asks the user to confirm/pick from the ranked candidates.
+    const ranked = rankCandidates(a.text, opts.anchors);
+    const best = ranked[0] || null;
+    const confident = !!(best && best.score >= 0.55);
+    const anchor = confident ? best.name : (opts.strictAnchor ? null : (best ? best.name : null));
     const midItem = matchItem(midText, catalog, opts.midTier);
     const rightItem = matchItem(rightText, catalog, opts.rightTier);
 
@@ -264,6 +282,15 @@ function parseRows(boxes, catalog, opts) {
     if (rightItem && warnable(opts.rightTier)) {
       const twins = findNearTwins(rightItem, catalog);
       if (twins.length) warnings.push({ field: opts.rightKey, item: rightItem, read: rightText, alternatives: twins });
+    }
+    if (!confident) {
+      warnings.push({
+        field: opts.anchorKey,
+        kind: 'port',
+        read: a.text.trim(),
+        item: anchor || null,
+        candidates: ranked.slice(0, 5)
+      });
     }
     if (warnings.length) row.warnings = warnings;
     rows.push(row);
@@ -330,7 +357,12 @@ function inferPartnerPorts(rows) {
   const used = new Set(known.map(r => nameKey(r.port)));
   const free = pair.filter(p => !used.has(nameKey(p)));
   if (free.length !== 1) return;
-  for (const r of rows) if (!r.port) r.port = free[0];
+  for (const r of rows) if (!r.port) {
+    r.port = free[0];
+    // The partner is inferred from a confident read - the "couldn't read the
+    // port" warning no longer applies (a real port is now known).
+    r.warnings = (r.warnings || []).filter(w => !(w.kind === 'port' && w.field === 'port'));
+  }
 }
 
 const CHAIN_MAP = {
@@ -376,6 +408,20 @@ function portForT7(t7Item, tierPorts) {
   if (!group) return null;
   for (const [port, items] of Object.entries(group)) {
     if ((items || []).some(p => namePart(p) === namePart(t7Item))) return port;
+  }
+  return null;
+}
+
+// Reverse authoritative lookup for the T5→T6 trader: each T6 item is produced by
+// exactly one trader (barterTierPorts.t6), so a read T6 item pins the trader that
+// bartered it - even when the trader's name was garbled by OCR. Only fires on an
+// exact item match, so a partial/misread T6 never mislabels.
+function traderForT6(t6Item, tierPorts) {
+  if (!t6Item) return null;
+  const group = tierPorts && tierPorts.t6;
+  if (!group) return null;
+  for (const [trader, items] of Object.entries(group)) {
+    if ((items || []).some(p => namePart(p) === namePart(t6Item))) return trader;
   }
   return null;
 }
@@ -453,6 +499,18 @@ export function buildTrades(t4t5Rows, t5t6Rows, t6t7Rows, tierPorts) {
     seenRow.add(rowKey);
     const candidates = byT5[r.t5] || [];
     for (const m of candidates) {
+      // The T6 item is trader-specific (barterTierPorts.t6): when it's read
+      // cleanly, the trader that produced it is authoritative, even if OCR
+      // garbled the trader name (e.g. "FACLEVE]" for Arehaza). Correcting it
+      // keeps the trade in its real chain so the T7 port pair stays complete.
+      // An ambiguous T6 (near-twin warning) is not trusted to override the
+      // trader read - resolveTierItem picks the trader's item instead.
+      const t6Ambiguous = (m.warnings || []).some(w => w.field === 't6' && (w.alternatives || []).length);
+      const fixedTrader = t6Ambiguous ? null : traderForT6(m.t6, tierPorts);
+      if (fixedTrader && norm(fixedTrader) !== norm(m.trader)) {
+        m.trader = fixedTrader;
+        if (m.warnings) m.warnings = m.warnings.filter(w => !(w.kind === 'port' && w.field === 'trader'));
+      }
       const key = norm(r.t5) + '|' + norm(m.trader);
       if (seen.has(key)) continue;
       seen.add(key);
@@ -474,9 +532,9 @@ export function buildTrades(t4t5Rows, t5t6Rows, t6t7Rows, tierPorts) {
       };
 
       const warnings = [
-        ...(r.warnings || []).filter(w => w.field === 't4' || w.field === 't5'),
-        ...(m.warnings || []).filter(w => w.field === 't6'),
-        ...(t7Row && t7Row.warnings ? t7Row.warnings.filter(w => w.field === 't7') : [])
+        ...(r.warnings || []).filter(w => w.field === 'island' || w.field === 't4' || w.field === 't5'),
+        ...(m.warnings || []).filter(w => w.field === 'trader' || w.field === 't6'),
+        ...(t7Row && t7Row.warnings ? t7Row.warnings.filter(w => w.field === 'port' || w.field === 't7') : [])
       ];
 
       // T6/T7 are port-specific and never ambiguous - resolve them from the
@@ -491,13 +549,21 @@ export function buildTrades(t4t5Rows, t5t6Rows, t6t7Rows, tierPorts) {
           if (fixed) { trade.t7 = fixed; resolved.add(w); }
         }
       }
-      const remaining = warnings.filter(w => !resolved.has(w));
-      if (remaining.length) trade.warnings = remaining;
       // The T7 item is port-specific, so the authoritative T6→T7 port is the one
       // that actually offers it (barterTierPorts) - definitive and independent of
-      // whether the screenshot's port label was readable. Fall back to the OCR
-      // port only if the T7 item couldn't be matched.
-      trade.t7Port = portForT7(trade.t7, tierPorts) || (t7Row ? t7Row.port : null);
+      // whether the screenshot's port label was readable. When it resolves, the
+      // unreadable OCR port label needs no confirmation, so its warning is
+      // dropped (otherwise the user is asked to "resolve" a port that the item
+      // already determines).
+      const authoritativePort = portForT7(trade.t7, tierPorts);
+      if (authoritativePort) {
+        for (const w of warnings) {
+          if (w.kind === 'port' && w.field === 'port') resolved.add(w);
+        }
+      }
+      const remaining = warnings.filter(w => !resolved.has(w));
+      if (remaining.length) trade.warnings = remaining;
+      trade.t7Port = authoritativePort || (t7Row ? t7Row.port : null);
       trades.push(trade);
 
       // The same T5 was read at more than one trader - one of those reads is a
@@ -540,15 +606,23 @@ export function buildTrades(t4t5Rows, t5t6Rows, t6t7Rows, tierPorts) {
   return trades;
 }
 
-export function scanMapping(t5t6Rows, t6t7Rows) {
+export function scanMapping(t5t6Rows, t6t7Rows, tierPorts) {
   const t6ToRegion = {};
   for (const r of t6t7Rows) {
-    const region = portRegion(r.port || '');
+    // Prefer the T7 item's authoritative port (port-specific, barterTierPorts)
+    // over the OCR port label - the name-column crop is skipped for T6→T7 shots,
+    // so the label can be garbled and would otherwise drop/confuse the mapping.
+    const port = portForT7(r.t7, tierPorts) || r.port || '';
+    const region = portRegion(port);
     if (region && r.t6) t6ToRegion[norm(r.t6)] = region;
   }
   const result = {};
   for (const r of t5t6Rows) {
-    const chain = CHAIN_MAP[norm(r.trader || '')];
+    // The T6 item pins the trader (same correction as buildTrades) - otherwise a
+    // garbled trader name (e.g. Arehaza read as Dallae) puts the chain in the
+    // wrong region and the mapping ends up conflicting/null.
+    const trader = traderForT6(r.t6, tierPorts) || r.trader || '';
+    const chain = CHAIN_MAP[norm(trader)];
     if (!chain || !r.t6) continue;
     const mapping = t6ToRegion[norm(r.t6)];
     if (!mapping) continue;
@@ -686,7 +760,7 @@ async function ocrIslandNames(dataUrl) {
   if (!src) return [];
   const w = png.width, h = png.height;
   const cropW = Math.round(w * 0.30);
-  const scale = Math.max(1, TARGET_W / w);
+  const scale = Math.max(1, NAME_W / w);
   const outW = Math.max(1, Math.round(cropW * scale));
   const outH = Math.max(1, Math.round(h * scale));
   const out = new Uint8Array(outW * outH * 4);
@@ -724,12 +798,15 @@ export async function scanImages(images) {
   for (const img of images || []) {
     const mime = img.mime || 'image/png';
     const dataUrl = img.data.startsWith('data:') ? img.data : `data:${mime};base64,${img.data}`;
-    let boxes = await ocrBoxes(dataUrl);
     // The name column (island / trader / port) is small text the full-image OCR
     // often garbles, dropping the whole row. Re-OCR the left ~30% and override
     // the full-image names only when the crop read resolves to a real port for
     // this screenshot's target tier - a garbage read never displaces a good one.
-    const targetTier = { t4t5: 'level_5', t5t6: 'level_6', t6t7: 'level_7' }[img.type];
+    let boxes = await ocrBoxes(dataUrl);
+    // T6→T7 ports are already pinned by the T7 item / pair-partner inference
+    // (portForT7, ensureCompleteT7Ports), so the extra crop OCR adds little
+    // there - skip it to cut two passes from the scan.
+    const targetTier = img.type === 't6t7' ? null : { t4t5: 'level_5', t5t6: 'level_6' }[img.type];
     if (targetTier) {
       try {
         const names = await ocrIslandNames(dataUrl);
@@ -758,6 +835,6 @@ export async function scanImages(images) {
     else if (img.type === 't5t6') t5t6 = parseT5t6(boxes, goods, ports);
     else if (img.type === 't6t7') t6t7 = parseT6t7(boxes, goods, ports);
   }
-  const mapping = t6t7.length ? scanMapping(t5t6, t6t7) : {};
+  const mapping = t6t7.length ? scanMapping(t5t6, t6t7, tierPorts) : {};
   return { trades: buildTrades(t4t5, t5t6, t6t7, tierPorts), mapping };
 }
