@@ -1,4 +1,4 @@
-import { loadBarterPorts } from './catalog.js';
+import { loadBarterPorts, loadBarterTierPorts, loadT6T7Ports } from './catalog.js';
 import { seaPath } from './sea-routes.js';
 
 const T7_TRADERS = {
@@ -691,10 +691,102 @@ function feasibleGroupings(regions, trades, shipCapacity) {
   return results;
 }
 
+// T6/T7 ports come in fixed pairs per region (two chains per source region, two
+// T7 ports per mapped region). A trade whose T7 port is missing or duplicated
+// (e.g. OCR read both trades at Sausan Garrison Wharf) is repaired here so the
+// route always covers all 6 T6→T7 ports:
+//   1. a real T7 item pins its port (barterTierPorts);
+//   2. a real T6 item pins the exact port it can be bartered at (t6T7Ports
+//      accepted-ports ∩ mapped region - deterministic when exactly one matches);
+//   3. a valid explicit t7Port is kept if the port is still free;
+//   4. anything left fills the missing (partner) port(s).
+// When the T7 item was not read but the port is now known and the T6 item is
+// real, the received T7 item is filled from the port's T6→T7 pairings so the
+// walkthrough shows a real item instead of "[Level 7] {Region}".
+export function ensureCompleteT7Ports(trades, regionMapping, tierPorts, t6T7Ports) {
+  if (!trades || trades.length < 2) return trades;
+  // Item key drops the "[Level N]" prefix so a scanned "[Level 7] Foo" matches
+  // the bare "Foo" names stored per port in barterTierPorts.
+  const itemKey = (s) => String(s || '').toLowerCase()
+    .normalize('NFKD').replace(/[\u0300-\u036f]/g, '')
+    .replace(/\[level\s*\d*\]/g, '').replace(/[^a-z0-9]/g, '');
+  const t7ItemPort = {};
+  for (const [port, items] of Object.entries((tierPorts && tierPorts.t7) || {})) {
+    for (const it of items || []) t7ItemPort[itemKey(it)] = port;
+  }
+  const t6ToPorts = (t6T7Ports && t6T7Ports.t6ToPorts) || {};
+  const portT7Pairs = (t6T7Ports && t6T7Ports.portT7Pairs) || {};
+  const isRealT7 = (t7) => !!(t7 && t7ItemPort[itemKey(t7)]);
+  const regionOf = (td) => String((regionMapping && regionMapping[td.region && td.region.toLowerCase()]) || 'A').toUpperCase();
+  const inRegion = (port, region) => (T7_TRADERS[region] || []).some(p => nameKey(p) === nameKey(port));
+
+  const groups = new Map();
+  for (const td of trades) {
+    const r = regionOf(td);
+    if (!groups.has(r)) groups.set(r, []);
+    groups.get(r).push(td);
+  }
+  for (const [region, regionTrades] of groups) {
+    const regionPorts = T7_TRADERS[region] || [];
+    if (regionPorts.length < 2 || regionTrades.length < 2) continue;
+    const lockedPorts = new Set();
+    const lockedTrades = new Set();
+    const flexible = [];
+    // 1) A real T7 item is port-specific - pin it (items are unique per port).
+    for (const td of regionTrades) {
+      const itemPort = t7ItemPort[itemKey(t7Name(td))];
+      const pk = itemPort && inRegion(itemPort, region) ? nameKey(itemPort) : null;
+      if (pk && !lockedPorts.has(pk)) { td.t7Port = itemPort; lockedPorts.add(pk); lockedTrades.add(td); }
+    }
+    // 2) A real T6 item pins the exact port that accepts it within this region.
+    for (const td of regionTrades) {
+      if (lockedTrades.has(td)) continue;
+      const t6 = t6Name(td);
+      const accepted = t6ToPorts[t6] || [];
+      const matches = accepted.filter(p => regionPorts.some(rp => nameKey(rp) === nameKey(p)));
+      const p = matches.length === 1 ? matches[0] : null;
+      const pk = p && nameKey(p);
+      if (pk && !lockedPorts.has(pk)) { td.t7Port = p; lockedPorts.add(pk); lockedTrades.add(td); }
+    }
+    // 3) Keep an explicit valid t7Port if its port is still free.
+    for (const td of regionTrades) {
+      if (lockedTrades.has(td)) continue;
+      const pk = td.t7Port && inRegion(td.t7Port, region) ? nameKey(td.t7Port) : null;
+      if (pk && !lockedPorts.has(pk)) { lockedPorts.add(pk); lockedTrades.add(td); }
+      else flexible.push(td);
+    }
+    // 4) Fill the missing (partner) port(s) with the flexible trades.
+    const freePorts = regionPorts.filter(p => !lockedPorts.has(nameKey(p)));
+    for (let i = 0; i < flexible.length && freePorts.length; i++) {
+      flexible[i].t7Port = freePorts[i % freePorts.length];
+    }
+    // Received-item fallback: make each trade's T7 consistent with its finalized
+    // port. A read T7 that belongs to another port is dropped, and a placeholder
+    // T7 is filled with a real item from the port's T6→T7 pairings, so the
+    // walkthrough shows actual items instead of "[Level 7] {Region}".
+    for (const td of regionTrades) {
+      if (isRealT7(td.t7) && nameKey(t7ItemPort[itemKey(td.t7)]) !== nameKey(td.t7Port)) {
+        td.t7 = undefined; // inconsistent with the finalized port - drop it
+      }
+      if (isRealT7(td.t7)) continue;
+      const pairs = portT7Pairs[td.t7Port] && portT7Pairs[td.t7Port][t6Name(td)];
+      if (pairs && pairs.length) td.t7 = pairs[0];
+    }
+  }
+  return trades;
+}
+
 // Exhaustive optimizer: try every config × every feasible batching × plain and
 // overstack-handoff, and return the shortest total sea-aware route.
 export async function optimizeRoute(trades, regionMapping, ilyaStock, shipCapacity = 22450, baseWeight = 5400, usedWeight = 150, allStock = false) {
   const ports = await loadBarterPorts();
+  const tierPorts = await loadBarterTierPorts();
+  const t6T7Ports = await loadT6T7Ports();
+  // The 6 T6→T7 ports are fixed pairs per mapped region. Before searching,
+  // guarantee every pair is covered so the final route always visits all 6
+  // ports - a duplicate (e.g. both trades read at Sausan) or a missing port is
+  // repaired by assigning the flexible trade to the region's other port.
+  ensureCompleteT7Ports(trades, regionMapping, tierPorts, t6T7Ports);
   const configs = generateAllConfigs(trades, ilyaStock, regionMapping, allStock);
   let best = null;
   for (const config of configs) {

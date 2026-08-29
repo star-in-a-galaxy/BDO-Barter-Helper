@@ -1,0 +1,570 @@
+{
+  "t6ToPorts": {
+    "[Level 6] Valencia Sand Shield": [
+      "Olvia Coast",
+      "Sausan Garrison Wharf",
+      "Lema Island"
+    ],
+    "[Level 6] Valencian Desert Fine Sword": [
+      "Olvia Coast",
+      "Sausan Garrison Wharf",
+      "Lema Island"
+    ],
+    "[Level 6] Fancy Camel Hide": [
+      "Olvia Coast",
+      "Sausan Garrison Wharf",
+      "Lema Island"
+    ],
+    "[Level 6] Golden Sand Ring": [
+      "Olvia Coast",
+      "Sausan Garrison Wharf",
+      "Lema Island"
+    ],
+    "[Level 6] Bamboo Sap Crate": [
+      "Olvia Coast",
+      "Sausan Garrison Wharf",
+      "Lema Island"
+    ],
+    "[Level 6] Nampo Persimmon Crate": [
+      "Olvia Coast",
+      "Sausan Garrison Wharf",
+      "Lema Island"
+    ],
+    "[Level 6] High-quality Ink-scented Box": [
+      "Olvia Coast",
+      "Sausan Garrison Wharf",
+      "Lema Island"
+    ],
+    "[Level 6] Hanji Country Wild Berry Crate": [
+      "Olvia Coast",
+      "Sausan Garrison Wharf",
+      "Lema Island"
+    ],
+    "[Level 6] Forest Fairy Perfume": [
+      "Olvia Coast",
+      "Sausan Garrison Wharf",
+      "Lema Island"
+    ],
+    "[Level 6] Kamasylvian Sculpture": [
+      "Olvia Coast",
+      "Sausan Garrison Wharf",
+      "Lema Island"
+    ],
+    "[Level 6] Moonlit Crystal Lamp": [
+      "Olvia Coast",
+      "Sausan Garrison Wharf",
+      "Lema Island"
+    ],
+    "[Level 6] Mossy Silver Log Decoration": [
+      "Olvia Coast",
+      "Sausan Garrison Wharf",
+      "Lema Island"
+    ],
+    "[Level 6] Top-Quality Coconut Syrup": [
+      "Epheria Sentry Post",
+      "Sanctuary Coastal Outpost",
+      "Iliya Island"
+    ],
+    "[Level 6] Traditional Arehazan Tea": [
+      "Epheria Sentry Post",
+      "Sanctuary Coastal Outpost",
+      "Iliya Island"
+    ],
+    "[Level 6] Miniature Arehaza Lighthouse": [
+      "Epheria Sentry Post",
+      "Sanctuary Coastal Outpost",
+      "Iliya Island"
+    ],
+    "[Level 6] Golden Cactus Bouquet": [
+      "Epheria Sentry Post",
+      "Sanctuary Coastal Outpost",
+      "Iliya Island"
+    ],
+    "[Level 6] Top-Quality Blue Underglaze Porcelain Crate": [
+      "Epheria Sentry Post",
+      "Sanctuary Coastal Outpost",
+      "Iliya Island"
+    ],
+    "[Level 6] Top-Quality Gamtu Crate": [
+      "Epheria Sentry Post",
+      "Sanctuary Coastal Outpost",
+      "Iliya Island"
+    ],
+    "[Level 6] Brass Bowl Crate": [
+      "Epheria Sentry Post",
+      "Sanctuary Coastal Outpost",
+      "Iliya Island"
+    ],
+    "[Level 6] Sharp Safflower Blade Crate": [
+      "Epheria Sentry Post",
+      "Sanctuary Coastal Outpost",
+      "Iliya Island"
+    ],
+    "[Level 6] Black Rose Bouquet": [
+      "Epheria Sentry Post",
+      "Sanctuary Coastal Outpost",
+      "Iliya Island"
+    ],
+    "[Level 6] Moonlit Crystal Shard": [
+      "Epheria Sentry Post",
+      "Sanctuary Coastal Outpost",
+      "Iliya Island"
+    ],
+    "[Level 6] Moonshade Aged Wine": [
+      "Epheria Sentry Post",
+      "Sanctuary Coastal Outpost",
+      "Iliya Island"
+    ],
+    "[Level 6] Shadow Ornament Mirror": [
+      "Epheria Sentry Post",
+      "Sanctuary Coastal Outpost",
+      "Iliya Island"
+    ]
+  },
+  "portT7Pairs": {
+    "Olvia Coast": {
+      "[Level 6] Valencia Sand Shield": [
+        "[Level 7] Top-Quality Heidelian Wine",
+        "[Level 7] Golden Flour Sack",
+        "[Level 7] Organic Honey Crate",
+        "[Level 7] Traditional Balenos Decorative Anchor"
+      ],
+      "[Level 6] Valencian Desert Fine Sword": [
+        "[Level 7] Top-Quality Heidelian Wine",
+        "[Level 7] Golden Flour Sack",
+        "[Level 7] Organic Honey Crate",
+        "[Level 7] Traditional Balenos Decorative Anchor"
+      ],
+      "[Level 6] Fancy Camel Hide": [
+        "[Level 7] Top-Quality Heidelian Wine",
+        "[Level 7] Golden Flour Sack",
+        "[Level 7] Organic Honey Crate",
+        "[Level 7] Traditional Balenos Decorative Anchor"
+      ],
+      "[Level 6] Golden Sand Ring": [
+        "[Level 7] Top-Quality Heidelian Wine",
+        "[Level 7] Golden Flour Sack",
+        "[Level 7] Organic Honey Crate",
+        "[Level 7] Traditional Balenos Decorative Anchor"
+      ],
+      "[Level 6] Bamboo Sap Crate": [
+        "[Level 7] Top-Quality Heidelian Wine",
+        "[Level 7] Golden Flour Sack",
+        "[Level 7] Organic Honey Crate",
+        "[Level 7] Traditional Balenos Decorative Anchor"
+      ],
+      "[Level 6] Nampo Persimmon Crate": [
+        "[Level 7] Top-Quality Heidelian Wine",
+        "[Level 7] Golden Flour Sack",
+        "[Level 7] Organic Honey Crate",
+        "[Level 7] Traditional Balenos Decorative Anchor"
+      ],
+      "[Level 6] High-quality Ink-scented Box": [
+        "[Level 7] Top-Quality Heidelian Wine",
+        "[Level 7] Golden Flour Sack",
+        "[Level 7] Organic Honey Crate",
+        "[Level 7] Traditional Balenos Decorative Anchor"
+      ],
+      "[Level 6] Hanji Country Wild Berry Crate": [
+        "[Level 7] Top-Quality Heidelian Wine",
+        "[Level 7] Golden Flour Sack",
+        "[Level 7] Organic Honey Crate",
+        "[Level 7] Traditional Balenos Decorative Anchor"
+      ],
+      "[Level 6] Forest Fairy Perfume": [
+        "[Level 7] Top-Quality Heidelian Wine",
+        "[Level 7] Golden Flour Sack",
+        "[Level 7] Organic Honey Crate",
+        "[Level 7] Traditional Balenos Decorative Anchor"
+      ],
+      "[Level 6] Kamasylvian Sculpture": [
+        "[Level 7] Top-Quality Heidelian Wine",
+        "[Level 7] Golden Flour Sack",
+        "[Level 7] Organic Honey Crate",
+        "[Level 7] Traditional Balenos Decorative Anchor"
+      ],
+      "[Level 6] Moonlit Crystal Lamp": [
+        "[Level 7] Top-Quality Heidelian Wine",
+        "[Level 7] Golden Flour Sack",
+        "[Level 7] Organic Honey Crate",
+        "[Level 7] Traditional Balenos Decorative Anchor"
+      ],
+      "[Level 6] Mossy Silver Log Decoration": [
+        "[Level 7] Top-Quality Heidelian Wine",
+        "[Level 7] Golden Flour Sack",
+        "[Level 7] Organic Honey Crate",
+        "[Level 7] Traditional Balenos Decorative Anchor"
+      ]
+    },
+    "Epheria Sentry Post": {
+      "[Level 6] Top-Quality Coconut Syrup": [
+        "[Level 7] Golden Eagle Brooch",
+        "[Level 7] Calpheon Knights' Combat Manual",
+        "[Level 7] Calpheon Golden Candle Stand",
+        "[Level 7] Calpheonian Artisan's Pearl Necklace"
+      ],
+      "[Level 6] Traditional Arehazan Tea": [
+        "[Level 7] Golden Eagle Brooch",
+        "[Level 7] Calpheon Knights' Combat Manual",
+        "[Level 7] Calpheon Golden Candle Stand",
+        "[Level 7] Calpheonian Artisan's Pearl Necklace"
+      ],
+      "[Level 6] Miniature Arehaza Lighthouse": [
+        "[Level 7] Golden Eagle Brooch",
+        "[Level 7] Calpheon Knights' Combat Manual",
+        "[Level 7] Calpheon Golden Candle Stand",
+        "[Level 7] Calpheonian Artisan's Pearl Necklace"
+      ],
+      "[Level 6] Golden Cactus Bouquet": [
+        "[Level 7] Golden Eagle Brooch",
+        "[Level 7] Calpheon Knights' Combat Manual",
+        "[Level 7] Calpheon Golden Candle Stand",
+        "[Level 7] Calpheonian Artisan's Pearl Necklace"
+      ],
+      "[Level 6] Top-Quality Blue Underglaze Porcelain Crate": [
+        "[Level 7] Golden Eagle Brooch",
+        "[Level 7] Calpheon Knights' Combat Manual",
+        "[Level 7] Calpheon Golden Candle Stand",
+        "[Level 7] Calpheonian Artisan's Pearl Necklace"
+      ],
+      "[Level 6] Top-Quality Gamtu Crate": [
+        "[Level 7] Golden Eagle Brooch",
+        "[Level 7] Calpheon Knights' Combat Manual",
+        "[Level 7] Calpheon Golden Candle Stand",
+        "[Level 7] Calpheonian Artisan's Pearl Necklace"
+      ],
+      "[Level 6] Brass Bowl Crate": [
+        "[Level 7] Golden Eagle Brooch",
+        "[Level 7] Calpheon Knights' Combat Manual",
+        "[Level 7] Calpheon Golden Candle Stand",
+        "[Level 7] Calpheonian Artisan's Pearl Necklace"
+      ],
+      "[Level 6] Sharp Safflower Blade Crate": [
+        "[Level 7] Golden Eagle Brooch",
+        "[Level 7] Calpheon Knights' Combat Manual",
+        "[Level 7] Calpheon Golden Candle Stand",
+        "[Level 7] Calpheonian Artisan's Pearl Necklace"
+      ],
+      "[Level 6] Black Rose Bouquet": [
+        "[Level 7] Golden Eagle Brooch",
+        "[Level 7] Calpheon Knights' Combat Manual",
+        "[Level 7] Calpheon Golden Candle Stand",
+        "[Level 7] Calpheonian Artisan's Pearl Necklace"
+      ],
+      "[Level 6] Moonlit Crystal Shard": [
+        "[Level 7] Golden Eagle Brooch",
+        "[Level 7] Calpheon Knights' Combat Manual",
+        "[Level 7] Calpheon Golden Candle Stand",
+        "[Level 7] Calpheonian Artisan's Pearl Necklace"
+      ],
+      "[Level 6] Moonshade Aged Wine": [
+        "[Level 7] Golden Eagle Brooch",
+        "[Level 7] Calpheon Knights' Combat Manual",
+        "[Level 7] Calpheon Golden Candle Stand",
+        "[Level 7] Calpheonian Artisan's Pearl Necklace"
+      ],
+      "[Level 6] Shadow Ornament Mirror": [
+        "[Level 7] Golden Eagle Brooch",
+        "[Level 7] Calpheon Knights' Combat Manual",
+        "[Level 7] Calpheon Golden Candle Stand",
+        "[Level 7] Calpheonian Artisan's Pearl Necklace"
+      ]
+    },
+    "Sausan Garrison Wharf": {
+      "[Level 6] Forest Fairy Perfume": [
+        "[Level 7] Sausan Military Supply",
+        "[Level 7] Stonetail Carrot Healthy Food Crate",
+        "[Level 7] Omar Lava Powder",
+        "[Level 7] Tarif Magic Jar"
+      ],
+      "[Level 6] Kamasylvian Sculpture": [
+        "[Level 7] Sausan Military Supply",
+        "[Level 7] Stonetail Carrot Healthy Food Crate",
+        "[Level 7] Omar Lava Powder",
+        "[Level 7] Tarif Magic Jar"
+      ],
+      "[Level 6] Moonlit Crystal Lamp": [
+        "[Level 7] Sausan Military Supply",
+        "[Level 7] Stonetail Carrot Healthy Food Crate",
+        "[Level 7] Omar Lava Powder",
+        "[Level 7] Tarif Magic Jar"
+      ],
+      "[Level 6] Mossy Silver Log Decoration": [
+        "[Level 7] Sausan Military Supply",
+        "[Level 7] Stonetail Carrot Healthy Food Crate",
+        "[Level 7] Omar Lava Powder",
+        "[Level 7] Tarif Magic Jar"
+      ],
+      "[Level 6] Valencia Sand Shield": [
+        "[Level 7] Sausan Military Supply",
+        "[Level 7] Stonetail Carrot Healthy Food Crate",
+        "[Level 7] Omar Lava Powder",
+        "[Level 7] Tarif Magic Jar"
+      ],
+      "[Level 6] Valencian Desert Fine Sword": [
+        "[Level 7] Sausan Military Supply",
+        "[Level 7] Stonetail Carrot Healthy Food Crate",
+        "[Level 7] Omar Lava Powder",
+        "[Level 7] Tarif Magic Jar"
+      ],
+      "[Level 6] Fancy Camel Hide": [
+        "[Level 7] Sausan Military Supply",
+        "[Level 7] Stonetail Carrot Healthy Food Crate",
+        "[Level 7] Omar Lava Powder",
+        "[Level 7] Tarif Magic Jar"
+      ],
+      "[Level 6] Golden Sand Ring": [
+        "[Level 7] Sausan Military Supply",
+        "[Level 7] Stonetail Carrot Healthy Food Crate",
+        "[Level 7] Omar Lava Powder",
+        "[Level 7] Tarif Magic Jar"
+      ],
+      "[Level 6] Bamboo Sap Crate": [
+        "[Level 7] Sausan Military Supply",
+        "[Level 7] Stonetail Carrot Healthy Food Crate",
+        "[Level 7] Omar Lava Powder",
+        "[Level 7] Tarif Magic Jar"
+      ],
+      "[Level 6] Nampo Persimmon Crate": [
+        "[Level 7] Sausan Military Supply",
+        "[Level 7] Stonetail Carrot Healthy Food Crate",
+        "[Level 7] Omar Lava Powder",
+        "[Level 7] Tarif Magic Jar"
+      ],
+      "[Level 6] High-quality Ink-scented Box": [
+        "[Level 7] Sausan Military Supply",
+        "[Level 7] Stonetail Carrot Healthy Food Crate",
+        "[Level 7] Omar Lava Powder",
+        "[Level 7] Tarif Magic Jar"
+      ],
+      "[Level 6] Hanji Country Wild Berry Crate": [
+        "[Level 7] Sausan Military Supply",
+        "[Level 7] Stonetail Carrot Healthy Food Crate",
+        "[Level 7] Omar Lava Powder",
+        "[Level 7] Tarif Magic Jar"
+      ]
+    },
+    "Sanctuary Coastal Outpost": {
+      "[Level 6] Black Rose Bouquet": [
+        "[Level 7] Rusalka's Thorny Bouquet",
+        "[Level 7] Sturdy Caphras Timber",
+        "[Level 7] Top-Quality Hakinza Perfume",
+        "[Level 7] Throne of Edana Records"
+      ],
+      "[Level 6] Moonlit Crystal Shard": [
+        "[Level 7] Rusalka's Thorny Bouquet",
+        "[Level 7] Sturdy Caphras Timber",
+        "[Level 7] Top-Quality Hakinza Perfume",
+        "[Level 7] Throne of Edana Records"
+      ],
+      "[Level 6] Moonshade Aged Wine": [
+        "[Level 7] Rusalka's Thorny Bouquet",
+        "[Level 7] Sturdy Caphras Timber",
+        "[Level 7] Top-Quality Hakinza Perfume",
+        "[Level 7] Throne of Edana Records"
+      ],
+      "[Level 6] Shadow Ornament Mirror": [
+        "[Level 7] Rusalka's Thorny Bouquet",
+        "[Level 7] Sturdy Caphras Timber",
+        "[Level 7] Top-Quality Hakinza Perfume",
+        "[Level 7] Throne of Edana Records"
+      ],
+      "[Level 6] Top-Quality Coconut Syrup": [
+        "[Level 7] Rusalka's Thorny Bouquet",
+        "[Level 7] Sturdy Caphras Timber",
+        "[Level 7] Top-Quality Hakinza Perfume",
+        "[Level 7] Throne of Edana Records"
+      ],
+      "[Level 6] Traditional Arehazan Tea": [
+        "[Level 7] Rusalka's Thorny Bouquet",
+        "[Level 7] Sturdy Caphras Timber",
+        "[Level 7] Top-Quality Hakinza Perfume",
+        "[Level 7] Throne of Edana Records"
+      ],
+      "[Level 6] Miniature Arehaza Lighthouse": [
+        "[Level 7] Rusalka's Thorny Bouquet",
+        "[Level 7] Sturdy Caphras Timber",
+        "[Level 7] Top-Quality Hakinza Perfume",
+        "[Level 7] Throne of Edana Records"
+      ],
+      "[Level 6] Golden Cactus Bouquet": [
+        "[Level 7] Rusalka's Thorny Bouquet",
+        "[Level 7] Sturdy Caphras Timber",
+        "[Level 7] Top-Quality Hakinza Perfume",
+        "[Level 7] Throne of Edana Records"
+      ],
+      "[Level 6] Top-Quality Blue Underglaze Porcelain Crate": [
+        "[Level 7] Rusalka's Thorny Bouquet",
+        "[Level 7] Sturdy Caphras Timber",
+        "[Level 7] Top-Quality Hakinza Perfume",
+        "[Level 7] Throne of Edana Records"
+      ],
+      "[Level 6] Top-Quality Gamtu Crate": [
+        "[Level 7] Rusalka's Thorny Bouquet",
+        "[Level 7] Sturdy Caphras Timber",
+        "[Level 7] Top-Quality Hakinza Perfume",
+        "[Level 7] Throne of Edana Records"
+      ],
+      "[Level 6] Brass Bowl Crate": [
+        "[Level 7] Rusalka's Thorny Bouquet",
+        "[Level 7] Sturdy Caphras Timber",
+        "[Level 7] Top-Quality Hakinza Perfume",
+        "[Level 7] Throne of Edana Records"
+      ],
+      "[Level 6] Sharp Safflower Blade Crate": [
+        "[Level 7] Rusalka's Thorny Bouquet",
+        "[Level 7] Sturdy Caphras Timber",
+        "[Level 7] Top-Quality Hakinza Perfume",
+        "[Level 7] Throne of Edana Records"
+      ]
+    },
+    "Lema Island": {
+      "[Level 6] Bamboo Sap Crate": [
+        "[Level 7] Balenos Starlight Salt",
+        "[Level 7] Balenos Relic Fragment",
+        "[Level 7] Balenos Rainbow Coral",
+        "[Level 7] Rainbow Sea Crystal Piece"
+      ],
+      "[Level 6] Nampo Persimmon Crate": [
+        "[Level 7] Balenos Starlight Salt",
+        "[Level 7] Balenos Relic Fragment",
+        "[Level 7] Balenos Rainbow Coral",
+        "[Level 7] Rainbow Sea Crystal Piece"
+      ],
+      "[Level 6] High-quality Ink-scented Box": [
+        "[Level 7] Balenos Starlight Salt",
+        "[Level 7] Balenos Relic Fragment",
+        "[Level 7] Balenos Rainbow Coral",
+        "[Level 7] Rainbow Sea Crystal Piece"
+      ],
+      "[Level 6] Hanji Country Wild Berry Crate": [
+        "[Level 7] Balenos Starlight Salt",
+        "[Level 7] Balenos Relic Fragment",
+        "[Level 7] Balenos Rainbow Coral",
+        "[Level 7] Rainbow Sea Crystal Piece"
+      ],
+      "[Level 6] Forest Fairy Perfume": [
+        "[Level 7] Balenos Starlight Salt",
+        "[Level 7] Balenos Relic Fragment",
+        "[Level 7] Balenos Rainbow Coral",
+        "[Level 7] Rainbow Sea Crystal Piece"
+      ],
+      "[Level 6] Kamasylvian Sculpture": [
+        "[Level 7] Balenos Starlight Salt",
+        "[Level 7] Balenos Relic Fragment",
+        "[Level 7] Balenos Rainbow Coral",
+        "[Level 7] Rainbow Sea Crystal Piece"
+      ],
+      "[Level 6] Moonlit Crystal Lamp": [
+        "[Level 7] Balenos Starlight Salt",
+        "[Level 7] Balenos Relic Fragment",
+        "[Level 7] Balenos Rainbow Coral",
+        "[Level 7] Rainbow Sea Crystal Piece"
+      ],
+      "[Level 6] Mossy Silver Log Decoration": [
+        "[Level 7] Balenos Starlight Salt",
+        "[Level 7] Balenos Relic Fragment",
+        "[Level 7] Balenos Rainbow Coral",
+        "[Level 7] Rainbow Sea Crystal Piece"
+      ],
+      "[Level 6] Valencia Sand Shield": [
+        "[Level 7] Balenos Starlight Salt",
+        "[Level 7] Balenos Relic Fragment",
+        "[Level 7] Balenos Rainbow Coral",
+        "[Level 7] Rainbow Sea Crystal Piece"
+      ],
+      "[Level 6] Valencian Desert Fine Sword": [
+        "[Level 7] Balenos Starlight Salt",
+        "[Level 7] Balenos Relic Fragment",
+        "[Level 7] Balenos Rainbow Coral",
+        "[Level 7] Rainbow Sea Crystal Piece"
+      ],
+      "[Level 6] Fancy Camel Hide": [
+        "[Level 7] Balenos Starlight Salt",
+        "[Level 7] Balenos Relic Fragment",
+        "[Level 7] Balenos Rainbow Coral",
+        "[Level 7] Rainbow Sea Crystal Piece"
+      ],
+      "[Level 6] Golden Sand Ring": [
+        "[Level 7] Balenos Starlight Salt",
+        "[Level 7] Balenos Relic Fragment",
+        "[Level 7] Balenos Rainbow Coral",
+        "[Level 7] Rainbow Sea Crystal Piece"
+      ]
+    },
+    "Iliya Island": {
+      "[Level 6] Top-Quality Blue Underglaze Porcelain Crate": [
+        "[Level 7] Artisan's Seashell Necklace",
+        "[Level 7] Balenosian Sailor's Telescope",
+        "[Level 7] Balenos Whale Sculpture",
+        "[Level 7] Balenos Salt Flower"
+      ],
+      "[Level 6] Top-Quality Gamtu Crate": [
+        "[Level 7] Artisan's Seashell Necklace",
+        "[Level 7] Balenosian Sailor's Telescope",
+        "[Level 7] Balenos Whale Sculpture",
+        "[Level 7] Balenos Salt Flower"
+      ],
+      "[Level 6] Brass Bowl Crate": [
+        "[Level 7] Artisan's Seashell Necklace",
+        "[Level 7] Balenosian Sailor's Telescope",
+        "[Level 7] Balenos Whale Sculpture",
+        "[Level 7] Balenos Salt Flower"
+      ],
+      "[Level 6] Sharp Safflower Blade Crate": [
+        "[Level 7] Artisan's Seashell Necklace",
+        "[Level 7] Balenosian Sailor's Telescope",
+        "[Level 7] Balenos Whale Sculpture",
+        "[Level 7] Balenos Salt Flower"
+      ],
+      "[Level 6] Black Rose Bouquet": [
+        "[Level 7] Artisan's Seashell Necklace",
+        "[Level 7] Balenosian Sailor's Telescope",
+        "[Level 7] Balenos Whale Sculpture",
+        "[Level 7] Balenos Salt Flower"
+      ],
+      "[Level 6] Moonlit Crystal Shard": [
+        "[Level 7] Artisan's Seashell Necklace",
+        "[Level 7] Balenosian Sailor's Telescope",
+        "[Level 7] Balenos Whale Sculpture",
+        "[Level 7] Balenos Salt Flower"
+      ],
+      "[Level 6] Moonshade Aged Wine": [
+        "[Level 7] Artisan's Seashell Necklace",
+        "[Level 7] Balenosian Sailor's Telescope",
+        "[Level 7] Balenos Whale Sculpture",
+        "[Level 7] Balenos Salt Flower"
+      ],
+      "[Level 6] Shadow Ornament Mirror": [
+        "[Level 7] Artisan's Seashell Necklace",
+        "[Level 7] Balenosian Sailor's Telescope",
+        "[Level 7] Balenos Whale Sculpture",
+        "[Level 7] Balenos Salt Flower"
+      ],
+      "[Level 6] Top-Quality Coconut Syrup": [
+        "[Level 7] Artisan's Seashell Necklace",
+        "[Level 7] Balenosian Sailor's Telescope",
+        "[Level 7] Balenos Whale Sculpture",
+        "[Level 7] Balenos Salt Flower"
+      ],
+      "[Level 6] Traditional Arehazan Tea": [
+        "[Level 7] Artisan's Seashell Necklace",
+        "[Level 7] Balenosian Sailor's Telescope",
+        "[Level 7] Balenos Whale Sculpture",
+        "[Level 7] Balenos Salt Flower"
+      ],
+      "[Level 6] Miniature Arehaza Lighthouse": [
+        "[Level 7] Artisan's Seashell Necklace",
+        "[Level 7] Balenosian Sailor's Telescope",
+        "[Level 7] Balenos Whale Sculpture",
+        "[Level 7] Balenos Salt Flower"
+      ],
+      "[Level 6] Golden Cactus Bouquet": [
+        "[Level 7] Artisan's Seashell Necklace",
+        "[Level 7] Balenosian Sailor's Telescope",
+        "[Level 7] Balenos Whale Sculpture",
+        "[Level 7] Balenos Salt Flower"
+      ]
+    }
+  }
+}

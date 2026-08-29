@@ -10,6 +10,14 @@ const barterPorts = JSON.parse(
   readFileSync(join(process.cwd(), 'assets', 'barterPorts.json'), 'utf-8')
 );
 
+const barterTierPorts = JSON.parse(
+  readFileSync(join(process.cwd(), 'assets', 'barterTierPorts.json'), 'utf-8')
+);
+
+const barterT6T7Ports = JSON.parse(
+  readFileSync(join(process.cwd(), 'assets', 't6T7Ports.json'), 'utf-8')
+);
+
 vi.mock('../js/catalog.js', () => ({
   getCatalog: () => Promise.resolve({
     t4Items: barterGoods.filter(item => item.tier === 'level_4'),
@@ -39,7 +47,9 @@ vi.mock('../js/catalog.js', () => ({
     goods: barterGoods
   }),
   loadBarterPorts: () => Promise.resolve(barterPorts),
-  loadBarterGoods: () => Promise.resolve(barterGoods)
+  loadBarterGoods: () => Promise.resolve(barterGoods),
+  loadBarterTierPorts: () => Promise.resolve(barterTierPorts),
+  loadT6T7Ports: () => Promise.resolve(barterT6T7Ports)
 }));
 
 const { planRoute } = await import('../js/planner.js');

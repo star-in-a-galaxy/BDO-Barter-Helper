@@ -6,11 +6,21 @@ const barterPorts = JSON.parse(
   readFileSync(join(process.cwd(), 'assets', 'barterPorts.json'), 'utf-8')
 );
 
+const barterTierPorts = JSON.parse(
+  readFileSync(join(process.cwd(), 'assets', 'barterTierPorts.json'), 'utf-8')
+);
+
+const barterT6T7Ports = JSON.parse(
+  readFileSync(join(process.cwd(), 'assets', 't6T7Ports.json'), 'utf-8')
+);
+
 vi.mock('../js/catalog.js', () => ({
-  loadBarterPorts: () => Promise.resolve(barterPorts)
+  loadBarterPorts: () => Promise.resolve(barterPorts),
+  loadBarterTierPorts: () => Promise.resolve(barterTierPorts),
+  loadT6T7Ports: () => Promise.resolve(barterT6T7Ports)
 }));
 
-const { optimizeRoute } = await import('../js/optimizer.js');
+const { optimizeRoute, ensureCompleteT7Ports } = await import('../js/optimizer.js');
 const { buildTrades } = await import('../js/scanner.js');
 
 describe('T7 barter location', () => {
@@ -104,5 +114,84 @@ describe('T7 barter location', () => {
         expect(allowed.has(a.location)).toBe(true);
       }
     }
+  });
+
+  describe('ensureCompleteT7Ports (all 6 ports in the route)', () => {
+    it('reassigns a duplicated T7 port to its region partner', () => {
+      // Both South trades were OCR-read at Sausan; the C pair (Sausan +
+      // Sanctuary) must both appear in the route.
+      const trades = [
+        { region: 'South', chain: 'South - Grándiha', t5: '[Level 5] Luxury Patterned Fabric', t6: '[Level 6] Moonlit Crystal Lamp', t7: undefined, t7Port: 'Sausan Garrison Wharf' },
+        { region: 'South', chain: 'South - Starry Midnight Port', t5: '[Level 5] Portrait of the Ancient', t6: '[Level 6] Moonshade Aged Wine', t7: undefined, t7Port: 'Sausan Garrison Wharf' }
+      ];
+      ensureCompleteT7Ports(trades, { north: 'A', south: 'C', east: 'B' }, barterTierPorts, barterT6T7Ports);
+      const ports = trades.map(t => t.t7Port);
+      expect(ports).toContain('Sausan Garrison Wharf');
+      expect(ports).toContain('Sanctuary Coastal Outpost');
+    });
+
+    it('a real T7 item pins its authoritative port, overriding a duplicated read', () => {
+      const trades = [
+        { region: 'South', chain: 'South - Grándiha', t5: '[Level 5] Luxury Patterned Fabric', t6: '[Level 6] Moonlit Crystal Lamp', t7: '[Level 7] Omar Lava Powder', t7Port: 'Sausan Garrison Wharf' },
+        { region: 'South', chain: 'South - Starry Midnight Port', t5: '[Level 5] Portrait of the Ancient', t6: '[Level 6] Moonshade Aged Wine', t7: '[Level 7] Top-Quality Hakinza Perfume', t7Port: 'Sausan Garrison Wharf' }
+      ];
+      ensureCompleteT7Ports(trades, { north: 'A', south: 'C', east: 'B' }, barterTierPorts, barterT6T7Ports);
+      expect(trades[0].t7Port).toBe('Sausan Garrison Wharf');   // Omar Lava Powder -> Sausan
+      expect(trades[1].t7Port).toBe('Sanctuary Coastal Outpost'); // Hakinza Perfume -> Sanctuary
+    });
+
+    it('replaces a read T7 that belongs to the wrong port with the port real item', () => {
+      // A trade read as Sausan's item but pinned to Sanctuary (via its real T6)
+      // must not keep the Sausan item - it becomes a real Sanctuary item from
+      // the port's T6→T7 pairings.
+      const trades = [
+        { region: 'South', chain: 'South - Grándiha', t5: '[Level 5] Luxury Patterned Fabric', t6: '[Level 6] Moonlit Crystal Lamp', t7: '[Level 7] Omar Lava Powder', t7Port: 'Sausan Garrison Wharf' },
+        { region: 'South', chain: 'South - Starry Midnight Port', t5: '[Level 5] Portrait of the Ancient', t6: '[Level 6] Moonshade Aged Wine', t7: '[Level 7] Omar Lava Powder', t7Port: 'Sausan Garrison Wharf' }
+      ];
+      ensureCompleteT7Ports(trades, { north: 'A', south: 'C', east: 'B' }, barterTierPorts, barterT6T7Ports);
+      const starry = trades.find(t => t.chain === 'South - Starry Midnight Port');
+      expect(starry.t7Port).toBe('Sanctuary Coastal Outpost');
+      expect(starry.t7).toBe("[Level 7] Rusalka's Thorny Bouquet"); // a real Sanctuary item
+    });
+
+    it('pins the exact port from a real T6 item and fills a real received T7', () => {
+      // Both T7s unread and both ports duplicate; the real T6 items determine
+      // the exact ports (Moonshade -> Sanctuary, Moonlit Lamp -> Sausan) and the
+      // received T7 items are filled from the ports' pairings.
+      const trades = [
+        { region: 'South', chain: 'South - Grándiha', t5: '[Level 5] Luxury Patterned Fabric', t6: '[Level 6] Moonlit Crystal Lamp', t7: undefined, t7Port: 'Sausan Garrison Wharf' },
+        { region: 'South', chain: 'South - Starry Midnight Port', t5: '[Level 5] Portrait of the Ancient', t6: '[Level 6] Moonshade Aged Wine', t7: undefined, t7Port: 'Sausan Garrison Wharf' }
+      ];
+      ensureCompleteT7Ports(trades, { north: 'A', south: 'C', east: 'B' }, barterTierPorts, barterT6T7Ports);
+      const grandiha = trades.find(t => t.chain === 'South - Grándiha');
+      const starry = trades.find(t => t.chain === 'South - Starry Midnight Port');
+      expect(grandiha.t7Port).toBe('Sausan Garrison Wharf');
+      expect(starry.t7Port).toBe('Sanctuary Coastal Outpost');
+      expect(grandiha.t7).toBe('[Level 7] Sausan Military Supply');
+      expect(starry.t7).toBe("[Level 7] Rusalka's Thorny Bouquet");
+    });
+
+    it('routes both ports of a duplicated region in the final walkthrough', async () => {
+      const trades = [
+        {
+          region: 'South', chain: 'South - Grándiha', island: 'Orffs Island',
+          t4: "[Level 4] Pirate's Key", t5: '[Level 5] Luxury Patterned Fabric',
+          t6: '[Level 6] Moonlit Crystal Lamp', t7: undefined, t7Port: 'Sausan Garrison Wharf'
+        },
+        {
+          region: 'South', chain: 'South - Starry Midnight Port', island: 'Narvo Island',
+          t4: '[Level 4] Headless Dragon Figurine', t5: '[Level 5] Portrait of the Ancient',
+          t6: '[Level 6] Moonshade Aged Wine', t7: undefined, t7Port: 'Sausan Garrison Wharf'
+        }
+      ];
+      const result = await optimizeRoute(trades, { north: 'A', south: 'C', east: 'B' }, false, 22450, 5400, 150);
+      expect(result.error).toBeUndefined();
+      const locs = new Set();
+      for (const a of result.actions) {
+        if (a.action === 'trade' && a.output && a.output.includes('Level 7')) locs.add(a.location);
+      }
+      expect(locs.has('Sausan Garrison Wharf')).toBe(true);
+      expect(locs.has('Sanctuary Coastal Outpost')).toBe(true);
+    });
   });
 });

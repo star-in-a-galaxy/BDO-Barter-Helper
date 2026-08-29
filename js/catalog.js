@@ -1,6 +1,7 @@
 let barterGoods = null;
 let barterPorts = null;
 let barterTierPorts = null;
+let barterT6T7Ports = null;
 
 export async function loadBarterGoods() {
   if (barterGoods) return barterGoods;
@@ -24,6 +25,17 @@ export async function loadBarterTierPorts() {
   const response = await fetch('assets/barterTierPorts.json');
   barterTierPorts = await response.json();
   return barterTierPorts;
+}
+
+// Which T7 ports accept each T6 item, and which T7 items a T6 can yield at a
+// given port (from assets/t6T7Ports.json, derived from barterRoutes.json). Used
+// to pin the exact T6→T7 port from a real T6 item and to fill the received T7
+// item as a fallback when the screenshot didn't read it.
+export async function loadT6T7Ports() {
+  if (barterT6T7Ports) return barterT6T7Ports;
+  const response = await fetch('assets/t6T7Ports.json');
+  barterT6T7Ports = await response.json();
+  return barterT6T7Ports;
 }
 
 export async function getCatalog() {
