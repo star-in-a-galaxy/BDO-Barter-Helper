@@ -11,6 +11,20 @@
   html, body { margin: 0; height: 100%; background: #2b2b2b; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
   
   #app { display: flex; height: 100%; }
+
+  #browser-warning {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 2000;
+    display: flex; align-items: center; gap: 8px;
+    background: #4a2d16; color: #fde68a;
+    padding: 8px 14px; font-size: 13px; line-height: 1.4;
+    border-bottom: 1px solid #78350f; box-shadow: 0 2px 6px rgba(0,0,0,0.5);
+  }
+  #browser-warning #browser-warning-close {
+    margin-left: auto; background: none; border: 1px solid #fde68a;
+    color: #fde68a; border-radius: 4px; cursor: pointer;
+    font-size: 16px; line-height: 1; padding: 2px 8px; flex-shrink: 0;
+  }
+  #browser-warning #browser-warning-close:hover { background: #78350f; }
   
   #sidebar {
     width: var(--sidebar-width, 480px);
@@ -230,6 +244,10 @@
     background: rgba(85,170,153,0.08); color: #b5c9c5;
   }
   .resolve-context { font-weight: 600; color: #5a9; margin-bottom: 4px; }
+  .resolve-trade { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; }
+  .resolve-trade .rt-item { display: inline-flex; align-items: center; color: #e0e0e0; font-size: 13px; }
+  .resolve-trade .rt-name { word-break: break-word; }
+  .resolve-trade .rt-arrow { color: #5a9; font-weight: 700; font-size: 16px; }
   .resolve-field { color: #facc15; font-size: 12px; margin-bottom: 12px; word-break: break-word; }
   .resolve-options { display: flex; flex-direction: column; gap: 8px; }
   .resolve-option {
@@ -244,6 +262,13 @@
   .resolve-option:hover { border-color: #5a9; background: #2f3a3f; }
   .resolve-option.current { border-color: #5a9; }
   .resolve-option img { flex-shrink: 0; }
+  .resolve-entry { display: flex; gap: 8px; align-items: center; }
+  .resolve-entry input {
+    flex: 1; padding: 9px 10px; border: 1px solid #555; background: #2a2a2a;
+    color: #e0e0e0; border-radius: 6px; font-size: 13px; min-width: 0;
+  }
+  .resolve-entry input.resolve-error { border-color: #f87171; background: #3a2323; }
+  .resolve-entry .resolve-option { flex-shrink: 0; }
   .resolve-footer {
     padding: 10px 16px; border-top: 1px solid #444;
     color: #888; font-size: 12px; position: sticky; bottom: 0; background: #1e1e1e;
@@ -864,6 +889,10 @@
     width: 14px; height: 3px; background: #38bdf8; border-radius: 2px;
     display: inline-block;
   }
+  #map-controls .mc-trades {
+    width: 10px; height: 10px; border-radius: 50%; background: #f0abfc;
+    border: 1px solid #111; display: inline-block;
+  }
   #map-controls .mc-divider { border-top: 1px solid #444; margin: 8px 0; }
   #map-controls #calibrate-btn {
     width: 100%; padding: 6px 8px; border: 1px solid #5a9; background: #2a4a5a;
@@ -888,9 +917,23 @@
     background: #1e3a5f; color: #fff; font: bold 12px/1 sans-serif;
     border: 2px solid #7dd3fc; box-shadow: 0 1px 3px rgba(0,0,0,0.6);
   }
+  .trade-badge {
+    display: flex; align-items: center; gap: 3px;
+    background: rgba(17,17,17,0.9); border: 1px solid #f0abfc;
+    border-radius: 5px; padding: 2px 5px; box-shadow: 0 1px 3px rgba(0,0,0,0.6);
+    white-space: nowrap;
+  }
+  .trade-badge img { width: 20px; height: 20px; vertical-align: middle; }
+  .trade-badge .trade-region-icon { vertical-align: middle; }
+  .trade-badge .tb-arrow { color: #f0abfc; font-size: 13px; line-height: 1; }
 </style>
 </head>
 <body>
+<div id="browser-warning" style="display:none">
+  <strong>Slow OCR detected:</strong> screenshot scanning is much faster in Chromium-based browsers
+  (Chrome, Edge, Opera, Brave). You appear to be using a non-Chromium browser, so scanning may be slow.
+  <button id="browser-warning-close" type="button" title="Dismiss">×</button>
+</div>
 <div id="app">
   <div id="sidebar">
     <div id="sidebar-header">
@@ -1025,6 +1068,7 @@
       <label><input type="checkbox" id="tgl-t6" checked> <span class="mc-dot t6"></span> T6 traders</label>
       <label><input type="checkbox" id="tgl-t7" checked> <span class="mc-dot t7"></span> T7 ports</label>
       <label><input type="checkbox" id="tgl-other" checked> <span class="mc-dot other"></span> Other</label>
+      <label><input type="checkbox" id="tgl-trades" checked> <span class="mc-trades"></span> Trades</label>
       <label><input type="checkbox" id="tgl-route" checked> <span class="mc-route"></span> Route</label>
       <div class="mc-divider"></div>
       <button id="calibrate-btn" type="button">Calibrate Map</button>
@@ -1077,7 +1121,7 @@
 <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/pako@2/dist/pako.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/upng-js/UPNG.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@7/dist/tesseract.min.js"></script>
 <script>
   const MIN_ZOOM = 0;
   const MAX_ZOOM = 15;

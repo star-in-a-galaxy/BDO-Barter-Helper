@@ -1,12 +1,35 @@
-import { getCatalog } from './catalog.js';
+import { getCatalog, loadBarterTierPorts, loadT6T7Ports } from './catalog.js';
 import { planRoute } from './planner.js';
 import { attachStepCheckboxes, getActiveCard, getActiveStep, getInventoryForCard, stepNext, stepPrev } from './walkthrough.js';
 import { formatInventory } from './inventory.js';
-import { initMapOverlay, drawRoute, clearRoute, setActiveStep, setAheadSteps } from './map-overlay.js';
+import { initMapOverlay, drawRoute, drawTrades, clearRoute, setActiveStep, setAheadSteps } from './map-overlay.js';
+import { ensureCompleteT7Ports } from './optimizer.js';
 import { scanImages as clientScan } from './scanner.js';
 
 let catalog = null;
 let tradeRows = [];
+let tierPorts = null;
+let t6T7Ports = null;
+
+// OCR is far slower in non-Chromium browsers (tesseract WASM). Warn the user and
+// recommend a Chromium-based browser when one isn't detected.
+function isChromiumBrowser() {
+  try {
+    if (navigator.userAgentData && Array.isArray(navigator.userAgentData.brands)) {
+      return navigator.userAgentData.brands.some(b => /chromium/i.test(b.brand));
+    }
+  } catch (e) { /* userAgentData may be unavailable; fall back to UA sniffing */ }
+  const ua = navigator.userAgent || '';
+  return /Chromium|Chrome\/|Edg\/|OPR\/|CriOS|HeadlessChrome/i.test(ua);
+}
+
+function showBrowserWarningIfNeeded() {
+  const el = document.getElementById('browser-warning');
+  if (!el || isChromiumBrowser()) return;
+  el.style.display = 'flex';
+  const close = document.getElementById('browser-warning-close');
+  if (close) close.addEventListener('click', () => { el.style.display = 'none'; });
+}
 
 // Fixed row order: the 6 chains, always shown (scanned values fill in where
 // found; missing chains stay blank).
@@ -232,7 +255,13 @@ function createTradeRow(trade) {
       warnBadge.className = 'scan-warning';
       warnBadge.textContent = '⚠ verify';
       warnBadge.title = trade.warnings
-        .map(w => `${w.field}: "${w.item}"\n  OCR read: ${w.read}\n  could also be: ${w.alternatives.join(', ')}`)
+        .map(w => {
+          if (w.kind === 'port') {
+            const guesses = (w.candidates || []).slice(0, 3).map(c => c.name).join(', ') || 'none';
+            return `port: "${w.read || w.item || ''}"\n  OCR read: ${w.read || ''}\n  best guesses: ${guesses}`;
+          }
+          return `${w.field}: "${w.item}"\n  OCR read: ${w.read}\n  could also be: ${(w.alternatives || []).join(', ')}`;
+        })
         .join('\n\n');
       regionCell.appendChild(warnBadge);
     }
@@ -254,9 +283,9 @@ function createTradeRow(trade) {
   const t5Input = t5Cell.querySelector('.filter-input');
   const t4Input = t4Cell.querySelector('.filter-input');
   const islandInput = islandCell.querySelector('.filter-input');
-  if (t5Input) t5Input.addEventListener('change', persistEdit);
-  if (t4Input) t4Input.addEventListener('change', persistEdit);
-  if (islandInput) islandInput.addEventListener('change', saveState);
+  if (t5Input) t5Input.addEventListener('change', () => { persistEdit(); refreshTradeLayer(); });
+  if (t4Input) t4Input.addEventListener('change', () => { persistEdit(); refreshTradeLayer(); });
+  if (islandInput) islandInput.addEventListener('change', () => { saveState(); refreshTradeLayer(); });
   
   row.appendChild(regionCell);
   row.appendChild(t5Cell);
@@ -385,6 +414,42 @@ function populateTrades(trades, persist = true) {
     tradeRows.push(row);
   });
   if (persist) saveState();
+  refreshTradeLayer();
+}
+
+// Redraw the map's trade FROM→TO badges from the current table. The optimizer
+// repairs duplicate/missing T6→T7 ports (ensureCompleteT7Ports); run the same
+// completion on a display snapshot so the map shows the inferred ports the route
+// will use, not just the raw scan. Only applied when the region mapping is a
+// valid bijection - otherwise the map shows the scan as-is.
+async function refreshTradeLayer() {
+  try {
+    if (!tierPorts) tierPorts = await loadBarterTierPorts();
+    if (!t6T7Ports) t6T7Ports = await loadT6T7Ports();
+    const regionMapping = currentRegionMapping();
+    const snapshot = tradeRows.map(r => r.getData());
+    if (isRegionBijection(regionMapping)) {
+      ensureCompleteT7Ports(snapshot, regionMapping, tierPorts, t6T7Ports);
+    }
+    drawTrades(snapshot);
+  } catch (e) {
+    // Never block the UI on display; fall back to the raw table data.
+    drawTrades(tradeRows.map(r => r.getData()));
+  }
+}
+
+function currentRegionMapping() {
+  return {
+    north: String(document.getElementById('region-north')?.value || ''),
+    south: String(document.getElementById('region-south')?.value || ''),
+    east: String(document.getElementById('region-east')?.value || '')
+  };
+}
+
+// North/South/East must map to distinct A/B/C for port completion to be sound.
+function isRegionBijection(m) {
+  const vals = [m.north, m.south, m.east];
+  return vals.every(v => ['A', 'B', 'C'].includes(v)) && new Set(vals).size === 3;
 }
 
 const scanStore = { t4t5: [], t5t6: [], t6t7: [] };
@@ -431,6 +496,7 @@ function clearTradeTable() {
   });
   clearRouteView();
   saveState();
+  refreshTradeLayer();
 }
 
 // The route is derived from the table, so clearing the table clears it too.
@@ -711,6 +777,70 @@ function itemIconImg(itemName) {
   return `<img src="assets/icons/level_${tier}_${safe}.webp" alt="" width="26" height="26" style="vertical-align:middle;margin-right:8px;" onerror="this.style.display='none'">`;
 }
 
+// The real, known ports that are valid for a scanned field. Only these may be
+// entered into the trade table - the OCR safeguard never passes raw reads.
+function knownPortsForField(field) {
+  if (field === 'trader') return Object.values(catalog.t6ByRegion || {}).flat();
+  const tier = field === 'island' ? 'level_5' : 'level_7';
+  return Object.values(catalog.ports || {})
+    .filter(p => p.target_tier === tier)
+    .map(p => p.name);
+}
+
+let portDatalist = null;
+function ensurePortDatalist(knownPorts) {
+  if (!portDatalist) {
+    portDatalist = document.createElement('datalist');
+    portDatalist.id = 'known-ports-datalist';
+    document.body.appendChild(portDatalist);
+  }
+  portDatalist.innerHTML = '';
+  knownPorts.forEach(p => {
+    const opt = document.createElement('option');
+    opt.value = p;
+    portDatalist.appendChild(opt);
+  });
+  return portDatalist;
+}
+
+// Apply a resolved port choice. For a trader this may move the whole trade
+// (T5/T4/island + scanned T6/T7) to the chain that trader belongs to.
+function applyPortChoice(w, trade, row, value) {
+  const field = w.field;
+  if (field === 'island') {
+    row.setValue('island', value);
+  } else if (field === 'trader') {
+    let targetChain = null;
+    for (const [reg, traders] of Object.entries(catalog.t6ByRegion || {})) {
+      const match = traders.find(t => normChainName(t) === normChainName(value));
+      if (match) { targetChain = `${reg} - ${match}`; break; }
+    }
+    const cur = row;
+    if (targetChain) {
+      const target = tradeRows.find(r => normChainName(r.chain) === normChainName(targetChain)) || cur;
+      if (target !== cur) {
+        const data = cur.getData();
+        target.setValue('t5', data.t5);
+        target.setValue('t4', data.t4);
+        target.setValue('island', data.island);
+        target.setValue('t6', trade.t6);
+        target.setValue('t7', trade.t7);
+        target.setValue('t7Port', trade.t7Port);
+        cur.setValue('t5', '');
+        cur.setValue('t4', '');
+        cur.setValue('island', '');
+        cur.setValue('t6', undefined);
+        cur.setValue('t7', undefined);
+        cur.setValue('t7Port', undefined);
+      }
+    }
+  } else if (field === 'port') {
+    row.setValue('t7Port', value);
+  }
+  row.clearWarnings();
+  saveState();
+}
+
 // Modal that walks through every unique scan ambiguity (near-twin items) and
 // asks the user to pick which item is right. The same ambiguity can appear in
 // several rows/trades (e.g. a T6 item seen in both the T5→T6 and T6→T7 scans),
@@ -730,7 +860,7 @@ function openResolutionModal(trades) {
     const row = tradeRows.find(r => normChainName(r.chain) === normChainName(trade.chain));
     if (!row) return;
     (trade.warnings || []).forEach(w => {
-      const key = `${normChainName(trade.chain)}|${w.field}|${w.item}`;
+      const key = `${normChainName(trade.chain)}|${w.field}|${w.read || w.item || ''}`;
       if (seen.has(key)) return;
       seen.add(key);
       queue.push({ w, trade, row });
@@ -766,7 +896,7 @@ function openResolutionModal(trades) {
     // remains - apply it automatically without prompting.
     let gkUsed = null;
     let gkAvailable = null;
-    if (w.kind !== 'trader') {
+    if (w.kind !== 'trader' && w.kind !== 'port') {
       const gk = groupKeyOf(w);
       gkUsed = usedByGroup.get(gk);
       if (!gkUsed) { gkUsed = new Set(); usedByGroup.set(gk, gkUsed); }
@@ -879,8 +1009,82 @@ function openResolutionModal(trades) {
         });
         optionsWrap.appendChild(btn);
       });
+    } else if (w.kind === 'port') {
+      // OCR couldn't confidently read a port - only real, known ports may land
+      // in the table. Offer the ranked candidates plus a free-entry field, and
+      // let the user confirm the guess or leave it blank.
+      const label = w.field === 'island' ? 'island' : w.field === 'trader' ? 'trader' : 'T7 port';
+      const knownPorts = knownPortsForField(w.field);
+      // The port being resolved is unknown (that's the whole point) - don't show
+      // a "port name" line next to the barter; just the FROM → TO trade.
+      context.style.display = 'none';
+      field.textContent = `OCR inconclusive - please pick the correct ${label}`;
+
+      // Show the actual barter (item icons + names) this port resolves for,
+      // right after the port/route name.
+      const fromItem = w.field === 'island' ? trade.t4 : w.field === 'trader' ? trade.t5 : trade.t6;
+      const toItem = w.field === 'island' ? trade.t5 : w.field === 'trader' ? trade.t6 : trade.t7;
+      if (fromItem && toItem) {
+        const tradeLine = document.createElement('div');
+        tradeLine.className = 'resolve-trade';
+        tradeLine.innerHTML =
+          `<span class="rt-item">${itemIconImg(fromItem)}<span class="rt-name">${fromItem}</span></span>` +
+          `<span class="rt-arrow">→</span>` +
+          `<span class="rt-item">${itemIconImg(toItem)}<span class="rt-name">${toItem}</span></span>`;
+        body.insertBefore(tradeLine, field);
+      }
+
+      (w.candidates || []).forEach(c => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'resolve-option' + (w.item && normChainName(c.name) === normChainName(w.item) ? ' current' : '');
+        btn.innerHTML = `<span>${c.name}</span>`;
+        btn.title = 'Use this port';
+        btn.addEventListener('click', () => {
+          applyPortChoice(w, trade, row, c.name);
+          i++; show();
+        });
+        optionsWrap.appendChild(btn);
+      });
+
+      // Free entry: type any real, known port (validated against the catalog).
+      const entryWrap = document.createElement('div');
+      entryWrap.className = 'resolve-entry';
+      const datalist = ensurePortDatalist(knownPorts);
+      const input = document.createElement('input');
+      input.type = 'text';
+      input.placeholder = 'Type a known port name…';
+      input.autocomplete = 'off';
+      input.setAttribute('list', datalist.id);
+      const apply = document.createElement('button');
+      apply.type = 'button';
+      apply.className = 'resolve-option';
+      apply.innerHTML = '<span>Apply port</span>';
+      apply.addEventListener('click', () => {
+        const v = String(input.value || '').trim();
+        if (!v) return;
+        const exact = knownPorts.find(p => normChainName(p) === normChainName(v));
+        if (!exact) {
+          input.classList.add('resolve-error');
+          input.placeholder = 'Not a known port - pick from the list';
+          return;
+        }
+        applyPortChoice(w, trade, row, exact);
+        i++; show();
+      });
+      input.addEventListener('keydown', (e) => { if (e.key === 'Enter') apply.click(); });
+      entryWrap.appendChild(input);
+      entryWrap.appendChild(apply);
+      optionsWrap.appendChild(entryWrap);
+
+      const skip = document.createElement('button');
+      skip.type = 'button';
+      skip.className = 'resolve-option';
+      skip.innerHTML = '<span>Leave it blank</span>';
+      skip.addEventListener('click', () => { saveState(); i++; show(); });
+      optionsWrap.appendChild(skip);
     } else {
-      const options = gkAvailable || [w.item, ...w.alternatives];
+      const options = gkAvailable || [w.item, ...(w.alternatives || [])];
       options.forEach(opt => {
         const btn = document.createElement('button');
         btn.type = 'button';
@@ -927,6 +1131,9 @@ async function scanScreenshots() {
       if (result.mapping.south) document.getElementById('region-south').value = result.mapping.south;
       if (result.mapping.east) document.getElementById('region-east').value = result.mapping.east;
     }
+    // The mapping dropdowns were set after populateTrades drew - re-render so
+    // the map reflects the scan's region mapping / inferred T7 ports.
+    refreshTradeLayer();
     saveState();
     const trades = result.trades || [];
     const openedModal = openResolutionModal(trades);
@@ -953,7 +1160,7 @@ const SETTING_IDS = [
   'region-north', 'region-south', 'region-east',
   'stock-all', 'ship-weight', 'char-weight', 'char-used-weight', 'juggling-toggle',
   'steps-ahead', 'hide-done',
-  'tgl-t5', 'tgl-t6', 'tgl-t7', 'tgl-other', 'tgl-route'
+  'tgl-t5', 'tgl-t6', 'tgl-t7', 'tgl-other', 'tgl-trades', 'tgl-route'
 ];
 
 let lastRoute = null; // { walkthrough, stops, route, distance }
@@ -1038,6 +1245,7 @@ function restoreTrades(savedRows) {
     tbody.appendChild(row.element);
     tradeRows.push(row);
   });
+  refreshTradeLayer();
 }
 
 // Re-mark the first `step - 1` steps done so `step` becomes the active one.
@@ -1084,6 +1292,7 @@ function loadState() {
 }
 
 async function init() {
+  showBrowserWarningIfNeeded();
   try {
     catalog = await getCatalog();
   } catch (err) {
@@ -1142,6 +1351,12 @@ async function init() {
   SETTING_IDS.forEach(id => {
     const el = document.getElementById(id);
     if (el) el.addEventListener('change', saveState);
+  });
+  // Region mapping drives T6→T7 port completion - re-render the map when it
+  // changes so inferred ports stay accurate.
+  ['region-north', 'region-south', 'region-east'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener('change', refreshTradeLayer);
   });
 
   // How many steps ahead to highlight on the map (default 1 = current + next).
