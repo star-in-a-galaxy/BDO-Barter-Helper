@@ -428,6 +428,10 @@ async function refreshTradeLayer() {
     if (!t6T7Ports) t6T7Ports = await loadT6T7Ports();
     const regionMapping = currentRegionMapping();
     const snapshot = tradeRows.map(r => r.getData());
+    // A cleared table has no trade data - don't let port completion re-fill
+    // ports (and badges) for empty rows; just clear the layer.
+    const hasData = snapshot.some(t => t.t5 || t.t4 || t.island || t.t7Port);
+    if (!hasData) { drawTrades([]); return; }
     if (isRegionBijection(regionMapping)) {
       ensureCompleteT7Ports(snapshot, regionMapping, tierPorts, t6T7Ports);
     }
@@ -515,6 +519,8 @@ function clearRouteView() {
   const routeToolbar = document.getElementById('route-toolbar');
   if (routeToolbar) routeToolbar.style.display = 'none';
   clearRoute();
+  // The route's step cards are gone - reset the inventory panel too.
+  updateInventoryPanel();
 }
 
 // --- Usage guide -----------------------------------------------------------
