@@ -845,6 +845,7 @@ function applyPortChoice(w, trade, row, value) {
   }
   row.clearWarnings();
   saveState();
+  refreshTradeLayer();
 }
 
 // Modal that walks through every unique scan ambiguity (near-twin items) and
@@ -912,6 +913,7 @@ function openResolutionModal(trades) {
         row.clearWarnings();
         gkUsed.add(gkAvailable[0]);
         saveState();
+        refreshTradeLayer();
         i++; show(); return;
       }
     }
@@ -964,6 +966,7 @@ function openResolutionModal(trades) {
             emptiedRow.setValue('island', o.island);
             emptiedRow.clearWarnings();
             saveState();
+            refreshTradeLayer();
             i++; show();
           });
           optionsWrap.appendChild(btn);
@@ -1006,11 +1009,13 @@ function openResolutionModal(trades) {
               curRow.setValue('t7', undefined);
               curRow.setValue('t7Port', undefined);
               saveState();
+              refreshTradeLayer();
               // The moved-away chain is now empty; recover it from the orphans.
               if (orphans.length) { phase2(curRow, `${trade.region} ${trade.chain}`); return; }
             }
           }
           saveState();
+          refreshTradeLayer();
           i++; show();
         });
         optionsWrap.appendChild(btn);
@@ -1102,6 +1107,7 @@ function openResolutionModal(trades) {
           row.clearWarnings();
           if (gkUsed) gkUsed.add(opt);
           saveState();
+          refreshTradeLayer();
           i++;
           show();
         });
