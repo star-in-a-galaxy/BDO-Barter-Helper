@@ -163,9 +163,11 @@ function commonPrefixLen(a, b) {
   return i;
 }
 
-// Same-tier items that share a long prefix with `name` but differ in the tail
-// (e.g. "Marine Knights' Helm" ↔ "Marine Knights' Spear"). OCR can easily
-// misread the last word, so these get flagged for manual verification.
+// Same-tier items OCR can confuse with `name`: those sharing a long prefix
+// (e.g. "Marine Knights' Helm" ↔ "Marine Knights' Spear") AND those with high
+// order-insensitive similarity despite a short prefix (e.g. "37 Year Old Herbal
+// Wine" ↔ "102 Year Old Golden Herb" - a leading digit/pair of words differs,
+// but tesseract misreads them). Both get flagged for manual verification.
 export function findNearTwins(name, catalog) {
   // namePart strips the "[Level N]" prefix so the shared prefix reflects the
   // item name itself, not the tier label.
@@ -180,7 +182,12 @@ export function findNearTwins(name, catalog) {
     if (!m) continue;
     const shorter = Math.min(n.length, m.length);
     const p = commonPrefixLen(n, m);
-    if (p >= shorter * 0.6 && p < shorter) {
+    const prefixTwin = p >= shorter * 0.6 && p < shorter;
+    // Order-insensitive similarity catches same-structure names that differ in
+    // the middle/leading part (not just the tail). Threshold keeps it to the
+    // genuinely confusable pairs (only one T5 pair in the whole catalog).
+    const structuralTwin = p < shorter && lcsRatio(n, m) >= 0.6;
+    if (prefixTwin || structuralTwin) {
       twins.push(it.name);
     }
   }

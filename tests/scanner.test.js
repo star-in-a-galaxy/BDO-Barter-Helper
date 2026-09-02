@@ -22,6 +22,11 @@ describe('scanner near-twin warnings', () => {
     expect(twins).not.toContain('[Level 6] Golden Sand Ring');
   });
 
+  it('flags similar-name T5s that differ structurally (Year Old Herbal Wine / Golden Herb)', () => {
+    const twins = findNearTwins('[Level 5] 37 Year Old Herbal Wine', goods);
+    expect(twins).toContain('[Level 5] 102 Year Old Golden Herb');
+  });
+
   it('does not flag items from other tiers', () => {
     // "Golden Sand" is a level-1 item, not a twin of a level-5 item
     const twins = findNearTwins('[Level 5] Golden Fish Scale', goods);
@@ -319,7 +324,9 @@ describe('scanner near-twin warnings', () => {
     const rows = parseT5t6(boxes, goods, ports);
     expect(rows).toHaveLength(1);
     expect(rows[0].trader).toBe('Arehaza');
-    expect(rows[0].warnings).toBeUndefined();
+    // No trader ambiguity remains (the T5 may still carry its own near-twin
+    // warning, which is a separate concern).
+    expect((rows[0].warnings || []).some(w => w.field === 'trader')).toBe(false);
   });
 
   it('propagates an unresolved port warning through buildTrades', () => {
